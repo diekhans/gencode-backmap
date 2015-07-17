@@ -1,0 +1,10 @@
+This is an import of gzstream 1.4 from
+http://www.cs.unc.edu/Research/compgeom/gzstream/
+
+This was used of in place of zfstream that is included with zlib due
+to it's early compatibility with gcc 3.*.
+
+The following modifications were made:
+    - rename gzstream.C to gzstream.cc
+    - added attach() method
+    
