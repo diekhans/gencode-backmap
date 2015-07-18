@@ -7,8 +7,8 @@ KENTINC = -I${KENTDIR}/inc -I${KENTDIR}/hg/inc
 
 CXXFLAGS += ${KENTINC}
 
-HDRS = FIOStream.hh	gxf.hh		gzstream.hh	typeOps.hh
-SRCS = FIOStream.cc	gxf.cc		gzstream.cc	typeOps.cc
+HDRS = FIOStream.hh	gxf.hh		gzstream.hh	typeOps.hh	transMapper.hh
+SRCS = FIOStream.cc	gxf.cc		gzstream.cc	typeOps.cc	transMapper.cc
 
 OBJS = $(foreach b,$(basename ${SRCS}),${OBJDIR}/${b}.o)
 

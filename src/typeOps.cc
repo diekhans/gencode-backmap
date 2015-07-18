@@ -40,9 +40,9 @@ int stringToInt(const string& str,
 /*
  * Split a string into a vector of string given a separator character.
  */
-vector<const string> stringSplit(const string& str,
-                                 char separator) {
-    vector<const string> strs;
+StringVector stringSplit(const string& str,
+                         char separator) {
+    StringVector strs;
     
     int prevIdx = 0;
     int sepIdx;

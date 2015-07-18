@@ -10,8 +10,8 @@
 
 #ifndef gxf_hh
 #define gxf_hh
-#include <string>
-#include <vector>
+#include "typeOps.hh"
+#include <queue>
 using namespace std;
 
 /* it seems so stupid to need to keep writing one-off GFF/GTF parsers */
@@ -28,10 +28,40 @@ typedef enum {
 typedef vector<Feature*>  FeatureVector;
 
 /*
+ * GxF base record type.  Use instanceOf to determine actually type
+ */
+class GxfRecord {
+    public:
+};
+
+/*
+ * non-feature line.
+ */
+class GxfLine: public string, public GxfRecord {
+    public:
+    GxfLine(const string& line):
+        string(line) {
+    }
+};
+
+/*
  * A row parsed from a GTF/GFF file. Immutable object.
  */
-class Feature {
+class GxfFeature: public GxfRecord {
 public:
+    // attribute/value pairs
+    class AttrVal {
+        public:
+        const string fAttr;
+        const string fVal;
+        const bool fQuoted;
+
+        AttrVal(const string& attr, const string& val, bool quoted):
+            fAttr(attr), fVal(val), fQuoted(quoted) {
+        }
+    };
+    typedef vector<AttrVal> AttrVals;
+    
     // columns parsed from file.
     const string fSeqid;
     const string fSource;
@@ -41,13 +71,13 @@ public:
     const string fScore;
     const string fStrand;
     const string fPhase;
-    const string fAttrs;
+    const AttrVals fAttrs;
 
 public:
     /* construct a new feature object */
-    Feature(const string& seqid, const string& source, const string& type,
-            int start, int end, const string& score, const string& strand,
-            const string& phase, const string& attrs):
+    GxfFeature(const string& seqid, const string& source, const string& type,
+               int start, int end, const string& score, const string& strand,
+               const string& phase, const AttrVals& attrs):
         fSeqid(seqid), fSource(source), fType(type),
         fStart(start), fEnd(end),
         fScore(score), fStrand(strand),
@@ -55,24 +85,7 @@ public:
     }
 
     /* destructor */
-    virtual ~Feature() {
-    }
-};
-
-/* Record returned by the parser, maybe or may not include a feature */
-class GxfLine {
-    public:
-    const string fLine;
-    const Feature* fFeature;
-
-    public:
-    GxfLine(const string& line,
-            const Feature* feature = NULL):
-        fLine(line),
-        fFeature(feature) {
-    }
-    ~GxfLine() {
-        delete fFeature;
+    virtual ~GxfFeature() {
     }
 };
 
@@ -83,11 +96,13 @@ class GxfParser {
     private:
     FIOStream* fIn;  // input stream
     GxfFormat fGxfFormat; // format of file
+    queue<const GxfRecord*> fPending; // FIFO of pushed records to be read before file
 
-    vector<const string> splitFeatureLine(const string& line);
-    const Feature* createGff3Feature(const vector<const string>& columns);
-    const Feature* createGtfFeature(const vector<const string>& columns);
-    const Feature* createGxfFeature(const vector<const string>& columns);
+    StringVector splitFeatureLine(const string& line);
+    const GxfFeature* createGff3Feature(const StringVector& columns);
+    const GxfFeature* createGtfFeature(const StringVector& columns);
+    const GxfFeature* createGxfFeature(const StringVector& columns);
+    const GxfRecord* read();
     
     public:
     /* constructor that opens file, which maybe compressed */
@@ -97,9 +112,34 @@ class GxfParser {
     /* destructor */
     ~GxfParser();
 
-    /* Read the next line, parse into a feature if it is one, otherwise just
-     * return line. Return NULL on EOF */
-    GxfLine* next();
+    /* Read the next record, either queued by push() or from the file , use
+     * instanceOf to determine the type.  Return NULL on EOF.
+     */
+    const GxfRecord* next();
+
+    /* Return a record to be read before the file. */
+    void push(const GxfRecord* gxfRecord) {
+        fPending.push(gxfRecord);
+    }
+};
+
+/**
+ * Tree container for GxfFeature objects
+ */
+class GxfFeatureTree {
+    public:
+    const GxfFeature* fNode;
+    vector<const GxfFeature*> fChildren;
+
+    GxfFeatureTree(const GxfFeature* node):
+        fNode(node) {
+    }
+
+    ~GxfFeatureTree() {
+        for (int i = 0; i < fChildren.size(); i++) {
+            delete fChildren[i];
+        }
+    }
 };
 
 #endif
