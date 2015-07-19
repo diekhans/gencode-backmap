@@ -3,6 +3,9 @@
 #include <errno.h>
 #include <stdlib.h>
 
+const string whitespace = " \t\n\r\f\v";
+
+
 /*
  * Convert a string to an int.
  */

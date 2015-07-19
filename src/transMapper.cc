@@ -56,7 +56,6 @@ struct psl* TransMapper::chainToPsl(struct chain *ch,
 /* read a chain file, convert to mapAln object and genomeRangeTree by query locations. */
 void TransMapper::loadMapChains(const string& chainFile,
                                 bool swapMap) {
-    struct genomeRangeTree* mapAlns = genomeRangeTreeNew();
     struct chain *ch;
     struct lineFile *chLf = lineFileOpen(const_cast<char*>(chainFile.c_str()), TRUE);
     while ((ch = chainRead(chLf)) != NULL) {

@@ -12,6 +12,7 @@
 #define gxf_hh
 #include "typeOps.hh"
 #include <queue>
+#include <stdexcept>
 using namespace std;
 
 /* it seems so stupid to need to keep writing one-off GFF/GTF parsers */
@@ -32,6 +33,12 @@ typedef vector<Feature*>  FeatureVector;
  */
 class GxfRecord {
     public:
+    /* destructor */
+    virtual ~GxfRecord() {
+    }
+
+    /* return record as a string */
+    virtual string toString() const = 0;
 };
 
 /*
@@ -41,6 +48,15 @@ class GxfLine: public string, public GxfRecord {
     public:
     GxfLine(const string& line):
         string(line) {
+    }
+
+    /* destructor */
+    virtual ~GxfLine() {
+    }
+
+    /* return record as a string */
+    virtual string toString() const {
+        return *this;
     }
 };
 
@@ -58,6 +74,12 @@ public:
 
         AttrVal(const string& attr, const string& val, bool quoted):
             fAttr(attr), fVal(val), fQuoted(quoted) {
+            if (stringEmpty(fAttr)) {
+                throw invalid_argument("empty attribute name");
+            }
+            if (stringEmpty(fVal)) {
+                throw invalid_argument("empty attribute value");
+            }
         }
     };
     typedef vector<AttrVal> AttrVals;
@@ -73,7 +95,10 @@ public:
     const string fPhase;
     const AttrVals fAttrs;
 
-public:
+    protected:
+    string baseColumnsAsString() const;
+    
+    public:
     /* construct a new feature object */
     GxfFeature(const string& seqid, const string& source, const string& type,
                int start, int end, const string& score, const string& strand,
@@ -98,10 +123,10 @@ class GxfParser {
     GxfFormat fGxfFormat; // format of file
     queue<const GxfRecord*> fPending; // FIFO of pushed records to be read before file
 
-    StringVector splitFeatureLine(const string& line);
-    const GxfFeature* createGff3Feature(const StringVector& columns);
-    const GxfFeature* createGtfFeature(const StringVector& columns);
-    const GxfFeature* createGxfFeature(const StringVector& columns);
+    StringVector splitFeatureLine(const string& line) const;
+    const GxfFeature* createGff3Feature(const StringVector& columns) const;
+    const GxfFeature* createGtfFeature(const StringVector& columns) const;
+    const GxfFeature* createGxfFeature(const StringVector& columns) const;
     const GxfRecord* read();
     
     public:
@@ -136,7 +161,7 @@ class GxfFeatureTree {
     }
 
     ~GxfFeatureTree() {
-        for (int i = 0; i < fChildren.size(); i++) {
+        for (size_t i = 0; i < fChildren.size(); i++) {
             delete fChildren[i];
         }
     }

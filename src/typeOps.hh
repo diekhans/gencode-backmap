@@ -23,6 +23,14 @@ using namespace std;
 #define instanceOf(objPtr, className) \
     ((bool)(dynamic_cast<const className*>(objPtr) != NULL))
 
+
+extern const string whitespace;
+
+/* does a string end with a suffix? */
+inline bool stringEndsWith(const string& s, const string& suffix) {
+    return (s.size() >= suffix.size()) && (s.rfind(suffix) == (s.size()-suffix.size()));
+}
+
 /*
  * Convert a string to an int.
  */
@@ -31,11 +39,35 @@ int stringToInt(const string& str,
                 int base = 10);
 
 /* string vector */
-typedef vector<const string> StringVector;
+typedef vector<string> StringVector;
 
 /*
  * Split a string into a vector of string given a separator character.
  */
 StringVector stringSplit(const string& str,
                          char separator);
+
+/* is a string empty (only whitespace) */
+inline bool stringEmpty(const string& s) {
+    return s.find_first_not_of(whitespace) == string::npos;
+}
+
+/* trim from end of string */
+inline string stringRtrim(const string& s, const string& t = whitespace) {
+    string ls = s;
+    ls.erase(ls.find_last_not_of(t) + 1);
+    return ls;
+}
+
+/* trim from beginning of string */
+inline string stringLtrim(const string& s, const string& t = whitespace) {
+    string ls = s;
+    ls.erase(0, ls.find_first_not_of(t));
+    return ls;
+}
+
+/* trim from both ends of string */
+inline string stringTrim(const string& s, const string& t = whitespace) {
+    return stringLtrim(stringRtrim(s, t), t);
+}
 #endif

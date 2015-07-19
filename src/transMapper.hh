@@ -3,8 +3,8 @@
  */
 #ifndef transMapper_hh
 #define transMapper_hh
-#include "pslTransMap.h"
 extern "C" {
+#include "pslTransMap.h"
 }
 #include <string>
 using namespace std;
