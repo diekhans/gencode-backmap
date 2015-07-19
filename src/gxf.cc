@@ -21,10 +21,38 @@ static string stripQuotes(const string& s) {
     }
 }
 
+const string GxfFeature::GENE = "gene";
+const string GxfFeature::TRANSCRIPT = "transcript";
+const string GxfFeature::EXON = "exon";
+const string GxfFeature::CDS = "CDS";
+const string GxfFeature::START_CODON = "start_codon";
+const string GxfFeature::UTR = "UTR";
+const string GxfFeature::STOP_CODON = "stop_codon";
+const string GxfFeature::STOP_CODON_REDEFINED_AS_SELENOCYSTEINE = "stop_codon_redefined_as_selenocysteine";
+
 /* return base columns (excluding attributes) as a string */
 string GxfFeature::baseColumnsAsString() const {
     return fSeqid + "\t" + fSource + "\t" + fType + "\t" + to_string(fStart) + "\t"
         + to_string(fEnd) + "\t" + fScore + "\t" + fStrand + "\t" + fPhase + "\t";
+}
+
+/* get a attribute, NULL if it doesn't exist */
+const AttrVal* GxfFeature::findAttr(const string& name) const {
+    for (size_t i = 0; i < fAttrs.size(); i++) {
+        if (fAttrs[i].fName == name) {
+            return &(fAttrs[i]);
+        }
+    }
+    return NULL;
+}
+
+/* get a attribute, error it doesn't exist */
+const AttrVal* GxfFeature::getAttr(const string& name) const {
+    const AttrVal* attrVal = findAttr(name);
+    if (attrVal == NULL) {
+        throw invalid_argument("Attribute not found: " + name);
+    }
+    return attrVal;
 }
 
 /*
@@ -57,7 +85,7 @@ class Gff3Feature: public GxfFeature {
     /* format an attribute */
     string formatAttr(const AttrVal& attrVal) const {
         // n.b. this is not general, doesn't handle embedded quotes
-        string strAttr = attrVal.fAttr + "=";
+        string strAttr = attrVal.fName + "=";
         if (attrVal.fQuoted) {
             strAttr += "\"" + attrVal.fVal + "\"";
         } else {
@@ -123,7 +151,7 @@ class GtfFeature: public GxfFeature {
     /* format an attribute */
     string formatAttr(const AttrVal& attrVal) const {
         // n.b. this is not general, doesn't handle embedded quotes
-        string strAttr = attrVal.fAttr + " ";
+        string strAttr = attrVal.fName + " ";
         if (attrVal.fQuoted) {
             strAttr += "\"" + attrVal.fVal + "\"";
         } else {

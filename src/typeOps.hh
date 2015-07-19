@@ -26,6 +26,11 @@ using namespace std;
 
 extern const string whitespace;
 
+/* convert a string to a non-const char* for calling kent library */
+inline char *toCharStr(const string& s) {
+    return const_cast<char*>(s.c_str());
+}
+
 /* does a string end with a suffix? */
 inline bool stringEndsWith(const string& s, const string& suffix) {
     return (s.size() >= suffix.size()) && (s.rfind(suffix) == (s.size()-suffix.size()));

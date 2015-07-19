@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        errAbort(const_cast<char*>("wrong # args: %s inGxf outGxf"), argv[0]);
+        errAbort(toCharStr("wrong # args: %s inGxf outGxf"), argv[0]);
     }
     string inGxfFile = argv[1];
     string outGxfFile = argv[2];
