@@ -40,6 +40,7 @@ class GxfRecord {
     /* return record as a string */
     virtual string toString() const = 0;
 };
+typedef vector<const GxfRecord*> GxfRecordVector;
 
 /*
  * non-feature line.
@@ -130,6 +131,12 @@ public:
 
     /* get a attribute, error it doesn't exist */
     const AttrVal* getAttr(const string& name) const;
+
+    /* get a attribute value, error it doesn't exist */
+    const string& getAttrValue(const string& name) const {
+        return getAttr(name)->fVal;
+    }
+
 };
 
 /**
@@ -164,27 +171,11 @@ class GxfParser {
     void push(const GxfRecord* gxfRecord) {
         fPending.push(gxfRecord);
     }
-};
 
-/**
- * Tree container for a GxfFeature object and children
- */
-class GxfFeatureNode {
-    public:
-    const GxfFeature* fFeature;
-    vector<const GxfFeatureNode*> fChildren;
-
-    GxfFeatureNode(const GxfFeature* feature):
-        fFeature(feature) {
+    /* Accessors */
+    GxfFormat getGxfFormat() const {
+        return fGxfFormat;
     }
-
-    ~GxfFeatureNode() {
-        delete fFeature;
-        for (size_t i = 0; i < fChildren.size(); i++) {
-            delete fChildren[i];
-        }
-    }
-
 };
 
 #endif

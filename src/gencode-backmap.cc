@@ -5,6 +5,7 @@
 #include "gxf.hh"
 #include "typeOps.hh"
 #include <fstream>
+#include "geneMapper.hh"
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
@@ -15,11 +16,8 @@ int main(int argc, char *argv[]) {
     
     GxfParser gxfParser(inGxfFile,
                         stringEndsWith(inGxfFile, ".gff3") ? GFF3_FORMAT : GTF_FORMAT);
-    const GxfRecord* gxfRecord;
     ofstream outGxf(outGxfFile);
-    while ((gxfRecord = gxfParser.next()) != NULL) {
-        outGxf << gxfRecord->toString() << endl;
-        delete gxfRecord;
-    }
+    GeneMapper geneMapper(NULL);
+    geneMapper.mapGxf(&gxfParser, outGxf);
     return 0;
 }

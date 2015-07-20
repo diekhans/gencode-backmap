@@ -83,7 +83,7 @@ TransMapper::TransMapper(const string& chainFile,
 }
 
 /* map one pair of query and target PSL */
-struct psl* TransMapper::mapPslPair(struct psl *inPsl, struct psl *mapPsl) {
+struct psl* TransMapper::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {
     if (inPsl->tSize != mapPsl->qSize)
         errAbort(toCharStr("Error: inPsl %s tSize (%d) != mapping alignment %s qSize (%d) (perhaps you need to specify -swapMap?)"),
                  inPsl->tName, inPsl->tSize, mapPsl->qName, mapPsl->qSize);
@@ -91,14 +91,14 @@ struct psl* TransMapper::mapPslPair(struct psl *inPsl, struct psl *mapPsl) {
 }
 
 /* Map a single input PSL and return a list of resulting mappings */
-struct psl* TransMapper::mapPsl(struct psl* inPsl) {
-    struct psl* mappedPsls = NULL;
+PslVector TransMapper::mapPsl(struct psl* inPsl) const {
+    PslVector mappedPsls;
     struct range *overMapAlnNodes = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);
     for (struct range *overMapAlnNode = overMapAlnNodes; overMapAlnNode != NULL; overMapAlnNode = overMapAlnNode->next) {
         for (struct psl *overMapPsl = static_cast<struct psl*>(overMapAlnNode->val); overMapPsl != NULL; overMapPsl = overMapPsl->next) {
             struct psl* mappedPsl = mapPslPair(inPsl, overMapPsl);
             if (mappedPsl != NULL) {
-                slAddHead(&mappedPsls, mappedPsl);
+                mappedPsls.push_back(mappedPsl);
             }
         }
     }

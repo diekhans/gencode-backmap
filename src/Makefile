@@ -13,13 +13,14 @@ PROG = ${BINDIR}/gencode-backmap
 CXX = g++-mp-4.8 -std=c++11
 CXXDEBUG = -g -O0 -fno-default-inline -fno-inline
 
-CXX = c++
-CXXDEBUG = -g -O0 -fno-inline
+#CXX = c++
+#CXXDEBUG = -g -O0 -fno-inline
 
 CXXFLAGS += ${KENTINC} -Wall -Werror ${CXXDEBUG}
 
-HDRS = FIOStream.hh gxf.hh  gzstream.hh typeOps.hh transMapper.hh geneMapper.hh
-SRCS = FIOStream.cc gxf.cc  gzstream.cc typeOps.cc transMapper.cc geneMapper.cc \
+HDRS = FIOStream.hh gxf.hh gzstream.hh typeOps.hh transMapper.hh geneMapper.hh \
+	gxfFeatureTree.hh
+SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc transMapper.cc geneMapper.cc \
 	gencode-backmap.cc
 
 OBJS = $(foreach b,$(basename ${SRCS}),${OBJDIR}/${b}.o)
@@ -39,3 +40,11 @@ clean:
 
 savebak:
 	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh ../tests/data
+
+test: gff3Test gtfTest
+
+gff3Test:
+	${PROG} ../tests/data/gencode.v22.chr_patch_hapl_scaff.annotation.gff3 $@.tmp.gff3
+
+gtfTest:
+	${PROG} ../tests/data/gencode.v22.chr_patch_hapl_scaff.annotation.gtf $@.tmp.gtf

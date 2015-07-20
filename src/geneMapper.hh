@@ -4,8 +4,34 @@
 #ifndef geneMapper_hh
 #define geneMapper_hh
 #include "gxf.hh"
-class TransMapper;
+#include "transMapper.hh"
+#include "gxfFeatureTree.hh"
 struct psl;
+
+/* set of mapped alignments */
+class PslMapping {
+    public:
+    struct psl* fSrcPsl;
+    PslVector fMappedPsls;  // top one is best scoring
+    int fScore;  // mapping score of top psl; 0 is perfect
+
+    private:
+    static int numPslAligned(struct psl* psl);
+    void sortMappedPsls();
+
+    public:
+    /* constructor, sort mapped PSLs */
+    PslMapping(struct psl* srcPsl,
+               PslVector& mappedPsls);
+
+    /* free up psls */
+    ~PslMapping();
+
+    /* Compute a mapping score between the src and mapped psl.  A perfect
+     * mapping is a zero score.  Extra inserts count against the score. */
+    static int calcPslMappingScore(struct psl* srcPsl,
+                                   struct psl* mappedPsl);
+};
 
 /* class that maps a gene to the new assemble */
 class GeneMapper {
@@ -16,7 +42,36 @@ class GeneMapper {
     struct psl* featuresToPsl(const string& qName,
                               const GxfFeatureVector& exons);
     GxfFeatureVector getExons(const GxfFeatureNode* transcript);
-    struct psl* transcriptExonsToPsl(const GxfFeatureNode* transcript);
+    struct psl* transcriptExonsToPsl(const GxfFeatureNode* transcriptTree);
+    PslMapping* mapTranscriptExons(const GxfFeatureNode* transcriptTree);
+    void queueRecords(GxfParser *gxfParser,
+                      GxfRecordVector& gxfRecords);
+    GxfFeatureNode* findGff3Parent(GxfFeatureNode* geneTreeLeaf,
+                                   const GxfFeature* gxfFeature);
+    GxfFeatureNode* loadGff3GeneRecord(const GxfFeature* gxfFeature,
+                                       GxfFeatureNode* geneTreeLeaf);
+    const string& getGtfParentType(const string& featureType);
+    GxfFeatureNode* findGtfParent(GxfFeatureNode* geneTreeLeaf,
+                                  const GxfFeature* gxfFeature);
+    GxfFeatureNode* loadGtfGeneRecord(const GxfFeature* gxfFeature,
+                                      GxfFeatureNode* geneTreeLeaf);    
+    bool loadGeneRecord(GxfParser *gxfParser,
+                        const GxfRecord* gxfRecord,
+                        GxfFeatureNode* geneTreeRoot,
+                        GxfFeatureNode*& geneTreeLeaf,
+                        GxfRecordVector& queuedRecords);
+    GxfFeatureNode* loadGene(GxfParser *gxfParser,
+                             const GxfFeature* geneFeature);
+
+    public:
+    /* Constructor */
+    GeneMapper(const TransMapper* transMapper):
+        fTransMapper(transMapper) {
+    }
+
+    /* Map a GFF3/GTF */
+    void mapGxf(GxfParser *gxfParser,
+                ostream& outFh);
 };
 
 #endif

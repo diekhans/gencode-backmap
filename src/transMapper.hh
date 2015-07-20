@@ -8,7 +8,13 @@ extern "C" {
 }
 #include <string>
 #include <map>
+#include <vector>
 using namespace std;
+
+/*
+ * vector of psls
+ */
+typedef vector<struct psl*> PslVector;
 
 /*
  * transmap via alignment chains
@@ -29,7 +35,7 @@ class TransMapper {
     void addSeqSize(const string& seqName,
                     int seqSize,
                     SizeMap& sizeMap);
-    struct psl* mapPslPair(struct psl *inPsl, struct psl *mapPsl);
+    struct psl* mapPslPair(struct psl *inPsl, struct psl *mapPsl) const;
 
     public:
     /* constructor, loading chains */
@@ -52,7 +58,7 @@ class TransMapper {
     }
     
     /* Map a single input PSL and return a list of resulting mappings */
-    struct psl* mapPsl(struct psl* inPsl);
+    PslVector mapPsl(struct psl* inPsl) const;
 
 };
 
