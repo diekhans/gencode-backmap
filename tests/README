@@ -1,0 +1,18 @@
+
+Test data
+
+- data/GRCh38-GRCh37.mapping.chains
+  Subset of chains needed to test mappings.  This was generated with:
+
+     gff3ToGenePred data/gencode.v22.chr_patch_hapl_scaff.annotation.gff3 test.gp
+     overlapSelect  test.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz GRCh38-GRCh37.mapping.chains
+
+  Then editing to replace chrM with a one-to-one chain.  This is needed because hg19 including a different
+  chrM than was in GRGh37 lite and used by GENCODE.
+
+- data/gencode.v22.annotation.gff3
+  Test subset of annotations in GFF3 format
+- data/gencode.v22.annotation.gtf
+  Test subset of annotations in GTF format
+- data/gencode.v22.metadata.PolyA_feature
+  PolyA features to map, these have corresponding entries in the gff3/gtf files.

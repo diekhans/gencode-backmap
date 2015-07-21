@@ -60,10 +60,5 @@ clean:
 savebak:
 	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh ../tests/data
 
-test: gff3Test gtfTest
-
-gff3Test:
-	${PROG} ../tests/data/gencode.v22.chr_patch_hapl_scaff.annotation.gff3 $@.tmp.gff3
-
-gtfTest:
-	${PROG} ../tests/data/gencode.v22.chr_patch_hapl_scaff.annotation.gtf $@.tmp.gtf
+test:
+	cd ../tests && ${MAKE} test

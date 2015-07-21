@@ -31,5 +31,12 @@
 # Debug files
 *.dSYM/
 
+# output directories
+bin/
+output/
+
+# Editor
+.emacs.bak/
+
 # override above rules
 !COPYING.LIB
