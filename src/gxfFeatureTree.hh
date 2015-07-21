@@ -4,6 +4,7 @@
 #ifndef gxfFeatureTree_hh
 #define gxfFeatureTree_hh
 #include <assert.h>
+#include "gxf.hh"
 
 /**
  * Tree container for a GxfFeature object and children
@@ -31,6 +32,45 @@ class GxfFeatureNode {
         assert(node->fParent == NULL);
         fChildren.push_back(node);
         node->fParent = this;
+    }
+
+    /* depth-first output */
+    void write(ostream& fh) const;
+};
+
+/**
+ * group a genes records together in a tree.
+ */
+class GxfFeatureTree {
+    private:
+    void queueRecords(GxfParser *gxfParser,
+                      GxfRecordVector& gxfRecords) const;
+    GxfFeatureNode* findGff3Parent(GxfFeatureNode* geneTreeLeaf,
+                                   const GxfFeature* gxfFeature) const;
+    GxfFeatureNode* loadGff3GeneRecord(const GxfFeature* gxfFeature,
+                                       GxfFeatureNode* geneTreeLeaf) const;
+    const string& getGtfParentType(const string& featureType) const;
+    GxfFeatureNode* findGtfParent(GxfFeatureNode* geneTreeLeaf,
+                                  const GxfFeature* gxfFeature) const;
+    GxfFeatureNode* loadGtfGeneRecord(const GxfFeature* gxfFeature,
+                                      GxfFeatureNode* geneTreeLeaf) const;    
+    bool loadGeneRecord(GxfParser *gxfParser,
+                        const GxfRecord* gxfRecord,
+                        GxfFeatureNode* geneTreeRoot,
+                        GxfFeatureNode*& geneTreeLeaf,
+                        GxfRecordVector& queuedRecords) const;
+    GxfFeatureNode* loadGene(GxfParser *gxfParser,
+                             const GxfFeature* geneFeature);
+    public:
+    GxfFeatureNode* fGene;
+
+    /* constructor */
+    GxfFeatureTree(GxfParser *gxfParser,
+                   const GxfFeature* geneFeature);
+    
+    /* depth-first output */
+    void write(ostream& fh) const {
+        fGene->write(fh);
     }
 };
 

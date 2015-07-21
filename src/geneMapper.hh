@@ -44,24 +44,6 @@ class GeneMapper {
     GxfFeatureVector getExons(const GxfFeatureNode* transcript);
     struct psl* transcriptExonsToPsl(const GxfFeatureNode* transcriptTree);
     PslMapping* mapTranscriptExons(const GxfFeatureNode* transcriptTree);
-    void queueRecords(GxfParser *gxfParser,
-                      GxfRecordVector& gxfRecords);
-    GxfFeatureNode* findGff3Parent(GxfFeatureNode* geneTreeLeaf,
-                                   const GxfFeature* gxfFeature);
-    GxfFeatureNode* loadGff3GeneRecord(const GxfFeature* gxfFeature,
-                                       GxfFeatureNode* geneTreeLeaf);
-    const string& getGtfParentType(const string& featureType);
-    GxfFeatureNode* findGtfParent(GxfFeatureNode* geneTreeLeaf,
-                                  const GxfFeature* gxfFeature);
-    GxfFeatureNode* loadGtfGeneRecord(const GxfFeature* gxfFeature,
-                                      GxfFeatureNode* geneTreeLeaf);    
-    bool loadGeneRecord(GxfParser *gxfParser,
-                        const GxfRecord* gxfRecord,
-                        GxfFeatureNode* geneTreeRoot,
-                        GxfFeatureNode*& geneTreeLeaf,
-                        GxfRecordVector& queuedRecords);
-    GxfFeatureNode* loadGene(GxfParser *gxfParser,
-                             const GxfFeature* geneFeature);
 
     public:
     /* Constructor */
