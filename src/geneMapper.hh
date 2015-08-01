@@ -4,7 +4,7 @@
 #ifndef geneMapper_hh
 #define geneMapper_hh
 #include "gxf.hh"
-#include "transMapper.hh"
+#include "transMap.hh"
 #include "gxfFeatureTree.hh"
 struct psl;
 
@@ -36,7 +36,7 @@ class PslMapping {
 /* class that maps a gene to the new assemble */
 class GeneMapper {
     private:
-    const TransMapper* fTransMapper;  // object to performance mappings
+    const TransMap* fTransMap;  // object to performance mappings
     
     int sumFeatureSizes(const GxfFeatureVector& features);
     struct psl* featuresToPsl(const string& qName,
@@ -47,8 +47,8 @@ class GeneMapper {
 
     public:
     /* Constructor */
-    GeneMapper(const TransMapper* transMapper):
-        fTransMapper(transMapper) {
+    GeneMapper(const TransMap* transMapper):
+        fTransMap(transMapper) {
     }
 
     /* Map a GFF3/GTF */

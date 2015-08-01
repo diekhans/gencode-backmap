@@ -5,7 +5,7 @@
 #include "gxf.hh"
 #include "typeOps.hh"
 #include <fstream>
-#include "transMapper.hh"
+#include "transMap.hh"
 #include "geneMapper.hh"
 
 /* map to different assembly */
@@ -13,10 +13,10 @@ static void gencodeBackmap(const string& inGxfFile,
                            GxfFormat gxfFormat,
                            const string& mappingChains,
                            const string& outGxfFile) {
-    TransMapper transMapper(mappingChains, false);
+    TransMap transMap(mappingChains, false);
     GxfParser gxfParser(inGxfFile, gxfFormat);
     ofstream outGxf(outGxfFile);
-    GeneMapper geneMapper(&transMapper);
+    GeneMapper geneMapper(&transMap);
     geneMapper.mapGxf(&gxfParser, outGxf);
 }
 

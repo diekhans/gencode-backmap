@@ -37,9 +37,9 @@ endif
 
 CXXFLAGS += ${KENTINC} ${CXXDEBUG}
 
-HDRS = FIOStream.hh gxf.hh gzstream.hh typeOps.hh transMapper.hh geneMapper.hh \
+HDRS = FIOStream.hh gxf.hh gzstream.hh typeOps.hh transMap.hh geneMapper.hh \
 	gxfFeatureTree.hh
-SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc transMapper.cc geneMapper.cc \
+SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc transMap.cc geneMapper.cc \
 	gxfFeatureTree.cc \
 	gencode-backmap.cc
 

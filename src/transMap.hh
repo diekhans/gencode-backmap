@@ -1,8 +1,8 @@
 /*
  * transmap projection of annotations
  */
-#ifndef transMapper_hh
-#define transMapper_hh
+#ifndef transMap_hh
+#define transMap_hh
 extern "C" {
 #include "pslTransMap.h"
 }
@@ -19,7 +19,7 @@ typedef vector<struct psl*> PslVector;
 /*
  * transmap via alignment chains
  */
-class TransMapper {
+class TransMap {
     private:
     struct genomeRangeTree* fMapAlns;  // mapping alingments
     typedef map<const string, int> SizeMap;
@@ -39,11 +39,11 @@ class TransMapper {
 
     public:
     /* constructor, loading chains */
-    TransMapper(const string& chainFile,
-                bool swapMap);
+    TransMap(const string& chainFile,
+             bool swapMap);
 
     /* destructor */
-    ~TransMapper() {
+    ~TransMap() {
         // just memory leak and let exit() clean up
     }
 

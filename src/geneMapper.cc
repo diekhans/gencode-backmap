@@ -9,7 +9,6 @@ extern "C" {
 #undef hash
 #undef new
 }
-#include "transMapper.hh"
 #include "gxf.hh"
 #include <algorithm>
 #include <fstream>
@@ -84,7 +83,7 @@ struct psl* GeneMapper::featuresToPsl(const string& qName,
                                       const GxfFeatureVector& exons) {
     // this does a [1..n] to [0..n) conversion
     int qSize = sumFeatureSizes(exons);
-    int tSize = fTransMapper->getQuerySeqSize(exons[0]->fSeqid); // target is mapping query
+    int tSize = fTransMap->getQuerySeqSize(exons[0]->fSeqid); // target is mapping query
     struct psl* psl = pslNew(toCharStr(qName), qSize, 0, qSize,
                              toCharStr(exons[0]->fSeqid), tSize, exons[0]->fStart-1, exons[exons.size()-1]->fEnd,
                              toCharStr(exons[0]->fStrand), exons.size(), 0);
@@ -126,7 +125,7 @@ struct psl* GeneMapper::transcriptExonsToPsl(const GxfFeatureNode* transcriptTre
  */
 PslMapping* GeneMapper::mapTranscriptExons(const GxfFeatureNode* transcriptTree) {
     struct psl* transcriptPsl = transcriptExonsToPsl(transcriptTree);
-    PslVector mappedTranscriptPsls = fTransMapper->mapPsl(transcriptPsl);
+    PslVector mappedTranscriptPsls = fTransMap->mapPsl(transcriptPsl);
     return new PslMapping(transcriptPsl, mappedTranscriptPsls);
 }
 

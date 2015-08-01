@@ -1,7 +1,7 @@
 /*
  * transmap projection of annotations
  */
-#include "transMapper.hh"
+#include "transMap.hh"
 #include "jkcommon.hh"
 extern "C" {
 #define hash jkhash
@@ -24,21 +24,21 @@ static void *slCatReversed(void *va, void *vb) {
 }
 
 /* add a query or target size if it doesn't already exist */
-void TransMapper::addSeqSize(const string& seqName,
-                             int seqSize,
-                             SizeMap& sizeMap) {
+void TransMap::addSeqSize(const string& seqName,
+                          int seqSize,
+                          SizeMap& sizeMap) {
     if (sizeMap.find(seqName) == sizeMap.end()) {
         sizeMap[seqName] = seqSize;
     }
 }
 
 /* add a map align object to the genomeRangeTree */
-void TransMapper::mapAlnsAdd(struct psl *mapPsl) {
+void TransMap::mapAlnsAdd(struct psl *mapPsl) {
     genomeRangeTreeAddVal(fMapAlns, mapPsl->qName, mapPsl->qStart, mapPsl->qEnd, mapPsl, slCatReversed);
 }
 
 /* convert a chain to a psl, ignoring match counts, etc */
-struct psl* TransMapper::chainToPsl(struct chain *ch,
+struct psl* TransMap::chainToPsl(struct chain *ch,
                                     bool swapMap) {
     int qStart = ch->qStart, qEnd = ch->qEnd;
     char strand[2] = {ch->qStrand, '\0'};
@@ -64,8 +64,8 @@ struct psl* TransMapper::chainToPsl(struct chain *ch,
 }
 
 /* read a chain file, convert to mapAln object and genomeRangeTree by query locations. */
-void TransMapper::loadMapChains(const string& chainFile,
-                                bool swapMap) {
+void TransMap::loadMapChains(const string& chainFile,
+                             bool swapMap) {
     struct chain *ch;
     struct lineFile *chLf = lineFileOpen(toCharStr(chainFile), TRUE);
     while ((ch = chainRead(chLf)) != NULL) {
@@ -76,14 +76,14 @@ void TransMapper::loadMapChains(const string& chainFile,
 }
 
 /* constructor, loading chains */
-TransMapper::TransMapper(const string& chainFile,
+TransMap::TransMap(const string& chainFile,
                          bool swapMap):
     fMapAlns(genomeRangeTreeNew()) {
     loadMapChains(chainFile, swapMap);
 }
 
 /* map one pair of query and target PSL */
-struct psl* TransMapper::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {
+struct psl* TransMap::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {
     if (inPsl->tSize != mapPsl->qSize)
         errAbort(toCharStr("Error: inPsl %s tSize (%d) != mapping alignment %s qSize (%d) (perhaps you need to specify -swapMap?)"),
                  inPsl->tName, inPsl->tSize, mapPsl->qName, mapPsl->qSize);
@@ -91,7 +91,7 @@ struct psl* TransMapper::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const
 }
 
 /* Map a single input PSL and return a list of resulting mappings */
-PslVector TransMapper::mapPsl(struct psl* inPsl) const {
+PslVector TransMap::mapPsl(struct psl* inPsl) const {
     PslVector mappedPsls;
     struct range *overMapAlnNodes = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);
     for (struct range *overMapAlnNode = overMapAlnNodes; overMapAlnNode != NULL; overMapAlnNode = overMapAlnNode->next) {
