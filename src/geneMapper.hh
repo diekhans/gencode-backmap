@@ -4,56 +4,33 @@
 #ifndef geneMapper_hh
 #define geneMapper_hh
 #include "gxf.hh"
-#include "transMap.hh"
 #include "gxfFeatureTree.hh"
+class FeatureTransMap;
+class PslMapping;
 struct psl;
-
-/* set of mapped alignments */
-class PslMapping {
-    public:
-    struct psl* fSrcPsl;
-    PslVector fMappedPsls;  // top one is best scoring
-    int fScore;  // mapping score of top psl; 0 is perfect
-
-    private:
-    static int numPslAligned(struct psl* psl);
-    void sortMappedPsls();
-
-    public:
-    /* constructor, sort mapped PSLs */
-    PslMapping(struct psl* srcPsl,
-               PslVector& mappedPsls);
-
-    /* free up psls */
-    ~PslMapping();
-
-    /* Compute a mapping score between the src and mapped psl.  A perfect
-     * mapping is a zero score.  Extra inserts count against the score. */
-    static int calcPslMappingScore(struct psl* srcPsl,
-                                   struct psl* mappedPsl);
-};
 
 /* class that maps a gene to the new assemble */
 class GeneMapper {
     private:
-    const TransMap* fTransMap;  // object to performance mappings
+    const FeatureTransMap* fFeatureTransMap;  // object to performance mappings
     
-    int sumFeatureSizes(const GxfFeatureVector& features);
-    struct psl* featuresToPsl(const string& qName,
-                              const GxfFeatureVector& exons);
-    GxfFeatureVector getExons(const GxfFeatureNode* transcript);
-    struct psl* transcriptExonsToPsl(const GxfFeatureNode* transcriptTree);
-    PslMapping* mapTranscriptExons(const GxfFeatureNode* transcriptTree);
+    GxfFeatureVector getExons(const GxfFeatureNode* transcriptTree) const;
+    PslMapping* mapTranscriptExons(const GxfFeatureNode* transcriptTree) const;
 
+    void processTranscript(const GxfFeatureNode* transcriptTree,
+                           ostream& outFh) const;
+    void processGene(GxfParser *gxfParser,
+                     const GxfFeature* geneFeature,
+                     ostream& outFh) const;
     public:
     /* Constructor */
-    GeneMapper(const TransMap* transMapper):
-        fTransMap(transMapper) {
+    GeneMapper(const FeatureTransMap* featureTransMap):
+        fFeatureTransMap(featureTransMap) {
     }
 
     /* Map a GFF3/GTF */
     void mapGxf(GxfParser *gxfParser,
-                ostream& outFh);
+                ostream& outFh) const;
 };
 
 #endif

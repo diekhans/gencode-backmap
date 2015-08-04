@@ -1,5 +1,5 @@
 /*
- * Tree structure use to store genes
+ * Tree structure use to store genes.
  */
 #ifndef gxfFeatureTree_hh
 #define gxfFeatureTree_hh

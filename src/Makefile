@@ -14,7 +14,7 @@ PROG = ${BINDIR}/gencode-backmap
 ifeq (${SYS},Darwin)
 CXX = g++-mp-4.8
 CXXFLAGS = -std=c++11 -Wall -Werror
-CXXDEBUG = -g -gdwarf-2 -O0 -fno-default-inline -fno-inline
+CXXDEBUG = -g -gdwarf-4 -O0 -fno-default-inline -fno-inline
 else
 CXX = /opt/rh/devtoolset-2/root/usr/bin/g++
 ifeq ($(wildcard ${CXX}),)
@@ -38,9 +38,10 @@ endif
 CXXFLAGS += ${KENTINC} ${CXXDEBUG}
 
 HDRS = FIOStream.hh gxf.hh gzstream.hh typeOps.hh transMap.hh geneMapper.hh \
-	gxfFeatureTree.hh
+	gxfFeatureTree.hh featureTransMap.hh \
+	jkinclude.hh
 SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc transMap.cc geneMapper.cc \
-	gxfFeatureTree.cc \
+	gxfFeatureTree.cc featureTransMap.cc  \
 	gencode-backmap.cc
 
 OBJS = $(foreach b,$(basename ${SRCS}),${OBJDIR}/${b}.o)
@@ -58,7 +59,7 @@ ${OBJDIR}/%.o: %.cc ${HDRS}
 clean:
 	rm -f ${OBJS} ${PROG}
 savebak:
-	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh ../tests/data
+	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh HOLD ../tests/data
 
 test:
 	cd ../tests && ${MAKE} test

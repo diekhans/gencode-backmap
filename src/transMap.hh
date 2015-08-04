@@ -3,9 +3,7 @@
  */
 #ifndef transMap_hh
 #define transMap_hh
-extern "C" {
-#include "pslTransMap.h"
-}
+#include "jkinclude.hh"
 #include <string>
 #include <map>
 #include <vector>
@@ -15,6 +13,32 @@ using namespace std;
  * vector of psls
  */
 typedef vector<struct psl*> PslVector;
+
+/* set of mapped alignments */
+class PslMapping {
+    public:
+    struct psl* fSrcPsl;
+    PslVector fMappedPsls;  // top one is best scoring
+    int fScore;  // mapping score of top psl; 0 is perfect
+
+    private:
+    static int numPslAligned(struct psl* psl);
+    void sortMappedPsls();
+
+    public:
+    /* constructor, sort mapped PSLs */
+    PslMapping(struct psl* srcPsl,
+               PslVector& mappedPsls);
+
+    /* free up psls */
+    ~PslMapping();
+
+    /* Compute a mapping score between the src and mapped psl.  A perfect
+     * mapping is a zero score.  Extra inserts count against the score. */
+    static int calcPslMappingScore(struct psl* srcPsl,
+                                   struct psl* mappedPsl);
+};
+
 
 /*
  * transmap via alignment chains
@@ -58,7 +82,7 @@ class TransMap {
     }
     
     /* Map a single input PSL and return a list of resulting mappings */
-    PslVector mapPsl(struct psl* inPsl) const;
+    PslMapping* mapPsl(struct psl* inPsl) const;
 
 };
 

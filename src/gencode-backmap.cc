@@ -1,11 +1,12 @@
 /*
  * program to map gencode datafiles to older assemblies.
  */
-#include "jkcommon.hh"
+#include "jkinclude.hh"
 #include "gxf.hh"
 #include "typeOps.hh"
 #include <fstream>
 #include "transMap.hh"
+#include "featureTransMap.hh"
 #include "geneMapper.hh"
 
 /* map to different assembly */
@@ -14,9 +15,10 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& mappingChains,
                            const string& outGxfFile) {
     TransMap transMap(mappingChains, false);
+    FeatureTransMap featureTransMap(&transMap);
     GxfParser gxfParser(inGxfFile, gxfFormat);
     ofstream outGxf(outGxfFile);
-    GeneMapper geneMapper(&transMap);
+    GeneMapper geneMapper(&featureTransMap);
     geneMapper.mapGxf(&gxfParser, outGxf);
 }
 

@@ -2,19 +2,66 @@
  * transmap projection of annotations
  */
 #include "transMap.hh"
-#include "jkcommon.hh"
-extern "C" {
-#define hash jkhash
-#define new jknew
-#include "pslTransMap.h"
-#include "psl.h"
-#include "genomeRangeTree.h"
-#include "chain.h"
-#include "dnautil.h"
-#undef hash
-#undef new
-}
+#include "jkinclude.hh"
+#include <algorithm>
 #include "typeOps.hh"
+
+/* constructor, sort mapped PSLs */
+PslMapping::PslMapping(struct psl* srcPsl,
+                       PslVector& mappedPsls):
+    fSrcPsl(srcPsl),
+    fMappedPsls(mappedPsls),
+    fScore(-1) {
+    if (fMappedPsls.size() > 0) {
+        sortMappedPsls();
+        fScore = calcPslMappingScore(srcPsl, fMappedPsls[0]); // best score due to sort
+    }
+}
+
+/* free up psls */
+PslMapping::~PslMapping() {
+    pslFree(&fSrcPsl);
+    for (size_t i = 0; i < fMappedPsls.size(); i++) {
+        pslFree(&(fMappedPsls[i]));
+    }
+}
+
+/* calculate the number of aligned bases */
+int PslMapping::numPslAligned(struct psl* psl) {
+    return (psl->match + psl->repMatch + psl->misMatch);
+}
+
+/* Compute a mapping score between a src and mapped psl.  A perfect mapping is
+ * a zero score.  Extra inserts count against the score.
+ */
+int PslMapping::calcPslMappingScore(struct psl* srcPsl,
+                                    struct psl* mappedPsl) {
+    return (numPslAligned(srcPsl) - numPslAligned(mappedPsl))
+        + abs(int(srcPsl->qNumInsert)-int(mappedPsl->qNumInsert))
+        + abs(int(srcPsl->tNumInsert)-int(mappedPsl->tNumInsert));
+}
+
+/* comparison functor based on lowest store. */
+class ScoreCmp {
+    public:
+    struct psl* fSrcPsl;
+    
+    ScoreCmp(struct psl* srcPsl):
+        fSrcPsl(srcPsl) {
+    }
+
+    int operator()(struct psl* mappedPsl1,
+                   struct psl* mappedPsl2) const {
+        return -(PslMapping::calcPslMappingScore(fSrcPsl, mappedPsl1)
+                 - PslMapping::calcPslMappingScore(fSrcPsl, mappedPsl2));
+    }
+};
+/* sort with best (lowest score) first */
+void PslMapping::sortMappedPsls() {
+    ScoreCmp scoreCmp(fSrcPsl);
+    sort(fMappedPsls.begin(), fMappedPsls.end(), scoreCmp);
+}
+
 
 /* slCat that reverses parameter order, as the first list in rangeTreeAddVal
  * mergeVals function tends to be larger in degenerate cases of a huge number
@@ -91,7 +138,7 @@ struct psl* TransMap::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {
 }
 
 /* Map a single input PSL and return a list of resulting mappings */
-PslVector TransMap::mapPsl(struct psl* inPsl) const {
+PslMapping* TransMap::mapPsl(struct psl* inPsl) const {
     PslVector mappedPsls;
     struct range *overMapAlnNodes = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);
     for (struct range *overMapAlnNode = overMapAlnNodes; overMapAlnNode != NULL; overMapAlnNode = overMapAlnNode->next) {
@@ -102,5 +149,6 @@ PslVector TransMap::mapPsl(struct psl* inPsl) const {
             }
         }
     }
-    return mappedPsls;
+    return new PslMapping(inPsl, mappedPsls);
 }
+

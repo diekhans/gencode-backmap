@@ -75,4 +75,13 @@ inline string stringLtrim(const string& s, const string& t = whitespace) {
 inline string stringTrim(const string& s, const string& t = whitespace) {
     return stringLtrim(stringRtrim(s, t), t);
 }
+
+/** Convert an integer to a string. */
+string toString(int num);
+
+/*
+ * convert a PSL to a string for debuging purposes.
+ */
+string pslToString(const struct psl* psl);
+
 #endif
