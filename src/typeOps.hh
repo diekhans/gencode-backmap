@@ -5,6 +5,7 @@
 #define typeOps_hh
 #include <string>
 #include <vector>
+#include "jkinclude.hh"
 using namespace std;
 
 #include <typeinfo>
@@ -24,6 +25,10 @@ using namespace std;
     ((bool)(dynamic_cast<const className*>(objPtr) != NULL))
 
 
+/* vector of integers */
+typedef vector<int> IntVector;
+
+/* whitespace characters */
 extern const string whitespace;
 
 /* convert a string to a non-const char* for calling kent library */
@@ -79,9 +84,75 @@ inline string stringTrim(const string& s, const string& t = whitespace) {
 /** Convert an integer to a string. */
 string toString(int num);
 
+/** Convert an character to a string. */
+inline string charToString(char ch) {
+    return string(1, ch);
+}
+
 /*
  * convert a PSL to a string for debuging purposes.
  */
-string pslToString(const struct psl* psl);
+string pslToString(struct psl* psl);
+
+/*
+ * Convert a PSL block to a string
+ */
+string pslBlockToString(struct psl* psl, int blkIdx);
+
+/* return query start for the given block */
+static inline unsigned pslQStart(struct psl *psl, int blkIdx) {
+    return psl->qStarts[blkIdx];
+}
+
+/* return target start for the given block */
+static inline unsigned pslTStart(struct psl *psl, int blkIdx) {
+    return psl->tStarts[blkIdx];
+}
+
+/* return strand as stored in psl, converting implicit `\0' to `+' */
+static inline char normStrand(char strand) {
+    return (strand == '\0') ? '+' : strand;
+}
+
+/* return query start for the given block, mapped to specified strand,
+ * which can be `\0' for `+' */
+static inline unsigned pslQStartStrand(struct psl *psl, int blkIdx, char strand) {
+    if (psl->strand[0] == normStrand(strand)) {
+        return psl->qStarts[blkIdx];
+    } else {
+        return psl->qSize - psl->qStarts[blkIdx];
+    }
+}
+
+/* return query end for the given block, mapped to specified strand,
+ * which can be `\0' for `+' */
+static inline unsigned pslQEndStrand(struct psl *psl, int blkIdx, char strand) {
+    if (psl->strand[0] == normStrand(strand)) {
+        return pslQEnd(psl, blkIdx);
+    } else {
+        return psl->qSize - pslQEnd(psl, blkIdx);
+    }
+}
+
+/* return target start for the given block, mapped to specified strand,
+ * which can be `\0' for `+' */
+static inline unsigned pslTStartStrand(struct psl *psl, int blkIdx, char strand) {
+    if (normStrand(psl->strand[1]) == normStrand(strand)) {
+        return psl->tStarts[blkIdx];
+    } else {
+        return psl->tSize - psl->tStarts[blkIdx];
+    }
+}
+
+/* return target end for the given block, mapped to specified strand,
+ * which can be `\0' for `+' */
+static inline unsigned pslTEndStrand(struct psl *psl, int blkIdx, char strand) {
+    if (normStrand(psl->strand[1]) == normStrand(strand)) {
+        return pslTEnd(psl, blkIdx);
+    } else {
+        return psl->tSize - pslTEnd(psl, blkIdx);
+    }
+}
+
 
 #endif

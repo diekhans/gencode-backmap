@@ -81,7 +81,8 @@ class TransMap {
         return fTargetSizes.at(tName);
     }
     
-    /* Map a single input PSL and return a list of resulting mappings */
+    /* Map a single input PSL and return a list of resulting mappings.
+     * Keep PSL in the same order, even if it creates a `-' on the target. */
     PslMapping* mapPsl(struct psl* inPsl) const;
 
 };

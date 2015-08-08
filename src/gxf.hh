@@ -137,6 +137,10 @@ public:
         return getAttr(name)->fVal;
     }
 
+    /* get the size of the feature */
+    int size() const {
+        return (fEnd - fStart)+1;
+    }
 };
 
 /**

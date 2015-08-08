@@ -134,10 +134,11 @@ struct psl* TransMap::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {
     if (inPsl->tSize != mapPsl->qSize)
         errAbort(toCharStr("Error: inPsl %s tSize (%d) != mapping alignment %s qSize (%d) (perhaps you need to specify -swapMap?)"),
                  inPsl->tName, inPsl->tSize, mapPsl->qName, mapPsl->qSize);
-    return pslTransMap(pslTransMapNoOpts, inPsl, mapPsl);
+    return pslTransMap(pslTransMapKeepTrans, inPsl, mapPsl);
 }
 
-/* Map a single input PSL and return a list of resulting mappings */
+/* Map a single input PSL and return a list of resulting mappings.
+ * Keep PSL in the same order, even if it creates a `-' on the target. */
 PslMapping* TransMap::mapPsl(struct psl* inPsl) const {
     PslVector mappedPsls;
     struct range *overMapAlnNodes = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);

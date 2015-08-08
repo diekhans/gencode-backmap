@@ -8,6 +8,7 @@
 class FeatureTransMap;
 class PslMapping;
 struct psl;
+class PslCursor;
 
 /* class that maps a gene to the new assemble */
 class GeneMapper {
@@ -15,8 +16,18 @@ class GeneMapper {
     const FeatureTransMap* fFeatureTransMap;  // object to performance mappings
     
     GxfFeatureVector getExons(const GxfFeatureNode* transcriptTree) const;
-    PslMapping* mapTranscriptExons(const GxfFeatureNode* transcriptTree) const;
-
+    
+    void mapExonPart(const GxfFeature* exon,
+                     PslCursor& srcPslCursor,
+                     PslCursor& mappedPslCursor,
+                     ostream& outFh) const;
+    void mapExon(const GxfFeature* exon,
+                 PslCursor& srcPslCursor,
+                 PslCursor& mappedPslCursor,
+                 ostream& outFh) const;
+    void mapExons(const GxfFeatureVector& exons,
+                  PslMapping *pslMapping,
+                  ostream& outFh) const;
     void processTranscript(const GxfFeatureNode* transcriptTree,
                            ostream& outFh) const;
     void processGene(GxfParser *gxfParser,

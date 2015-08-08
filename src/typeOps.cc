@@ -82,7 +82,7 @@ static string unsignedArrayToString(unsigned len,
 /*
  * convert a PSL to a string for debuging purposes.
  */
-string pslToString(const struct psl* psl) {
+string pslToString(struct psl* psl) {
     return toString(psl->match) + "\t" +
         toString(psl->misMatch) + "\t" +
         toString(psl->repMatch) + "\t" +
@@ -104,4 +104,17 @@ string pslToString(const struct psl* psl) {
         unsignedArrayToString(psl->blockCount, psl->blockSizes) + "\t" +
         unsignedArrayToString(psl->blockCount, psl->qStarts) + "\t" +
         unsignedArrayToString(psl->blockCount, psl->tStarts);
+}
+
+/*
+ * Convert a PSL block to a string
+ */
+string pslBlockToString(struct psl* psl, int blkIdx) {
+    return string(psl->qName) + ":" + charToString(psl->strand[0]) + ":"
+        + toString(pslQStart(psl, blkIdx)) + "-"
+        + toString(pslQEnd(psl, blkIdx))
+        + " => " +
+        string(psl->tName) + ":" + charToString(normStrand(psl->strand[1])) + ":"
+        + toString(pslTStart(psl, blkIdx)) + "-"
+        + toString(pslTEnd(psl, blkIdx));
 }

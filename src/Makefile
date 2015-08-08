@@ -13,14 +13,14 @@ PROG = ${BINDIR}/gencode-backmap
 
 ifeq (${SYS},Darwin)
 CXX = g++-mp-4.8
-CXXFLAGS = -std=c++11 -Wall -Werror
-CXXDEBUG = -g -gdwarf-4 -O0 -fno-default-inline -fno-inline
+CXXFLAGS = -std=c++11 -Wall -Werror -Wno-sign-compare
+CXXDEBUG = -g -gdwarf-3 -O0 -fno-default-inline -fno-inline
 else
 CXX = /opt/rh/devtoolset-2/root/usr/bin/g++
 ifeq ($(wildcard ${CXX}),)
 CXX = g++
 endif
-CXXFLAGS = -std=c++11 -Wall -Werror
+CXXFLAGS = -std=c++11 -Wall -Werror -Wno-sign-compare 
 LIBS += -lpthread
 
 # autodetect UCSC installation of samtabix:

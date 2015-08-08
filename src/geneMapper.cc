@@ -3,8 +3,100 @@
 #include "jkinclude.hh"
 #include "gxf.hh"
 #include "featureTransMap.hh"
+#include "typeOps.hh"
 #include <fstream>
 #include <iostream>
+
+/*
+ * Cursor into a PSL.  Tracks position in an alignment.
+ */
+class PslCursor {
+    private:
+    struct psl* fPsl;
+    int fIBlk;  // index of current block, set to blockCount if reached end
+    int fOff;   // offset in current block;
+
+    /* check if in range */
+    inline void assertInRange() const {
+        assert(fIBlk < fPsl->blockCount);
+        assert(fOff < fPsl->blockSizes[fIBlk]);
+    }
+    
+    public:
+    PslCursor(struct psl* psl, int iBlk=0, int off=0):
+        fPsl(psl), fIBlk(iBlk), fOff(off) {
+    }
+
+    /* have we reached the end of the psl */
+    bool atEnd() const {
+        return fIBlk >= fPsl->blockCount;
+    }
+
+    /* accessors of current position */
+    int getQPos() const {
+        if (atEnd()) {
+            return pslQEnd(fPsl, fPsl->blockCount-1); 
+        } else {
+            return pslQStart(fPsl, fIBlk)+fOff;
+        }
+    }
+    int getTPos() const {
+        if (atEnd()) {
+            return pslTEnd(fPsl, fPsl->blockCount-1); 
+        } else {
+            return pslTStart(fPsl, fIBlk)+fOff;
+        }
+    }
+
+    /* accessors for current block end */
+    int getQBlockEnd() const {
+        if (atEnd()) {
+            return pslQEnd(fPsl, fPsl->blockCount-1);
+        } else {
+            return pslQEnd(fPsl, fIBlk);
+        }
+    }
+    int getTBlockEnd() const {
+        if (atEnd()) {
+            return pslTEnd(fPsl, fPsl->blockCount-1);
+        } else {
+            return pslTEnd(fPsl, fIBlk);
+        }
+    }
+
+    /* get offset into current block */
+    int getBlockOff() const {
+        return fOff;
+    }
+    
+    /* space left in current block */
+    int getBlockLeft() const {
+        return getTBlockEnd() - getTPos();
+    }
+
+    /* advance by the specified amount, returning a new cursor.  If it moved
+     * onto the next block, it must move to the exact beginning. If reached
+     * the end, will return a cursor where atEnd() is TRUE */
+    PslCursor advance(unsigned amount) const {
+        assertInRange();
+        assert(amount <= getBlockLeft());
+        if (amount < getBlockLeft()) {
+            return PslCursor(fPsl, fIBlk, fOff+amount);  // same block
+        } else if (fIBlk < fPsl->blockCount-1) {
+            return PslCursor(fPsl, fIBlk+1, 0); // next block
+        } else {
+            return PslCursor(fPsl, fPsl->blockCount, 0); // EOF
+        }
+    }
+
+    /* convert to a string for debugging purposes */
+    string toString() const {
+        return ::toString(getQPos()) + ".." + ::toString(getQBlockEnd()) + " <> "
+            + ::toString(getTPos()) + ".." + ::toString(getTBlockEnd())
+            + " [" + ::toString(getBlockLeft()) + "]";
+    }
+};
+
 
 /* get exon features */
 GxfFeatureVector GeneMapper::getExons(const GxfFeatureNode* transcriptTree) const {
@@ -17,13 +109,62 @@ GxfFeatureVector GeneMapper::getExons(const GxfFeatureNode* transcriptTree) cons
     return exons;
 }
 
-/* 
- * Map a transcript's exons, returning object that has mappings and scoring
+/*
+ * Map one part of an exon feature.  Cursors are updated
  */
-PslMapping* GeneMapper::mapTranscriptExons(const GxfFeatureNode* transcriptTree) const {
-    const string& qName = transcriptTree->fFeature->getAttr("transcript_id")->fVal;
-    GxfFeatureVector exons = getExons(transcriptTree);
-    return fFeatureTransMap->mapFeatures(qName, exons);
+void GeneMapper::mapExonPart(const GxfFeature* exon,
+                             PslCursor& srcPslCursor,
+                             PslCursor& mappedPslCursor,
+                             ostream& outFh) const {
+    assert(srcPslCursor.getQPos() <= mappedPslCursor.getQPos());
+    outFh << "  exonPart: " << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << endl;
+    if (srcPslCursor.getQPos() < mappedPslCursor.getQPos()) {
+        // deleted region
+        int amount = min(mappedPslCursor.getQPos()-srcPslCursor.getQPos(), srcPslCursor.getBlockLeft());
+        outFh << "    deleted: " << amount << endl;
+        srcPslCursor = srcPslCursor.advance(amount);
+    } else {
+        // mapped region
+        int amount = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
+        outFh << "    overlap: " << amount << endl;
+        srcPslCursor = srcPslCursor.advance(amount);
+        mappedPslCursor = mappedPslCursor.advance(amount);
+    }
+}
+
+/*
+ * Map an exon feature.  Cursors are updated
+ */
+void GeneMapper::mapExon(const GxfFeature* exon,
+                         PslCursor& srcPslCursor,
+                         PslCursor& mappedPslCursor,
+                         ostream& outFh) const {
+    assert((exon->fEnd-exon->fStart)+1 == srcPslCursor.getBlockLeft());
+    outFh << "mappingExon: "  << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << "\t" << exon->toString() << endl;
+
+    // note that source blocks can be merged in mapped block, but we don't merge
+    // features
+    int srcPslExonQEnd = srcPslCursor.getQBlockEnd();
+    while ((srcPslCursor.getQPos() < srcPslExonQEnd) && (not mappedPslCursor.atEnd())) {
+        mapExonPart(exon, srcPslCursor, mappedPslCursor, outFh);
+    }
+    // FIXME: handled un mapped at end
+    if (srcPslCursor.getQPos() < srcPslExonQEnd) {
+        outFh << "   exonLeftover: " << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << endl;
+    }
+}
+
+/*
+ * Map exons of a transcript that has at least something mapped.
+ */
+void GeneMapper::mapExons(const GxfFeatureVector& exons,
+                          PslMapping *pslMapping,
+                          ostream& outFh) const {
+    PslCursor srcPslCursor(pslMapping->fSrcPsl);
+    PslCursor mappedPslCursor(pslMapping->fMappedPsls[0]);
+    for (int iExon = 0; iExon < exons.size(); iExon++) {
+        mapExon(exons[iExon], srcPslCursor, mappedPslCursor, outFh);
+    }
 }
 
 /*
@@ -31,17 +172,15 @@ PslMapping* GeneMapper::mapTranscriptExons(const GxfFeatureNode* transcriptTree)
  */
 void GeneMapper::processTranscript(const GxfFeatureNode* transcriptTree,
                                    ostream& outFh) const {
-    PslMapping *pslMapping = mapTranscriptExons(transcriptTree);
-    transcriptTree->write(outFh);
-    outFh << "srcPsl: " << pslToString(pslMapping->fSrcPsl) << endl;
-    outFh <<"destPsls: score: " << pslMapping->fScore
-          << " srcBlks: " << pslMapping->fSrcPsl->blockCount
-          << " destBlks: " << ((pslMapping->fMappedPsls.size() == 0) ? 0 : pslMapping->fMappedPsls[0]->blockCount)
-          << endl;
-    for (size_t i = 0; i < pslMapping->fMappedPsls.size(); i++) {
-        outFh << "        " << pslToString(pslMapping->fMappedPsls[i]) << endl;
+    const string& qName = transcriptTree->fFeature->getAttr("transcript_id")->fVal;
+    outFh << "====" << qName  << "====" <<endl;
+    GxfFeatureVector exons = getExons(transcriptTree);
+    PslMapping *pslMapping =  fFeatureTransMap->mapFeatures(qName, exons);
+    if (pslMapping->fMappedPsls.size() > 0) {
+        mapExons(exons, pslMapping, outFh);
+    } else {
+        outFh << "not mapped: " << qName << endl;
     }
-    outFh << endl;
     delete pslMapping;
 }
 
@@ -55,7 +194,7 @@ void GeneMapper::processGene(GxfParser *gxfParser,
     for (size_t i = 0; i < geneTree->fGene->fChildren.size(); i++) {
         const GxfFeatureNode* transcriptTree = geneTree->fGene->fChildren[i];
         if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
-            throw invalid_argument("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
+            throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
         }
         processTranscript(transcriptTree, outFh);
     }
@@ -71,7 +210,7 @@ void GeneMapper::mapGxf(GxfParser *gxfParser,
         if (instanceOf(gxfRecord, GxfFeature)) {
             processGene(gxfParser, dynamic_cast<const GxfFeature*>(gxfRecord), outFh);
         } else {
-            outFh << gxfRecord->toString() << endl;
+            // FIXME: outFh << gxfRecord->toString() << endl;
             delete gxfRecord;
         }
     }
