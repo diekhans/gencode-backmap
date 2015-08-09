@@ -88,6 +88,18 @@ class AttrVal {
 class AttrVals: public vector<const AttrVal*> {
     // n.b.  this keeps pointers rather than values due to reallocation if vector changes
     public:
+    /* empty constructor */
+    AttrVals() {
+    }
+
+    /* copy constructor */
+    AttrVals(const AttrVals& src) {
+        for (size_t i = 0; i < src.size(); i++) {
+            push_back(new AttrVal(*(src[i])));
+        }
+    }
+
+    
     /* destructor */
     ~AttrVals() {
         for (size_t i = 0; i < size(); i++) {

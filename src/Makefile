@@ -21,6 +21,7 @@ ifeq ($(wildcard ${CXX}),)
 CXX = g++
 endif
 CXXFLAGS = -std=c++11 -Wall -Werror -Wno-sign-compare 
+CXXDEBUG = -g -gdwarf-3 -O0 -fno-default-inline -fno-inline
 LIBS += -lpthread
 
 # autodetect UCSC installation of samtabix:

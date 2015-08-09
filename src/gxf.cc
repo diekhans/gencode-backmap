@@ -59,16 +59,18 @@ class Gff3Feature: public GxfFeature {
             attrVals.push_back(parseAttr(stringTrim(parts[i])));
         }
     }
+    void addExtraAttr(AttrVals& attrVals, const AttrVal* extraAttr) const {
+        int i = attrVals.findIdx(extraAttr->fName);
+        if (i < 0) {
+            attrVals.push_back(new AttrVal(extraAttr->fName, extraAttr->fVal, extraAttr->fQuoted));
+        } else {
+            attrVals[i] = new AttrVal(attrVals[i]->fName, attrVals[i]->fVal+","+extraAttr->fVal, attrVals[i]->fQuoted);
+        }
+    }
 
     void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) const {
-        for (size_t i = 0; i < extraAttrs->size()-1; i++) {
-            const AttrVal* extraAttr = (*extraAttrs)[i];
-            int idx = attrVals.findIdx(extraAttr->fName);
-            if (idx < 0) {
-                attrVals.push_back(new AttrVal(extraAttr->fName, extraAttr->fVal, extraAttr->fQuoted));
-            } else {
-                attrVals[i] = new AttrVal(attrVals[i]->fName, attrVals[i]->fVal+","+extraAttr->fVal, attrVals[i]->fQuoted);
-            }
+        for (size_t i = 0; i < extraAttrs->size(); i++) {
+            addExtraAttr(attrVals, (*extraAttrs)[i]);
         }
     }
     
@@ -148,7 +150,7 @@ class GtfFeature: public GxfFeature {
     
     void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) const {
         // GTF is easy, since just duplicate attribute names
-        for (size_t i = 0; i < extraAttrs->size()-1; i++) {
+        for (size_t i = 0; i < extraAttrs->size(); i++) {
             attrVals.push_back((*extraAttrs)[i]);
         }
     }
