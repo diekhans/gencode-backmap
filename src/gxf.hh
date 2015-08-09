@@ -77,9 +77,54 @@ class AttrVal {
             throw invalid_argument("empty attribute value");
         }
     }
+
+    /* copy constructor */
+    AttrVal(const AttrVal& src):
+        fName(src.fName), fVal(src.fVal), fQuoted(src.fQuoted) {
+    }
 };
+
 /* list of attributes */
-typedef vector<AttrVal> AttrVals;
+class AttrVals: public vector<const AttrVal*> {
+    // n.b.  this keeps pointers rather than values due to reallocation if vector changes
+    public:
+    /* destructor */
+    ~AttrVals() {
+        for (size_t i = 0; i < size(); i++) {
+            delete (*this)[i];
+        }
+    }
+
+    /* find the index of an attribute or -1 if not found */
+    int findIdx(const string& name) const {
+        for (int i = 0; i < size(); i++) {
+            if ((*this)[i]->fName == name) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    
+    /* get a attribute, NULL if it doesn't exist */
+    const AttrVal* findAttr(const string& name) const {
+        int i = findIdx(name);
+        if (i < 0) {
+            return NULL;
+        } else {
+            return (*this)[i];
+        }
+    }
+    
+    /* get a attribute, error it doesn't exist */
+    const AttrVal* getAttr(const string& name) const {
+        const AttrVal* attrVal = findAttr(name);
+        if (attrVal == NULL) {
+            throw invalid_argument("Attribute not found: " + name);
+        }
+        return attrVal;
+    }
+};
 
 /*
  * A row parsed from a GTF/GFF file. Immutable object.
@@ -127,10 +172,14 @@ public:
     }
 
     /* get a attribute, NULL if it doesn't exist */
-    const AttrVal* findAttr(const string& name) const;
+    const AttrVal* findAttr(const string& name) const {
+        return fAttrs.findAttr(name);
+    }
 
     /* get a attribute, error it doesn't exist */
-    const AttrVal* getAttr(const string& name) const;
+    const AttrVal* getAttr(const string& name) const {
+        return fAttrs.getAttr(name);
+    }
 
     /* get a attribute value, error it doesn't exist */
     const string& getAttrValue(const string& name) const {
