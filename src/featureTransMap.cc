@@ -3,6 +3,7 @@
  */
 #include "featureTransMap.hh"
 #include "gxf.hh"
+#include "pslOps.hh"
 
 /** compute total size of features */
 int FeatureTransMap::sumFeatureSizes(const GxfFeatureVector& features) const {

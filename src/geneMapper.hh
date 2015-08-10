@@ -15,24 +15,11 @@ class GeneMapper {
     private:
     const FeatureTransMap* fFeatureTransMap;  // object to performance mappings
     
-    GxfFeatureVector getExons(const GxfFeatureNode* transcriptTree) const;
-    
-    void mapExonPart(const GxfFeature* exon,
-                     PslCursor& srcPslCursor,
-                     PslCursor& mappedPslCursor,
-                     ostream& outFh) const;
-    void mapExon(const GxfFeature* exon,
-                 PslCursor& srcPslCursor,
-                 PslCursor& mappedPslCursor,
-                 ostream& outFh) const;
-    void mapExons(const GxfFeatureVector& exons,
-                  PslMapping *pslMapping,
-                  ostream& outFh) const;
-    void processTranscript(const GxfFeatureNode* transcriptTree,
-                           ostream& outFh) const;
     void processGene(GxfParser *gxfParser,
                      const GxfFeature* geneFeature,
                      ostream& outFh) const;
+    void processTranscript(const GxfFeatureNode* transcriptTree) const;
+    
     public:
     /* Constructor */
     GeneMapper(const FeatureTransMap* featureTransMap):
