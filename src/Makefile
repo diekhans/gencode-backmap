@@ -39,10 +39,10 @@ endif
 CXXFLAGS += ${KENTINC} ${CXXDEBUG}
 
 HDRS = FIOStream.hh gxf.hh gzstream.hh typeOps.hh transMap.hh geneMapper.hh \
-	gxfFeatureTree.hh featureTransMap.hh pslOps.hh \
+	gxfFeatureTree.hh featureTransMap.hh pslOps.hh Frame.hh \
 	jkinclude.hh
 SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc transMap.cc geneMapper.cc \
-	gxfFeatureTree.cc featureTransMap.cc  pslOps.cc \
+	gxfFeatureTree.cc featureTransMap.cc  pslOps.cc Frame.cc \
 	gencode-backmap.cc
 
 OBJS = $(foreach b,$(basename ${SRCS}),${OBJDIR}/${b}.o)

@@ -5,6 +5,7 @@
 #include "pslOps.hh"
 #include "featureTransMap.hh"
 #include "typeOps.hh"
+#include "Frame.hh"
 #include <fstream>
 #include <iostream>
 
@@ -29,24 +30,40 @@ class TranscriptMapper {
         return exons;
     }
 
-    /* 
-     * create an exon feature for a full mapped
-     */
-    const GxfFeature* mkFullMappedFeature(const GxfFeature* exon,
-                                          const PslCursor& srcPslCursor,
-                                          const PslCursor& mappedPslCursor,
-                                          int amount) {
-        assert(srcPslCursor.getTPosStrand('+') == exon->fStart-1);
-        assert(srcPslCursor.getTBlockEndStrand('+') == exon->fEnd);
-        assert(srcPslCursor.getTPos()+amount == exon->fEnd);
+    /* is the full feature represent in the current source cursor and amount 
+     * that is mapped or not mapped? */
+    static bool isFullFeature(const GxfFeature* feature,
+                              const PslCursor& srcPslCursor,
+                              int amount) {
+        /// FIXME: needed??
+        if (amount == feature->size()) {
+            assert(srcPslCursor.getTPosStrand('+') == feature->fStart-1);
+            assert(srcPslCursor.getTBlockEndStrand('+') == feature->fEnd);
+            assert(srcPslCursor.getTPosStrand('+')+amount == feature->fEnd);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-        // coordinates are always plus strand
+    /* 
+     * create an exon feature for a full or partially mapped feature.
+     */
+    const GxfFeature* mkMappedFeature(const GxfFeature* exon,
+                                      const PslCursor& srcPslCursor,
+                                      const PslCursor& mappedPslCursor) {
+        int off = srcPslCursor.getTPosStrand('+') - (exon->fStart-1);
+        int amount = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
+        Frame frame(Frame::fromPhaseStr(exon->fPhase).incr(off));
+
+        // GFF3 genomic coordinates are always plus strand
         int mappedTStart = mappedPslCursor.getTPosStrand('+');
         int mappedTEnd = mappedTStart + amount;
 
         return gxfFeatureFactory(exon->getFormat(), exon->fSeqid, exon->fSource, exon->fType,
                                  mappedTStart, mappedTEnd, exon->fScore,
-                                 string(0, pslQStrand(srcPslCursor.getPsl())), ".", exon->fAttrs);
+                                 string(0, pslQStrand(srcPslCursor.getPsl())),
+                                 frame.toPhaseStr(), exon->fAttrs);
     }
     
     /*
@@ -66,10 +83,7 @@ class TranscriptMapper {
         } else {
             // mapped region
             int amount = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
-            if (amount == exon->size()) {
-                // whole 
-                delete mkFullMappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
-            }
+            delete mkMappedFeature(exon, srcPslCursor, mappedPslCursor);
             outFh << "    overlap: " << amount << endl;
             srcPslCursor = srcPslCursor.advance(amount);
             mappedPslCursor = mappedPslCursor.advance(amount);
