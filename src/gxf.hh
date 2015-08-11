@@ -25,9 +25,6 @@ typedef enum {
     GTF_FORMAT,
 } GxfFormat;
 
-/* vector of feature objects */
-typedef vector<const GxfFeature*>  GxfFeatureVector;
-
 /*
  * GxF base record type.  Use instanceOf to determine actually type
  */
@@ -179,9 +176,18 @@ public:
         fPhase(phase), fAttrs(attrs) {
     }
 
+    /* get the format */
+    virtual GxfFormat getFormat() const = 0;
+    
     /* destructor */
     virtual ~GxfFeature() {
     }
+
+    /* get all attribute */
+    const AttrVals& getAttrs() const {
+        return fAttrs;
+    }
+
 
     /* get a attribute, NULL if it doesn't exist */
     const AttrVal* findAttr(const string& name) const {
@@ -204,6 +210,37 @@ public:
     }
 };
 
+/* create the appropriate feature type */
+const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                                    const StringVector& columns);
+
+/* create the appropriate feature type */
+const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                                    const string& seqid, const string& source, const string& type,
+                                    int start, int end, const string& score, const string& strand,
+                                    const string& phase, const AttrVals& attrs, const AttrVals* extraAttrs=NULL);
+
+/* vector of feature objects */
+class GxfFeatureVector: public vector<const GxfFeature*> {
+    private:
+    bool fOwnsFeatures; // show delete features on destruct?
+
+    public:
+    /* constructor */
+    GxfFeatureVector(bool ownsFeatures=false):
+        fOwnsFeatures(ownsFeatures) {
+    }
+
+    /* destructor */
+    ~GxfFeatureVector() {
+        if (fOwnsFeatures) {
+            for (size_t i = 0; i < size(); i++) {
+                delete (*this)[i];
+            }
+        }
+    }
+};
+
 /**
  * gff3 or gtf parser.
  */
@@ -214,9 +251,6 @@ class GxfParser {
     queue<const GxfRecord*> fPending; // FIFO of pushed records to be read before file
 
     StringVector splitFeatureLine(const string& line) const;
-    const GxfFeature* createGff3Feature(const StringVector& columns) const;
-    const GxfFeature* createGtfFeature(const StringVector& columns) const;
-    const GxfFeature* createGxfFeature(const StringVector& columns) const;
     const GxfRecord* read();
     
     public:

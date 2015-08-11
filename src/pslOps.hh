@@ -92,6 +92,10 @@ class PslCursor {
         fPsl(psl), fIBlk(iBlk), fOff(off) {
     }
 
+    struct psl* getPsl() const {
+        return fPsl;
+    }
+    
     /* have we reached the end of the psl */
     bool atEnd() const {
         return fIBlk >= fPsl->blockCount;
@@ -126,6 +130,38 @@ class PslCursor {
             return pslTEnd(fPsl, fPsl->blockCount-1);
         } else {
             return pslTEnd(fPsl, fIBlk);
+        }
+    }
+
+    /* accessors of current position, strand adjusted */
+    int getQPosStrand(char strand) const {
+        if (pslQStrand(fPsl) == strand) {
+            return getQPos();
+        } else {
+            return fPsl->qSize - getQBlockEnd();
+        }
+    }
+    int getTPosStrand(char strand) const {
+        if (pslTStrand(fPsl) == strand) {
+            return getTPos();
+        } else {
+            return fPsl->tSize - getTBlockEnd();
+        }
+    }
+
+    /* accessors for current block end, strand adjusted */
+    int getQBlockEndStrand(char strand) const {
+        if (strand == pslQStrand(fPsl)) {
+            return getQBlockEnd();
+        } else {
+            return fPsl->qSize - getQPos();
+        }
+    }
+    int getTBlockEndStrand(char strand) const {
+        if (strand == pslTStrand(fPsl)) {
+            return getTBlockEnd();
+        } else {
+            return fPsl->tSize - getTPos();
         }
     }
 

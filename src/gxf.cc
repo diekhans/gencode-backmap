@@ -40,9 +40,14 @@ string GxfFeature::baseColumnsAsString() const {
  * GFF3 Feature
  */
 class Gff3Feature: public GxfFeature {
-    private:
+    public:
+    /* get the format */
+    virtual GxfFormat getFormat() const {
+        return GFF3_FORMAT;
+    }
+    
     /* parse ID=ENSG00000223972.5 */
-    AttrVal* parseAttr(const string& attrStr) const {
+    static AttrVal* parseAttr(const string& attrStr) {
         size_t i = attrStr.find('=');
         if (i == string::npos) {
             throw invalid_argument("Invalid GFF3 attribute \"" + attrStr + "\"");
@@ -52,14 +57,18 @@ class Gff3Feature: public GxfFeature {
         return new AttrVal(name, stripQuotes(value), isQuoted(value));
     }
 
-    void parseAttrStr(AttrVals& attrVals, const string& attrsStr) const {
+    
+    /* parse: ID=ENSG00000223972.5;gene_id=ENSG00000223972.5 */
+    static AttrVals parseAttrs(const string& attrsStr) {
+        AttrVals attrVals;
         StringVector parts = stringSplit(attrsStr,';');
         // `;' is a separator
         for (size_t i = 0; i < parts.size(); i++) {
             attrVals.push_back(parseAttr(stringTrim(parts[i])));
         }
+        return attrVals;
     }
-    void addExtraAttr(AttrVals& attrVals, const AttrVal* extraAttr) const {
+    static void addExtraAttr(AttrVals& attrVals, const AttrVal* extraAttr) {
         int i = attrVals.findIdx(extraAttr->fName);
         if (i < 0) {
             attrVals.push_back(new AttrVal(extraAttr->fName, extraAttr->fVal, extraAttr->fQuoted));
@@ -67,23 +76,22 @@ class Gff3Feature: public GxfFeature {
             attrVals[i] = new AttrVal(attrVals[i]->fName, attrVals[i]->fVal+","+extraAttr->fVal, attrVals[i]->fQuoted);
         }
     }
-
-    void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) const {
+    static void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) {
         for (size_t i = 0; i < extraAttrs->size(); i++) {
             addExtraAttr(attrVals, (*extraAttrs)[i]);
         }
     }
-    
-    /* parse: ID=ENSG00000223972.5;gene_id=ENSG00000223972.5; add in extra attributes . */
-    AttrVals parseAttrs(const string& attrsStr, const AttrVals* extraAttrs=NULL) const {
-        AttrVals attrVals;
-        parseAttrStr(attrVals, attrsStr);
+    /* merge attributes with extra attributes, if supplied */
+    static AttrVals mergeAttrs(const AttrVals& attrVals, const AttrVals* extraAttrs=NULL) {
         if (extraAttrs != NULL) {
-            addExtraAttrs(attrVals, extraAttrs);
+            AttrVals attrValsCopy(attrVals);
+            addExtraAttrs(attrValsCopy, extraAttrs);
+            return attrValsCopy;
+        } else {
+            return attrVals;
         }
-        return attrVals;
     }
-
+    
     /* format an attribute */
     string formatAttr(const AttrVal* attrVal) const {
         // n.b. this is not general, doesn't handle embedded quotes
@@ -108,13 +116,12 @@ class Gff3Feature: public GxfFeature {
         return strAttrs;
     }
     
-    public:
     /* constructor Add in extraAttrs if supplied.  Used when cloning an feature and
      * added tags */
     Gff3Feature(const string& seqid, const string& source, const string& type, int
                 start, int end, const string& score, const string& strand, const
-                string& phase, const string& attrs, const AttrVals* extraAttrs=NULL):
-        GxfFeature(seqid, source, type, start, end, score, strand, phase, parseAttrs(attrs, extraAttrs)) {
+                string& phase, const AttrVals& attrs):
+        GxfFeature(seqid, source, type, start, end, score, strand, phase, attrs) {
     }
 
     /* return record as a string */
@@ -128,9 +135,14 @@ class Gff3Feature: public GxfFeature {
  * GTF Feature
  */
 class GtfFeature: public GxfFeature {
-    private:
+    public:
+    /* get the format */
+    virtual GxfFormat getFormat() const {
+        return GTF_FORMAT;
+    }
+    
     /* parse ID=ENSG00000223972.5 */
-    AttrVal* parseAttr(const string& attrStr) const {
+    static AttrVal* parseAttr(const string& attrStr) {
         size_t i = attrStr.find(' ');
         if (i == string::npos) {
             throw invalid_argument("Invalid GTF attribute \"" + attrStr + "\"");
@@ -140,31 +152,35 @@ class GtfFeature: public GxfFeature {
         return new AttrVal(name, stripQuotes(value), isQuoted(value));
     }
 
-    void parseAttrStr(AttrVals& attrVals, const string& attrsStr) const {
+    /* parse: gene_id "ENSG00000223972.5"; gene_type "transcribed_unprocessed_pseudogene";  */
+    static AttrVals parseAttrs(const string& attrsStr) {
+        AttrVals attrVals;
         StringVector parts = stringSplit(attrsStr,';');
         // last will be empty, since `;' is a terminator
         for (size_t i = 0; i < parts.size()-1; i++) {
             attrVals.push_back(parseAttr(stringTrim(parts[i])));
         }
+        return attrVals;
     }
-    
-    void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) const {
+
+    static void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) {
         // GTF is easy, since just duplicate attribute names
         for (size_t i = 0; i < extraAttrs->size(); i++) {
             attrVals.push_back((*extraAttrs)[i]);
         }
     }
     
-    /* parse: gene_id "ENSG00000223972.5"; gene_type "transcribed_unprocessed_pseudogene";  */
-    AttrVals parseAttrs(const string& attrsStr, const AttrVals* extraAttrs=NULL) const {
-        AttrVals attrVals;
-        parseAttrStr(attrVals, attrsStr);
+    /* merge attributes with extra attributes, if supplied */
+    static AttrVals mergeAttrs(const AttrVals& attrVals, const AttrVals* extraAttrs=NULL) {
         if (extraAttrs != NULL) {
-            addExtraAttrs(attrVals, extraAttrs);
+            AttrVals attrValsCopy(attrVals);
+            addExtraAttrs(attrValsCopy, extraAttrs);
+            return attrValsCopy;
+        } else {
+            return attrVals;
         }
-        return attrVals;
     }
-
+    
     /* format an attribute */
     string formatAttr(const AttrVal* attrVal) const {
         // n.b. this is not general, doesn't handle embedded quotes
@@ -192,8 +208,8 @@ class GtfFeature: public GxfFeature {
     /* constructor */
     GtfFeature(const string& seqid, const string& source, const string& type, int
                start, int end, const string& score, const string& strand, const
-               string& phase, const string& attrs, const AttrVals* extraAttrs=NULL):
-        GxfFeature(seqid, source, type, start, end, score, strand, phase, parseAttrs(attrs, extraAttrs)) {
+               string& phase, const AttrVals& attrs):
+        GxfFeature(seqid, source, type, start, end, score, strand, phase, attrs) {
     }
 
     /* return record as a string */
@@ -203,6 +219,32 @@ class GtfFeature: public GxfFeature {
 };
 
 
+/* create the appropriate feature type */
+const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                                    const StringVector& columns) {
+    if (gxfFormat == GFF3_FORMAT) {
+        return new Gff3Feature(columns[0], columns[1], columns[2],
+                               stringToInt(columns[3]), stringToInt(columns[4]),
+                               columns[5], columns[6], columns[7], Gff3Feature::parseAttrs(columns[8]));
+    } else {
+        return new GtfFeature(columns[0], columns[1], columns[2],
+                              stringToInt(columns[3]), stringToInt(columns[4]),
+                              columns[5], columns[6], columns[7], GtfFeature::parseAttrs(columns[8]));
+    }
+}
+
+/* create the appropriate feature type */
+const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                                    const string& seqid, const string& source, const string& type,
+                                    int start, int end, const string& score, const string& strand, const string& phase,
+                                    const AttrVals& attrs, const AttrVals* extraAttrs) {
+    if (gxfFormat == GFF3_FORMAT) {
+        return new Gff3Feature(seqid, source, type, start, end, score, strand, phase, Gff3Feature::mergeAttrs(attrs, extraAttrs));
+    } else {
+        return new GtfFeature(seqid, source, type, start, end, score, strand, phase, GtfFeature::mergeAttrs(attrs, extraAttrs));
+    }
+}
+
 /* split a feature line of GFF3 or GTF */
 StringVector GxfParser::splitFeatureLine(const string& line) const {
     StringVector columns = stringSplit(line, '\t');
@@ -211,30 +253,6 @@ StringVector GxfParser::splitFeatureLine(const string& line) const {
     }
     return columns;
 }
-
-/* create a gff3 feature */
-const GxfFeature* GxfParser::createGff3Feature(const StringVector& columns) const {
-    return new Gff3Feature(columns[0], columns[1], columns[2],
-                           stringToInt(columns[3]), stringToInt(columns[4]),
-                           columns[5], columns[6], columns[7], columns[8]);
-}
-
-/* create a gtf feature */
-const GxfFeature* GxfParser::createGtfFeature(const StringVector& columns) const {
-    return new GtfFeature(columns[0], columns[1], columns[2],
-                          stringToInt(columns[3]), stringToInt(columns[4]),
-                          columns[5], columns[6], columns[7], columns[8]);
-}
-
-/* create the appropriate feature type */
-const GxfFeature* GxfParser::createGxfFeature(const StringVector& columns) const {
-    if (fGxfFormat == GFF3_FORMAT) {
-        return createGff3Feature(columns);
-    } else {
-        return createGtfFeature(columns);
-    }
-}
-
 
 /* constructor that opens file, which maybe compressed */
 GxfParser::GxfParser(const string& fileName,
@@ -254,7 +272,7 @@ const GxfRecord* GxfParser::read() {
     if (not fIn->readLine(line)) {
         return NULL;
     } else if ((line.size() > 0) and line[0] != '#') {
-        return createGxfFeature(splitFeatureLine(line));
+        return gxfFeatureFactory(fGxfFormat, splitFeatureLine(line));
     } else {
         return new GxfLine(line);
     }

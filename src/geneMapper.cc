@@ -17,6 +17,7 @@ class TranscriptMapper {
     const string fQName;
     PslMapping *fPslMapping;
 
+    
     /* get exon features */
     GxfFeatureVector getExons(const GxfFeatureNode* transcriptTree) const {
         GxfFeatureVector exons;
@@ -28,13 +29,33 @@ class TranscriptMapper {
         return exons;
     }
 
+    /* 
+     * create an exon feature for a full mapped
+     */
+    const GxfFeature* mkFullMappedFeature(const GxfFeature* exon,
+                                          const PslCursor& srcPslCursor,
+                                          const PslCursor& mappedPslCursor,
+                                          int amount) {
+        assert(srcPslCursor.getTPosStrand('+') == exon->fStart-1);
+        assert(srcPslCursor.getTBlockEndStrand('+') == exon->fEnd);
+        assert(srcPslCursor.getTPos()+amount == exon->fEnd);
+
+        // coordinates are always plus strand
+        int mappedTStart = mappedPslCursor.getTPosStrand('+');
+        int mappedTEnd = mappedTStart + amount;
+
+        return gxfFeatureFactory(exon->getFormat(), exon->fSeqid, exon->fSource, exon->fType,
+                                 mappedTStart, mappedTEnd, exon->fScore,
+                                 string(0, pslQStrand(srcPslCursor.getPsl())), ".", exon->fAttrs);
+    }
+    
     /*
      * Map one part of an exon feature.  Cursors are updated
      */
     void mapExonPart(const GxfFeature* exon,
-                                 PslCursor& srcPslCursor,
-                                 PslCursor& mappedPslCursor,
-                                 ostream& outFh) {
+                     PslCursor& srcPslCursor,
+                     PslCursor& mappedPslCursor,
+                     ostream& outFh) {
         assert(srcPslCursor.getQPos() <= mappedPslCursor.getQPos());
         outFh << "  exonPart: " << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << endl;
         if (srcPslCursor.getQPos() < mappedPslCursor.getQPos()) {
@@ -45,6 +66,10 @@ class TranscriptMapper {
         } else {
             // mapped region
             int amount = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
+            if (amount == exon->size()) {
+                // whole 
+                delete mkFullMappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
+            }
             outFh << "    overlap: " << amount << endl;
             srcPslCursor = srcPslCursor.advance(amount);
             mappedPslCursor = mappedPslCursor.advance(amount);
@@ -55,8 +80,8 @@ class TranscriptMapper {
      * Map an exon feature.  Cursors are updated
      */
     void mapExon(const GxfFeature* exon,
-                             PslCursor& srcPslCursor,
-                             PslCursor& mappedPslCursor) {
+                 PslCursor& srcPslCursor,
+                 PslCursor& mappedPslCursor) {
         assert((exon->fEnd-exon->fStart)+1 == srcPslCursor.getBlockLeft());
         cerr << "mappingExon: "  << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << "\t" << exon->toString() << endl;
 
@@ -119,6 +144,7 @@ class TranscriptMapper {
     }
 };
 
+/* process one transcript */
 void GeneMapper::processTranscript(const GxfFeatureNode* transcriptTree) const {
     TranscriptMapper transcriptMapper(transcriptTree);
     transcriptMapper.mapTranscriptFeatures(fFeatureTransMap);
