@@ -18,7 +18,7 @@ class TranscriptMapper {
     const string fQName;
     PslMapping *fPslMapping;
 
-    
+   
     /* get exon features */
     GxfFeatureVector getExons(const GxfFeatureNode* transcriptTree) const {
         GxfFeatureVector exons;
@@ -46,23 +46,61 @@ class TranscriptMapper {
         }
     }
 
+    /*
+     * Determine how much was mapped in a step of src and mapped cursors
+     */
+    int calcAmountMapped(const PslCursor& srcPslCursor,
+                         const PslCursor& mappedPslCursor) const {
+        return min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
+    }
+    
+    /*
+     * Determine how much was unmapped in a step of src and mapped cursors
+     */
+    int calcAmountUnmapped(const PslCursor& srcPslCursor,
+                         const PslCursor& mappedPslCursor) const {
+        return min(mappedPslCursor.getQPos()-srcPslCursor.getQPos(), srcPslCursor.getBlockLeft());
+    }
+    
     /* 
      * create an exon feature for a full or partially mapped feature.
      */
     const GxfFeature* mkMappedFeature(const GxfFeature* exon,
                                       const PslCursor& srcPslCursor,
-                                      const PslCursor& mappedPslCursor) {
+                                      const PslCursor& mappedPslCursor,
+                                      int amount) {
         int off = srcPslCursor.getTPosStrand('+') - (exon->fStart-1);
-        int amount = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
         Frame frame(Frame::fromPhaseStr(exon->fPhase).incr(off));
 
         // GFF3 genomic coordinates are always plus strand
         int mappedTStart = mappedPslCursor.getTPosStrand('+');
         int mappedTEnd = mappedTStart + amount;
 
+        cerr << "    overlap: " << mappedTStart << ".." << mappedTEnd << " ["  << amount << "]" << endl;
         return gxfFeatureFactory(exon->getFormat(), exon->fSeqid, exon->fSource, exon->fType,
                                  mappedTStart, mappedTEnd, exon->fScore,
                                  string(0, pslQStrand(srcPslCursor.getPsl())),
+                                 frame.toPhaseStr(), exon->fAttrs);
+    }
+    
+    /* 
+     * Create an exon feature for a full or partially unmapped feature.
+     * The feature is in source coordinates.
+     */
+    const GxfFeature* mkUnmappedFeature(const GxfFeature* exon,
+                                        const PslCursor& srcPslCursor,
+                                        const PslCursor& mappedPslCursor,
+                                        int amount) {
+        int off = srcPslCursor.getTPosStrand('+') - (exon->fStart-1);
+        Frame frame(Frame::fromPhaseStr(exon->fPhase).incr(off));
+
+        // GFF3 genomic coordinates are always plus strand
+        int unmappedTStart = srcPslCursor.getTPosStrand('+');
+        int unmappedTEnd = unmappedTStart + amount;
+
+        cerr << "    deleted: " << unmappedTStart << ".." << unmappedTEnd << " ["  << amount << "]" << endl;
+        return gxfFeatureFactory(exon->getFormat(), exon->fSeqid, exon->fSource, exon->fType,
+                                 unmappedTStart, unmappedTEnd, exon->fScore, exon->fStrand,
                                  frame.toPhaseStr(), exon->fAttrs);
     }
     
@@ -74,17 +112,15 @@ class TranscriptMapper {
                      PslCursor& mappedPslCursor,
                      ostream& outFh) {
         assert(srcPslCursor.getQPos() <= mappedPslCursor.getQPos());
-        outFh << "  exonPart: " << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << endl;
         if (srcPslCursor.getQPos() < mappedPslCursor.getQPos()) {
             // deleted region
-            int amount = min(mappedPslCursor.getQPos()-srcPslCursor.getQPos(), srcPslCursor.getBlockLeft());
-            outFh << "    deleted: " << amount << endl;
+            int amount = calcAmountUnmapped(srcPslCursor, mappedPslCursor);
+            delete mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
             srcPslCursor = srcPslCursor.advance(amount);
         } else {
             // mapped region
-            int amount = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
-            delete mkMappedFeature(exon, srcPslCursor, mappedPslCursor);
-            outFh << "    overlap: " << amount << endl;
+            int amount = calcAmountMapped(srcPslCursor, mappedPslCursor);
+            delete mkMappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
             srcPslCursor = srcPslCursor.advance(amount);
             mappedPslCursor = mappedPslCursor.advance(amount);
         }
@@ -107,7 +143,10 @@ class TranscriptMapper {
         }
         // FIXME: handled un mapped at end
         if (srcPslCursor.getQPos() < srcPslExonQEnd) {
-            cerr << "   exonLeftover: " << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << endl;
+            cerr << "final unmapped" << endl;
+            int amount = calcAmountUnmapped(srcPslCursor, mappedPslCursor);
+            delete mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
+            srcPslCursor = srcPslCursor.advance(amount);
         }
     }
 
@@ -131,7 +170,7 @@ class TranscriptMapper {
             mapExons(exons, fPslMapping);
             return true;
         } else {
-            // outFh << "not mapped: " << qName << endl;
+            cerr << "not mapped: " << fPslMapping->fSrcPsl->qName << endl;
             return false;
         }
     }
