@@ -69,12 +69,22 @@ class TransMap {
     /* destructor */
     ~TransMap();
 
-    /* get the size of the a mapping query sequence */
+    /* do we have a mapping query sequence */
+    bool haveQuerySeq(const string& qName) const {
+        return fQuerySizes.find(qName) != fQuerySizes.end();
+    }
+    
+    /* do we have a mapping target sequence */
+    bool haveTargetSeq(const string& tName) const {
+        return fTargetSizes.find(tName) != fTargetSizes.end();
+    }
+    
+    /* get the size of a mapping query sequence */
     int getQuerySeqSize(const string& qName) const {
         return fQuerySizes.at(qName);
     }
     
-    /* get the size of the a mapping target sequence */
+    /* get the size of a mapping target sequence */
     int getTargetSeqSize(const string& tName) const {
         return fTargetSizes.at(tName);
     }

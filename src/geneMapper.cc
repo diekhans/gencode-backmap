@@ -152,12 +152,15 @@ class TranscriptMapper {
     bool mapTranscriptExons(const FeatureTransMap* featureTransMap) {
         GxfFeatureVector exons = getExons(fTranscriptTree);
         fPslMapping = featureTransMap->mapFeatures(fQName, exons);
-        if (fPslMapping->fMappedPsls.size() > 0) {
+        if (fPslMapping == NULL) {
+            cerr << "not in map: " << fQName << endl;
+            return false;
+        } else if (fPslMapping->fMappedPsls.size() == 0) {
+            cerr << "not mapped: " << fQName << endl;
+            return false;
+        } else {
             mapExons(exons, fPslMapping);
             return true;
-        } else {
-            cerr << "not mapped: " << fPslMapping->fSrcPsl->qName << endl;
-            return false;
         }
     }
 

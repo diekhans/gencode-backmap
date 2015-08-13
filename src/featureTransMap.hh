@@ -26,7 +26,8 @@ class FeatureTransMap {
     }
 
     /* Map features to list of PSLs.  PSL will be kept in the input order
-     * of the features, even if this creates a negative target strand. */
+     * of the features, even if this creates a negative target strand.
+     * Return NULL if qName is not in mapping. */
     PslMapping* mapFeatures(const string& qName,
                             const GxfFeatureVector& features) const;
 };

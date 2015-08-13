@@ -93,7 +93,11 @@ PslMapping* FeatureTransMap::mapFeatures(const string& qName,
     if (not checkFeatureOrder(features)) {
         throw invalid_argument("features not in expected order: " + qName);
     }
-    
-    struct psl* inPsl = featuresToPsl(qName, features);
-    return fTransMap->mapPsl(inPsl);
+
+    // target is mapping query
+    if (not fTransMap->haveQuerySeq(features[0]->fSeqid)) {
+        return NULL;
+    } else {
+        return fTransMap->mapPsl(featuresToPsl(qName, features));
+    }
 }

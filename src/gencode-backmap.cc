@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         {NULL, 0, NULL, 0}
     };
     bool swapMap = false;
-    // opterr = 0;  // we print error message
+    opterr = 0;  // we print error message
     while (true) {
         int optc = getopt_long(argc, argv, "s", long_options, NULL);
         if (optc == -1) {
