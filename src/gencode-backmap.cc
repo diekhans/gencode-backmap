@@ -28,7 +28,8 @@ int main(int argc, char *argv[]) {
         errAbort(toCharStr("wrong # args: %s inGxf mappingChains outGxf"), argv[0]);
     }
     string inGxfFile = argv[1];
-    GxfFormat gxfFormat = stringEndsWith(inGxfFile, ".gff3") ? GFF3_FORMAT : GTF_FORMAT;
+    GxfFormat gxfFormat = (stringEndsWith(inGxfFile, ".gff3") or stringEndsWith(inGxfFile, ".gff3.gz"))
+        ? GFF3_FORMAT : GTF_FORMAT;
     string mappingChains = argv[2];
     string outGxfFile = argv[3];
 

@@ -46,22 +46,6 @@ class TranscriptMapper {
         }
     }
 
-    /*
-     * Determine how much was mapped in a step of src and mapped cursors
-     */
-    int calcAmountMapped(const PslCursor& srcPslCursor,
-                         const PslCursor& mappedPslCursor) const {
-        return min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
-    }
-    
-    /*
-     * Determine how much was unmapped in a step of src and mapped cursors
-     */
-    int calcAmountUnmapped(const PslCursor& srcPslCursor,
-                         const PslCursor& mappedPslCursor) const {
-        return min(mappedPslCursor.getQPos()-srcPslCursor.getQPos(), srcPslCursor.getBlockLeft());
-    }
-    
     /* 
      * create an exon feature for a full or partially mapped feature.
      */
@@ -113,13 +97,14 @@ class TranscriptMapper {
                      ostream& outFh) {
         assert(srcPslCursor.getQPos() <= mappedPslCursor.getQPos());
         if (srcPslCursor.getQPos() < mappedPslCursor.getQPos()) {
-            // deleted region
-            int amount = calcAmountUnmapped(srcPslCursor, mappedPslCursor);
+            // deleted region; amount is minimum of different between starts in
+            // exon and how much is left in exon
+            int amount = min(mappedPslCursor.getQPos()-srcPslCursor.getQPos(), srcPslCursor.getBlockLeft());
             delete mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
             srcPslCursor = srcPslCursor.advance(amount);
         } else {
-            // mapped region
-            int amount = calcAmountMapped(srcPslCursor, mappedPslCursor);
+            // mapped region; amount is the minimum left in either block
+            int amount = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
             delete mkMappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
             srcPslCursor = srcPslCursor.advance(amount);
             mappedPslCursor = mappedPslCursor.advance(amount);
@@ -132,8 +117,8 @@ class TranscriptMapper {
     void mapExon(const GxfFeature* exon,
                  PslCursor& srcPslCursor,
                  PslCursor& mappedPslCursor) {
-        assert((exon->fEnd-exon->fStart)+1 == srcPslCursor.getBlockLeft());
         cerr << "mappingExon: "  << srcPslCursor.toString() << " = " << mappedPslCursor.toString() << "\t" << exon->toString() << endl;
+        assert((exon->fEnd-exon->fStart)+1 == srcPslCursor.getBlockLeft());
 
         // note that source blocks can be merged in mapped block, but we don't merge
         // features
@@ -141,10 +126,11 @@ class TranscriptMapper {
         while ((srcPslCursor.getQPos() < srcPslExonQEnd) && (not mappedPslCursor.atEnd())) {
             mapExonPart(exon, srcPslCursor, mappedPslCursor, cerr);
         }
-        // FIXME: handled un mapped at end
         if (srcPslCursor.getQPos() < srcPslExonQEnd) {
+            // unmapped at the end of exon; amount is what is left over in
+            // this src exon block
             cerr << "final unmapped" << endl;
-            int amount = calcAmountUnmapped(srcPslCursor, mappedPslCursor);
+            int amount = srcPslCursor.getBlockLeft();
             delete mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, amount);
             srcPslCursor = srcPslCursor.advance(amount);
         }
