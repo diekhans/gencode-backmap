@@ -27,15 +27,15 @@ PslMapping::~PslMapping() {
 }
 
 /* calculate the number of aligned bases */
-int PslMapping::numPslAligned(struct psl* psl) {
+int PslMapping::numPslAligned(const struct psl* psl) {
     return (psl->match + psl->repMatch + psl->misMatch);
 }
 
 /* Compute a mapping score between a src and mapped psl.  A perfect mapping is
  * a zero score.  Extra inserts count against the score.
  */
-int PslMapping::calcPslMappingScore(struct psl* srcPsl,
-                                    struct psl* mappedPsl) {
+int PslMapping::calcPslMappingScore(const struct psl* srcPsl,
+                                    const struct psl* mappedPsl) {
     return (numPslAligned(srcPsl) - numPslAligned(mappedPsl))
         + abs(int(srcPsl->qNumInsert)-int(mappedPsl->qNumInsert))
         + abs(int(srcPsl->tNumInsert)-int(mappedPsl->tNumInsert));
@@ -56,10 +56,26 @@ class ScoreCmp {
                  - PslMapping::calcPslMappingScore(fSrcPsl, mappedPsl2));
     }
 };
+
+
+/* compare two psl to see which is better mapped. */
+static struct psl* gSrcPsl = NULL;
+static int mapScoreCmp(const void *va, const void *vb) {
+    const struct psl *mappedPsl1 = *static_cast<const struct psl *const*>(va);
+    const struct psl *mappedPsl2 = *static_cast<const struct psl *const*>(vb);
+    return -(PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl1)
+             - PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl2));
+}
+
 /* sort with best (lowest score) first */
 void PslMapping::sortMappedPsls() {
-    ScoreCmp scoreCmp(fSrcPsl);
-    sort(fMappedPsls.begin(), fMappedPsls.end(), scoreCmp);
+    // FIXME: with this seemingly correct sort, the C++ library goes of the end of the vector and SEGVs
+    // this happens on g++ 4.8.2 on Linux and 4.9 on OS/X (Mac ports).  It doesn't happen with
+    // clang on OS/X.
+    //sort(fMappedPsls.begin(), fMappedPsls.end(), ScoreCmp(fSrcPsl));
+    gSrcPsl = fSrcPsl;
+    qsort(static_cast<struct psl**>(&(fMappedPsls[0])), fMappedPsls.size(), sizeof(struct psl*), mapScoreCmp);
+    gSrcPsl = NULL;
 }
 
 
@@ -128,6 +144,23 @@ TransMap::TransMap(const string& chainFile,
     fMapAlns(genomeRangeTreeNew()) {
     loadMapChains(chainFile, swapMap);
 }
+
+/* destructor */
+TransMap::~TransMap() {
+    struct hashCookie cookie = hashFirst(fMapAlns->jkhash);
+    struct hashEl* chromEl;
+    while ((chromEl = hashNext(&cookie)) != NULL) {
+        for (struct range* range = genomeRangeTreeList(fMapAlns, chromEl->name);
+             range != NULL; range = range->next) {
+            struct psl* head = static_cast<struct psl*>(range->val);
+            pslFreeList(&head);
+        }
+    }
+    
+    genomeRangeTreeFree(&fMapAlns);
+}
+
+
 
 /* map one pair of query and target PSL */
 struct psl* TransMap::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {

@@ -22,7 +22,7 @@ class PslMapping {
     int fScore;  // mapping score of top psl; 0 is perfect
 
     private:
-    static int numPslAligned(struct psl* psl);
+    static int numPslAligned(const struct psl* psl);
     void sortMappedPsls();
 
     public:
@@ -35,8 +35,8 @@ class PslMapping {
 
     /* Compute a mapping score between the src and mapped psl.  A perfect
      * mapping is a zero score.  Extra inserts count against the score. */
-    static int calcPslMappingScore(struct psl* srcPsl,
-                                   struct psl* mappedPsl);
+    static int calcPslMappingScore(const struct psl* srcPsl,
+                                   const struct psl* mappedPsl);
 };
 
 
@@ -67,9 +67,7 @@ class TransMap {
              bool swapMap);
 
     /* destructor */
-    ~TransMap() {
-        // just memory leak and let exit() clean up
-    }
+    ~TransMap();
 
     /* get the size of the a mapping query sequence */
     int getQuerySeqSize(const string& qName) const {

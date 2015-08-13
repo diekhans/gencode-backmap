@@ -51,6 +51,10 @@ struct psl* FeatureTransMap::featuresToPsl(const string& qName,
     }
     
     int tSize = fTransMap->getQuerySeqSize(features[0]->fSeqid); // target is mapping query
+    if (tEnd > tSize) {
+        throw invalid_argument("feature " + qName + " end " + toString(tEnd) + " great than " + features[0]->fSeqid
+                               + " mapping alignment query size " + toString(tSize) + ", does the mapping alignment need swapped?");
+    }
     char strand[3] = {'+', features[0]->fStrand[0], '\0'};
 
     struct psl* psl = pslNew(toCharStr(qName), qSize, 0, qSize,

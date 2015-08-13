@@ -150,3 +150,8 @@ GxfFeatureTree::GxfFeatureTree(GxfParser *gxfParser,
     fGene(NULL) {
     fGene = loadGene(gxfParser, geneFeature);
 }
+
+/* Destructor */
+GxfFeatureTree::~GxfFeatureTree() {
+    delete fGene;
+}

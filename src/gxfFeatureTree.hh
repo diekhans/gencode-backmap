@@ -67,6 +67,9 @@ class GxfFeatureTree {
     /* constructor */
     GxfFeatureTree(GxfParser *gxfParser,
                    const GxfFeature* geneFeature);
+
+    /* Destructor */
+    ~GxfFeatureTree();
     
     /* depth-first output */
     void write(ostream& fh) const {
