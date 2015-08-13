@@ -5,7 +5,7 @@ Test data
   Subset of chains needed to test mappings.  This was generated with:
 
      gff3ToGenePred data/gencode.v22.annotation.gff3 test.gp
-     overlapSelect  test.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz test.chains
+     overlapSelect -inFmt=chainq test.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz test.chains
 
   Then editing to replace chrM with a one-to-one chain.  This is needed because hg19 including a different
   chrM than was in GRGh37 lite and used by GENCODE.
