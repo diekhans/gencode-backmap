@@ -65,7 +65,7 @@ class AttrVal {
     const string fVal;
     const bool fQuoted;
 
-    AttrVal(const string& name, const string& val, bool quoted):
+    AttrVal(const string& name, const string& val, bool quoted=false):
         fName(name), fVal(val), fQuoted(quoted) {
         if (stringEmpty(fName)) {
             throw invalid_argument("empty attribute name");
@@ -218,7 +218,7 @@ const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
 const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
                                     const string& seqid, const string& source, const string& type,
                                     int start, int end, const string& score, const string& strand,
-                                    const string& phase, const AttrVals& attrs, const AttrVals* extraAttrs=NULL);
+                                    const string& phase, const AttrVals& attrs, const AttrVal* extraAttr=NULL);
 
 /* vector of feature objects */
 class GxfFeatureVector: public vector<const GxfFeature*> {

@@ -45,7 +45,7 @@ GxfFeatureNode* GxfFeatureTree::findGff3Parent(GxfFeatureNode* geneTreeLeaf,
 GxfFeatureNode* GxfFeatureTree::loadGff3GeneRecord(const GxfFeature* gxfFeature,
                                                    GxfFeatureNode* geneTreeLeaf) const {
     GxfFeatureNode* parent = findGff3Parent(geneTreeLeaf, gxfFeature);
-    GxfFeatureNode* child = new GxfFeatureNode(gxfFeature);
+    GxfFeatureNode* child = new GxfFeatureNode(gxfFeature, REMAP_STATUS_NONE);
     parent->addChild(child);
     return child;
 }
@@ -89,7 +89,7 @@ GxfFeatureNode* GxfFeatureTree::findGtfParent(GxfFeatureNode* geneTreeLeaf,
 GxfFeatureNode* GxfFeatureTree::loadGtfGeneRecord(const GxfFeature* gxfFeature,
                                                   GxfFeatureNode* geneTreeLeaf) const {
     GxfFeatureNode* parent = findGtfParent(geneTreeLeaf, gxfFeature);
-    GxfFeatureNode* child = new GxfFeatureNode(gxfFeature);
+    GxfFeatureNode* child = new GxfFeatureNode(gxfFeature, REMAP_STATUS_NONE);
     parent->addChild(child);
     return child;
 }
@@ -131,7 +131,7 @@ GxfFeatureNode* GxfFeatureTree::loadGene(GxfParser *gxfParser,
                                          const GxfFeature* geneFeature) {
     assert(geneFeature->fType == GxfFeature::GENE);
 
-    GxfFeatureNode* geneTreeRoot = new GxfFeatureNode(geneFeature);
+    GxfFeatureNode* geneTreeRoot = new GxfFeatureNode(geneFeature, REMAP_STATUS_NONE);
     GxfFeatureNode* geneTreeLeaf = geneTreeRoot;  // were we are currently working
     GxfRecordVector queuedRecords;
     const GxfRecord* gxfRecord = NULL;
@@ -154,4 +154,39 @@ GxfFeatureTree::GxfFeatureTree(GxfParser *gxfParser,
 /* Destructor */
 GxfFeatureTree::~GxfFeatureTree() {
     delete fGene;
+}
+
+/* Attribute name used for remap status */
+const string REMAP_ATTR_NAME = "remap_status";
+
+/* convert a remap status to a AttrVal  */
+const AttrVal& remapStatusToAttrVal(RemapStatus remapStatus) {
+    switch (remapStatus) {
+    case REMAP_STATUS_NONE: {
+        static const AttrVal status(REMAP_ATTR_NAME, "remap_status_none");
+        return status;
+    }
+    case REMAP_STATUS_FULL_CONTIG: {
+        static const AttrVal status(REMAP_ATTR_NAME, "remap_status_full_contig");
+        return status;
+    }
+    case REMAP_STATUS_FULL_FRAGMENT: {
+        static const AttrVal status(REMAP_ATTR_NAME, "remap_status_full_fragment");
+        return status;
+    }
+    case REMAP_STATUS_PARTIAL_CONTIG: {
+        static const AttrVal status(REMAP_ATTR_NAME, "remap_status_partial_contig");
+        return status;
+    }
+    case REMAP_STATUS_PARTIAL_FRAGMENT: {
+        static const AttrVal status(REMAP_ATTR_NAME, "remap_status_partial_fragment");
+        return status;
+    }
+    case REMAP_STATUS_DELETED: {
+        static const AttrVal status(REMAP_ATTR_NAME, "remap_status_deleted");
+        return status;
+    }
+    default:
+        throw invalid_argument("BUG: invalid remap status");
+    }
 }

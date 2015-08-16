@@ -14,7 +14,6 @@ PROG = ${BINDIR}/gencode-backmap
 ifeq (${SYS},Darwin)
 CXX = g++-mp-4.9
 CXXFLAGS = -std=c++11 -Wall -Werror -Wno-sign-compare
-#  -gdwarf-4
 CXXDEBUG = -g -O0 -fno-default-inline -fno-inline
 else
 CXX = /opt/rh/devtoolset-2/root/usr/bin/g++

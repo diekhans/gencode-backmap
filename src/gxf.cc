@@ -56,7 +56,6 @@ class Gff3Feature: public GxfFeature {
         string value = attrStr.substr(i+1);
         return new AttrVal(name, stripQuotes(value), isQuoted(value));
     }
-
     
     /* parse: ID=ENSG00000223972.5;gene_id=ENSG00000223972.5 */
     static AttrVals parseAttrs(const string& attrsStr) {
@@ -68,30 +67,6 @@ class Gff3Feature: public GxfFeature {
         }
         return attrVals;
     }
-    static void addExtraAttr(AttrVals& attrVals, const AttrVal* extraAttr) {
-        int i = attrVals.findIdx(extraAttr->fName);
-        if (i < 0) {
-            attrVals.push_back(new AttrVal(extraAttr->fName, extraAttr->fVal, extraAttr->fQuoted));
-        } else {
-            attrVals[i] = new AttrVal(attrVals[i]->fName, attrVals[i]->fVal+","+extraAttr->fVal, attrVals[i]->fQuoted);
-        }
-    }
-    static void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) {
-        for (size_t i = 0; i < extraAttrs->size(); i++) {
-            addExtraAttr(attrVals, (*extraAttrs)[i]);
-        }
-    }
-    /* merge attributes with extra attributes, if supplied */
-    static AttrVals mergeAttrs(const AttrVals& attrVals, const AttrVals* extraAttrs=NULL) {
-        if (extraAttrs != NULL) {
-            AttrVals attrValsCopy(attrVals);
-            addExtraAttrs(attrValsCopy, extraAttrs);
-            return attrValsCopy;
-        } else {
-            return attrVals;
-        }
-    }
-    
     /* format an attribute */
     string formatAttr(const AttrVal* attrVal) const {
         // n.b. this is not general, doesn't handle embedded quotes
@@ -163,24 +138,6 @@ class GtfFeature: public GxfFeature {
         return attrVals;
     }
 
-    static void addExtraAttrs(AttrVals& attrVals, const AttrVals* extraAttrs) {
-        // GTF is easy, since just duplicate attribute names
-        for (size_t i = 0; i < extraAttrs->size(); i++) {
-            attrVals.push_back((*extraAttrs)[i]);
-        }
-    }
-    
-    /* merge attributes with extra attributes, if supplied */
-    static AttrVals mergeAttrs(const AttrVals& attrVals, const AttrVals* extraAttrs=NULL) {
-        if (extraAttrs != NULL) {
-            AttrVals attrValsCopy(attrVals);
-            addExtraAttrs(attrValsCopy, extraAttrs);
-            return attrValsCopy;
-        } else {
-            return attrVals;
-        }
-    }
-    
     /* format an attribute */
     string formatAttr(const AttrVal* attrVal) const {
         // n.b. this is not general, doesn't handle embedded quotes
@@ -237,11 +194,16 @@ const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
 const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
                                     const string& seqid, const string& source, const string& type,
                                     int start, int end, const string& score, const string& strand, const string& phase,
-                                    const AttrVals& attrs, const AttrVals* extraAttrs) {
+                                    const AttrVals& attrs, const AttrVal* extraAttr) {
+    AttrVals useAttrs(attrs);
+    if (extraAttr != NULL) {
+        useAttrs.push_back(new AttrVal(*extraAttr));
+    }
+    
     if (gxfFormat == GFF3_FORMAT) {
-        return new Gff3Feature(seqid, source, type, start, end, score, strand, phase, Gff3Feature::mergeAttrs(attrs, extraAttrs));
+        return new Gff3Feature(seqid, source, type, start, end, score, strand, phase, useAttrs);
     } else {
-        return new GtfFeature(seqid, source, type, start, end, score, strand, phase, GtfFeature::mergeAttrs(attrs, extraAttrs));
+        return new GtfFeature(seqid, source, type, start, end, score, strand, phase, useAttrs);
     }
 }
 

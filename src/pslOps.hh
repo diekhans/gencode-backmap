@@ -91,7 +91,9 @@ class PslCursor {
     PslCursor(struct psl* psl, int iBlk=0, int off=0):
         fPsl(psl), fIBlk(iBlk), fOff(off) {
     }
-
+    PslCursor(const PslCursor& src):
+        fPsl(src.fPsl), fIBlk(src.fIBlk), fOff(src.fOff) {
+    }
     struct psl* getPsl() const {
         return fPsl;
     }
