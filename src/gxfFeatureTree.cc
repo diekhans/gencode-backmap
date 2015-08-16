@@ -186,6 +186,10 @@ const AttrVal& remapStatusToAttrVal(RemapStatus remapStatus) {
         static const AttrVal status(REMAP_ATTR_NAME, "remap_status_deleted");
         return status;
     }
+    case REMAP_STATUS_NO_SEQ_MAP: {
+        static const AttrVal status(REMAP_ATTR_NAME, "remap_status_no_seq_map");
+        return status;
+    }
     default:
         throw invalid_argument("BUG: invalid remap status");
     }

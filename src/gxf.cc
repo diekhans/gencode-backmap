@@ -91,8 +91,7 @@ class Gff3Feature: public GxfFeature {
         return strAttrs;
     }
     
-    /* constructor Add in extraAttrs if supplied.  Used when cloning an feature and
-     * added tags */
+    /* constructor. */
     Gff3Feature(const string& seqid, const string& source, const string& type, int
                 start, int end, const string& score, const string& strand, const
                 string& phase, const AttrVals& attrs):
@@ -194,16 +193,11 @@ const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
 const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
                                     const string& seqid, const string& source, const string& type,
                                     int start, int end, const string& score, const string& strand, const string& phase,
-                                    const AttrVals& attrs, const AttrVal* extraAttr) {
-    AttrVals useAttrs(attrs);
-    if (extraAttr != NULL) {
-        useAttrs.push_back(new AttrVal(*extraAttr));
-    }
-    
+                                    const AttrVals& attrs) {
     if (gxfFormat == GFF3_FORMAT) {
-        return new Gff3Feature(seqid, source, type, start, end, score, strand, phase, useAttrs);
+        return new Gff3Feature(seqid, source, type, start, end, score, strand, phase, attrs);
     } else {
-        return new GtfFeature(seqid, source, type, start, end, score, strand, phase, useAttrs);
+        return new GtfFeature(seqid, source, type, start, end, score, strand, phase, attrs);
     }
 }
 

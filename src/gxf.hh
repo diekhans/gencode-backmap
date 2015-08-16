@@ -81,7 +81,7 @@ class AttrVal {
     }
 };
 
-/* list of attributes */
+/* list of attributes, derived class of specific types are create for GFF3 and GTF */
 class AttrVals: public vector<const AttrVal*> {
     // n.b.  this keeps pointers rather than values due to reallocation if vector changes
     public:
@@ -132,6 +132,22 @@ class AttrVals: public vector<const AttrVal*> {
             throw invalid_argument("Attribute not found: " + name);
         }
         return attrVal;
+    }
+
+    /* add an attribute */
+    void add(const AttrVal& attrVal) {
+        push_back(new AttrVal(attrVal));
+    }
+
+    /* add or replace an attribute */
+    void update(const AttrVal& attrVal) {
+        int idx = findIdx(attrVal.fName);
+        if (idx < 0) {
+            add(attrVal);
+        } else {
+            delete (*this)[idx];
+            (*this)[idx] = new AttrVal(attrVal);
+        }
     }
 };
 
@@ -218,7 +234,7 @@ const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
 const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
                                     const string& seqid, const string& source, const string& type,
                                     int start, int end, const string& score, const string& strand,
-                                    const string& phase, const AttrVals& attrs, const AttrVal* extraAttr=NULL);
+                                    const string& phase, const AttrVals& attrs);
 
 /* vector of feature objects */
 class GxfFeatureVector: public vector<const GxfFeature*> {
