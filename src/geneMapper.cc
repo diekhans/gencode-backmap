@@ -18,20 +18,21 @@ class TranscriptMapper {
     const string fQName;
     PslMapping *fPslMapping;
 
-    GxfFeatureVector fMappedExons;
-    GxfFeatureVector fUnmappedExons;
+    /* these are child features of the transcript that were mapped or not mapped. */
+    vector<const GxfFeatureNode*> fMappedFeatures;
+    vector<const GxfFeatureNode*> fUnmappedFeatures;
 
 
-    /* record mapped exon */
-    void recordMappedExon(const GxfFeature* feature) {
-        fMappedExons.push_back(feature);
-        cerr << "mapped\t" << feature->toString() << endl;
+    /* record mapped features */
+    void recordMappedFeature(const GxfFeature* feature,
+                             RemapStatus remapStatus) {
+        fMappedFeatures.push_back(new GxfFeatureNode(feature, remapStatus));
     }
     
-    /* record unmapped exon */
-    void recordUnmappedExon(const GxfFeature* feature) {
-        fUnmappedExons.push_back(feature);
-        cerr << "unmapped\t" << feature->toString() << endl;
+    /* record unmapped feature */
+    void recordUnmappedFeature(const GxfFeature* feature,
+                               RemapStatus remapStatus) {
+        fUnmappedFeatures.push_back(new GxfFeatureNode(feature, remapStatus));
     }
     
     /* get exon features */
@@ -211,12 +212,12 @@ class TranscriptMapper {
         if (srcPslCursor.getQPos() < mappedPslCursor.getQPos()) {
             // deleted region
             int length = calcInternalUnmappedLength(srcPslCursor, mappedPslCursor);
-            recordUnmappedExon(mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, length, remapStatus, partIdx));
+            recordUnmappedFeature(mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, length, remapStatus, partIdx), remapStatus);
             srcPslCursor = srcPslCursor.advance(length);
         } else {
             // mapped region
             int length = calcMappedLength(srcPslCursor, mappedPslCursor);
-            recordMappedExon(mkMappedFeature(exon, srcPslCursor, mappedPslCursor, length, remapStatus, partIdx));
+            recordMappedFeature(mkMappedFeature(exon, srcPslCursor, mappedPslCursor, length, remapStatus, partIdx), remapStatus);
             srcPslCursor = srcPslCursor.advance(length);
             mappedPslCursor = mappedPslCursor.advance(length);
         }
@@ -242,7 +243,7 @@ class TranscriptMapper {
         if (srcPslCursor.getQPos() < srcPslExonQEnd) {
             // unmapped at the end of feature
             int length = calcTerminalUnmappedLength(srcPslCursor, mappedPslCursor);
-            recordUnmappedExon(mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, length, remapStatus, partIdx++));
+            recordUnmappedFeature(mkUnmappedFeature(exon, srcPslCursor, mappedPslCursor, length, remapStatus, partIdx++), remapStatus);
             srcPslCursor = srcPslCursor.advance(length);
         }
         assert(srcPslCursor.getQPos() == srcPslExonQEnd);
@@ -266,7 +267,7 @@ class TranscriptMapper {
         RemapStatus remapStatus = (fPslMapping == NULL) ? REMAP_STATUS_NO_SEQ_MAP : REMAP_STATUS_DELETED;
 
         for (int iExon = 0; iExon < exons.size(); iExon++) {
-            recordUnmappedExon(mkUnmappedTranscriptFeature(exons[iExon], remapStatus));
+            recordUnmappedFeature(mkUnmappedTranscriptFeature(exons[iExon], remapStatus), remapStatus);
         }
     }
     
@@ -288,13 +289,17 @@ class TranscriptMapper {
     TranscriptMapper(const GxfFeatureNode* transcriptTree):
         fTranscriptTree(transcriptTree),
         fQName(transcriptTree->fFeature->getAttr("transcript_id")->fVal),
-        fPslMapping(NULL),
-        fMappedExons(true),
-        fUnmappedExons(true) {
+        fPslMapping(NULL) {
     }
 
     /* destructor */
     ~TranscriptMapper() {
+        for (int i = 0; i < fMappedFeatures.size(); i++) {
+            delete fMappedFeatures[i];
+        }
+        for (int i = 0; i < fUnmappedFeatures.size(); i++) {
+            delete fUnmappedFeatures[i];
+        }
         delete fPslMapping;
     }
     
@@ -309,6 +314,13 @@ class TranscriptMapper {
 
 /* process one transcript */
 void GeneMapper::processTranscript(const GxfFeatureNode* transcriptTree) const {
+    // FIXME: tmp
+    for (int i = 0; i < transcriptTree->fChildren.size(); i++) {
+        const GxfFeatureNode* child = transcriptTree->fChildren[i];
+        for (int ii = 0; ii < child->fChildren.size(); ii++) {
+            cerr << "third level: " << child->fChildren[ii]->fFeature->toString() << endl;
+        }
+    }
     TranscriptMapper transcriptMapper(transcriptTree);
     transcriptMapper.mapTranscriptFeatures(fFeatureTransMap);
 }
