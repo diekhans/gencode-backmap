@@ -3,81 +3,7 @@
  */
 #include "transMap.hh"
 #include "jkinclude.hh"
-#include <algorithm>
 #include "typeOps.hh"
-
-/* constructor, sort mapped PSLs */
-PslMapping::PslMapping(struct psl* srcPsl,
-                       PslVector& mappedPsls):
-    fSrcPsl(srcPsl),
-    fMappedPsls(mappedPsls),
-    fScore(-1) {
-    if (fMappedPsls.size() > 0) {
-        sortMappedPsls();
-        fScore = calcPslMappingScore(srcPsl, fMappedPsls[0]); // best score due to sort
-    }
-}
-
-/* free up psls */
-PslMapping::~PslMapping() {
-    pslFree(&fSrcPsl);
-    for (size_t i = 0; i < fMappedPsls.size(); i++) {
-        pslFree(&(fMappedPsls[i]));
-    }
-}
-
-/* calculate the number of aligned bases */
-int PslMapping::numPslAligned(const struct psl* psl) {
-    return (psl->match + psl->repMatch + psl->misMatch);
-}
-
-/* Compute a mapping score between a src and mapped psl.  A perfect mapping is
- * a zero score.  Extra inserts count against the score.
- */
-int PslMapping::calcPslMappingScore(const struct psl* srcPsl,
-                                    const struct psl* mappedPsl) {
-    return (numPslAligned(srcPsl) - numPslAligned(mappedPsl))
-        + abs(int(srcPsl->qNumInsert)-int(mappedPsl->qNumInsert))
-        + abs(int(srcPsl->tNumInsert)-int(mappedPsl->tNumInsert));
-}
-
-/* comparison functor based on lowest store. */
-class ScoreCmp {
-    public:
-    struct psl* fSrcPsl;
-    
-    ScoreCmp(struct psl* srcPsl):
-        fSrcPsl(srcPsl) {
-    }
-
-    int operator()(struct psl* mappedPsl1,
-                   struct psl* mappedPsl2) const {
-        return -(PslMapping::calcPslMappingScore(fSrcPsl, mappedPsl1)
-                 - PslMapping::calcPslMappingScore(fSrcPsl, mappedPsl2));
-    }
-};
-
-
-/* compare two psl to see which is better mapped. */
-static struct psl* gSrcPsl = NULL;
-static int mapScoreCmp(const void *va, const void *vb) {
-    const struct psl *mappedPsl1 = *static_cast<const struct psl *const*>(va);
-    const struct psl *mappedPsl2 = *static_cast<const struct psl *const*>(vb);
-    return -(PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl1)
-             - PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl2));
-}
-
-/* sort with best (lowest score) first */
-void PslMapping::sortMappedPsls() {
-    // FIXME: with this seemingly correct sort, the C++ library goes of the end of the vector and SEGVs
-    // this happens on g++ 4.8.2 on Linux and 4.9 on OS/X (Mac ports).  It doesn't happen with
-    // clang on OS/X.
-    //sort(fMappedPsls.begin(), fMappedPsls.end(), ScoreCmp(fSrcPsl));
-    gSrcPsl = fSrcPsl;
-    qsort(static_cast<struct psl**>(&(fMappedPsls[0])), fMappedPsls.size(), sizeof(struct psl*), mapScoreCmp);
-    gSrcPsl = NULL;
-}
-
 
 /* slCat that reverses parameter order, as the first list in rangeTreeAddVal
  * mergeVals function tends to be larger in degenerate cases of a huge number
@@ -139,10 +65,8 @@ void TransMap::loadMapChains(const string& chainFile,
 }
 
 /* constructor, loading chains */
-TransMap::TransMap(const string& chainFile,
-                         bool swapMap):
+TransMap::TransMap():
     fMapAlns(genomeRangeTreeNew()) {
-    loadMapChains(chainFile, swapMap);
 }
 
 /* destructor */
@@ -172,7 +96,7 @@ struct psl* TransMap::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {
 
 /* Map a single input PSL and return a list of resulting mappings.
  * Keep PSL in the same order, even if it creates a `-' on the target. */
-PslMapping* TransMap::mapPsl(struct psl* inPsl) const {
+PslVector TransMap::mapPsl(struct psl* inPsl) const {
     PslVector mappedPsls;
     struct range *overMapAlnNodes = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);
     for (struct range *overMapAlnNode = overMapAlnNodes; overMapAlnNode != NULL; overMapAlnNode = overMapAlnNode->next) {
@@ -183,6 +107,27 @@ PslMapping* TransMap::mapPsl(struct psl* inPsl) const {
             }
         }
     }
-    return new PslMapping(inPsl, mappedPsls);
+    return mappedPsls;
 }
 
+/* factory from a chain file */
+TransMap* TransMap::chainFileFactory(const string& chainFile,
+                                     bool swapMap) {
+    TransMap* transMap = new TransMap();
+    transMap->loadMapChains(chainFile, swapMap);
+    return transMap;
+}
+
+/* factory from a list of psls */
+TransMap* TransMap::pslFactory(struct psl* psls,
+                               bool swapMap) {
+    TransMap* transMap = new TransMap();
+    for (struct psl* psl = psls; psl != NULL; psl = psl->next) {
+        struct psl*pslCp = pslClone(psl);
+        if (swapMap)
+            pslSwap(pslCp, FALSE);
+        transMap->mapAlnsAdd(pslCp);
+    }
+    return transMap;
+}
+    

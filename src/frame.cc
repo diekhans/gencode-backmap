@@ -1,4 +1,4 @@
-#include "Frame.hh"
+#include "frame.hh"
 #include <stdexcept>
 #include "typeOps.hh"
 

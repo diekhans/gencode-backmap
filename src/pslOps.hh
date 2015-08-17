@@ -5,7 +5,21 @@
 #define pslOps_hh
 #include "jkinclude.hh"
 #include "typeOps.hh"
+#include <vector>
 
+/*
+ * Vector of psls; doesn't own PSLs.
+ */
+class PslVector: public vector<struct psl*> {
+    public:
+    /* free all PSLs in the vector */
+    void free() {
+        for (int i = 0; i < size(); i++) {
+            pslFree(&((*this)[i]));
+        }
+        clear();
+    }
+};
 
 /*
  * convert a PSL to a string for debuging purposes.
@@ -16,16 +30,6 @@ string pslToString(struct psl* psl);
  * Convert a PSL block to a string
  */
 string pslBlockToString(struct psl* psl, int blkIdx);
-
-/* return query start for the given block */
-static inline unsigned pslQStart(struct psl *psl, int blkIdx) {
-    return psl->qStarts[blkIdx];
-}
-
-/* return target start for the given block */
-static inline unsigned pslTStart(struct psl *psl, int blkIdx) {
-    return psl->tStarts[blkIdx];
-}
 
 /* return strand as stored in psl, converting implicit `\0' to `+' */
 static inline char normStrand(char strand) {

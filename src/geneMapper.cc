@@ -3,9 +3,10 @@
 #include "jkinclude.hh"
 #include "gxf.hh"
 #include "pslOps.hh"
+#include "pslMapping.hh"
 #include "featureTransMap.hh"
 #include "typeOps.hh"
-#include "Frame.hh"
+#include "frame.hh"
 #include <fstream>
 #include <iostream>
 
@@ -272,18 +273,16 @@ class TranscriptMapper {
     }
     
     /* map all exons of a transcript mapping failure */
-    bool mapTranscriptExons(const FeatureTransMap* featureTransMap) {
+    void mapTranscriptExons(const FeatureTransMap* featureTransMap) {
         GxfFeatureVector exons = getExons(fTranscriptTree);
         fPslMapping = featureTransMap->mapFeatures(fQName, exons);
         if ((fPslMapping == NULL) or (fPslMapping->fMappedPsls.size() == 0)) {
             processUnmappedTranscript(exons);
-            return false;
         } else {
             mapExons(exons);
-            return true;
         }
     }
-
+    
     public:
     /* constructor */
     TranscriptMapper(const GxfFeatureNode* transcriptTree):
@@ -304,23 +303,15 @@ class TranscriptMapper {
     }
     
     /*
-     * map and output one transcripts annotations.
+     * map one transcript's annotations.
      */
-    const GxfFeatureNode* mapTranscriptFeatures(const FeatureTransMap* featureTransMap) {
+    void mapTranscriptFeatures(const FeatureTransMap* featureTransMap) {
         mapTranscriptExons(featureTransMap);
-        return NULL; // FIXME:
     }
 };
 
 /* process one transcript */
 void GeneMapper::processTranscript(const GxfFeatureNode* transcriptTree) const {
-    // FIXME: tmp
-    for (int i = 0; i < transcriptTree->fChildren.size(); i++) {
-        const GxfFeatureNode* child = transcriptTree->fChildren[i];
-        for (int ii = 0; ii < child->fChildren.size(); ii++) {
-            cerr << "third level: " << child->fChildren[ii]->fFeature->toString() << endl;
-        }
-    }
     TranscriptMapper transcriptMapper(transcriptTree);
     transcriptMapper.mapTranscriptFeatures(fFeatureTransMap);
 }

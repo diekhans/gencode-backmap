@@ -17,12 +17,13 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& mappingChains,
                            bool swapMap,
                            const string& outGxfFile) {
-    TransMap transMap(mappingChains, swapMap);
-    FeatureTransMap featureTransMap(&transMap);
+    TransMap* transMap = TransMap::chainFileFactory(mappingChains, swapMap);
+    FeatureTransMap featureTransMap(transMap);
     GxfParser gxfParser(inGxfFile, gxfFormat);
     ofstream outGxf(outGxfFile);
     GeneMapper geneMapper(&featureTransMap);
     geneMapper.mapGxf(&gxfParser, outGxf);
+    delete transMap;
 }
 
 /* Entry point.  Parse arguments. */
