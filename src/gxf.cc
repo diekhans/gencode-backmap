@@ -98,6 +98,11 @@ class Gff3Feature: public GxfFeature {
         GxfFeature(seqid, source, type, start, end, score, strand, phase, attrs) {
     }
 
+    /* clone the feature */
+    virtual GxfFeature* clone() const {
+        return new Gff3Feature(fSeqid, fSource, fType, fStart, fEnd, fScore, fStrand, fPhase, fAttrs);
+    }
+    
     /* return record as a string */
     virtual string toString() const {
         return baseColumnsAsString() + formatAttrs();
@@ -168,6 +173,11 @@ class GtfFeature: public GxfFeature {
         GxfFeature(seqid, source, type, start, end, score, strand, phase, attrs) {
     }
 
+    /* clone the feature */
+    virtual GxfFeature* clone() const {
+        return new GtfFeature(fSeqid, fSource, fType, fStart, fEnd, fScore, fStrand, fPhase, fAttrs);
+    }
+    
     /* return record as a string */
     virtual string toString() const {
         return baseColumnsAsString() + formatAttrs();

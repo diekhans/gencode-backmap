@@ -35,11 +35,12 @@ class FeatureTransMap {
         return transMaps;
     }
     public:
-    /* Constructor with single transmap */
+    /* Constructor with single transmap.  Doesn't own TransMap objects */
     FeatureTransMap(const TransMap* transMap):
         fTransMaps(mkVector(transMap)) {
     }
-    /* Constructor with mulitple transmap object, in order of projection */
+    /* Constructor with mulitple transmap object, in order of projection
+     * Doesn't own TransMap objects */
     FeatureTransMap(const TransMapVector transMaps):
         fTransMaps(transMaps) {
     }

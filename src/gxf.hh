@@ -192,6 +192,9 @@ public:
         fPhase(phase), fAttrs(attrs) {
     }
 
+    /* clone the feature */
+    virtual GxfFeature* clone() const = 0;
+    
     /* get the format */
     virtual GxfFormat getFormat() const = 0;
     
@@ -236,24 +239,15 @@ const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
                                     int start, int end, const string& score, const string& strand,
                                     const string& phase, const AttrVals& attrs);
 
-/* vector of feature objects */
+/* vector of feature objects, doesn't own features */
 class GxfFeatureVector: public vector<const GxfFeature*> {
-    private:
-    bool fOwnsFeatures; // show delete features on destruct?
-
     public:
-    /* constructor */
-    GxfFeatureVector(bool ownsFeatures=false):
-        fOwnsFeatures(ownsFeatures) {
-    }
-
-    /* destructor */
-    ~GxfFeatureVector() {
-        if (fOwnsFeatures) {
-            for (size_t i = 0; i < size(); i++) {
-                delete (*this)[i];
-            }
+    /* free all features in the vector */
+    void free() {
+        for (int i = 0; i < size(); i++) {
+            delete (*this)[i];
         }
+        clear();
     }
 };
 

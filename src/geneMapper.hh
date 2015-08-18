@@ -5,7 +5,7 @@
 #define geneMapper_hh
 #include "gxf.hh"
 #include "gxfFeatureTree.hh"
-class FeatureTransMap;
+class TransMap;
 class PslMapping;
 struct psl;
 class PslCursor;
@@ -13,7 +13,7 @@ class PslCursor;
 /* class that maps a gene to the new assemble */
 class GeneMapper {
     private:
-    const FeatureTransMap* fFeatureTransMap;  // object to performance mappings
+    const TransMap* fGenomeTransMap;
     
     void processGene(GxfParser *gxfParser,
                      const GxfFeature* geneFeature,
@@ -22,8 +22,8 @@ class GeneMapper {
 
     public:
     /* Constructor */
-    GeneMapper(const FeatureTransMap* featureTransMap):
-        fFeatureTransMap(featureTransMap) {
+    GeneMapper(const TransMap* genomeTransMap):
+        fGenomeTransMap(genomeTransMap) {
     }
 
     /* Map a GFF3/GTF */

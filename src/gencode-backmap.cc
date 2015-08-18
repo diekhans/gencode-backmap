@@ -8,7 +8,6 @@
 #include <fstream>
 #include <iostream>
 #include "transMap.hh"
-#include "featureTransMap.hh"
 #include "geneMapper.hh"
 
 /* map to different assembly */
@@ -17,13 +16,12 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& mappingChains,
                            bool swapMap,
                            const string& outGxfFile) {
-    TransMap* transMap = TransMap::chainFileFactory(mappingChains, swapMap);
-    FeatureTransMap featureTransMap(transMap);
+    TransMap* genomeTransMap = TransMap::chainFileFactory(mappingChains, swapMap);
     GxfParser gxfParser(inGxfFile, gxfFormat);
     ofstream outGxf(outGxfFile);
-    GeneMapper geneMapper(&featureTransMap);
+    GeneMapper geneMapper(genomeTransMap);
     geneMapper.mapGxf(&gxfParser, outGxf);
-    delete transMap;
+    delete genomeTransMap;
 }
 
 /* Entry point.  Parse arguments. */
