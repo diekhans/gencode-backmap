@@ -23,23 +23,22 @@ class TranscriptMapper {
     FeatureMappingSet* fExonMappings;
     
     /* get exon features */
-    GxfFeatureVector getExons(const GxfFeatureNode* transcriptTree) const {
+    GxfFeatureVector getExons() const {
         GxfFeatureVector exons;
-        for (size_t i = 0; i < transcriptTree->fChildren.size(); i++) {
-            if (transcriptTree->fChildren[i]->fFeature->fType == GxfFeature::EXON) {
-                exons.push_back(transcriptTree->fChildren[i]->fFeature);
-            }
-        }
+        fTranscriptTree->getMatching(exons, [](const GxfFeature* f) {return f->fType == GxfFeature::EXON;});
         return exons;
     }
-    /* map all exons of a transcript mapping failure */
+
+    /* map all exons of a transcript, store in fExonMappings */
     bool mapExons() {
-        GxfFeatureVector exons = getExons(fTranscriptTree);
+        GxfFeatureVector exons = getExons();
         FeatureTransMap exonTransMap(fGenomeTransMap);
         PslMapping* pslMapping = exonTransMap.mapFeatures(fQName, exons);
         fExonMappings = FeatureMapper::mapFeatures(exons, pslMapping, fSrcSeqInMapping);
         return fSrcSeqInMapping && pslMapping->haveMappings();
     }
+
+    /* process all unmapped features besides exons */
     
     public:
     /* constructor */

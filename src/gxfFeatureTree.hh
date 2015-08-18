@@ -4,6 +4,7 @@
 #ifndef gxfFeatureTree_hh
 #define gxfFeatureTree_hh
 #include <assert.h>
+#include <functional>
 #include "gxf.hh"
 
 /**
@@ -27,6 +28,18 @@ class GxfFeatureNode {
         }
     }
 
+    /* recursively get a list features matching the specified filter */
+    void getMatching(GxfFeatureVector& hits,
+                     function<bool(const GxfFeature*)>(filter)) const {
+        if (filter(fFeature)) {
+            hits.push_back(fFeature);
+        }
+        for (int i = 0; i < fChildren.size(); i++) {
+            fChildren[i]->getMatching(hits, filter);
+        }
+    }
+    
+    
     /* add a child node, linking up parents */
     void addChild(GxfFeatureNode* node) {
         assert(node->fParent == NULL);

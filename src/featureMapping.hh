@@ -1,11 +1,10 @@
 /*
- * Mapping of features, regardless of type.
+ * Mapping of features.
  */
 #ifndef featureMapping_hh
 #define featureMapping_hh
 #include "gxf.hh"
 #include "remapStatus.hh"
-
 class PslMapping;
 
 /**
@@ -20,7 +19,7 @@ class FeatureMapping {
     const bool fSrcSeqInMapping;         // is the source sequence in the mapping?
     GxfFeatureVector fMappedFeatures;    // features that were mapped
     GxfFeatureVector fUnmappedFeatures;  // features that were not mapped
-    
+
     public:
     /* constructor, has ownership of mapped/unmapped features */
     FeatureMapping(const GxfFeature* srcFeature,
@@ -46,30 +45,10 @@ class FeatureMapping {
     }
 
     /* compute the remap status of the feature */
-    RemapStatus calcRemapStatus() const {
-        if (not fSrcSeqInMapping) {
-            // couldn't even try mapping, chrom not in map
-            return REMAP_STATUS_NO_SEQ_MAP;
-        } else if (fMappedFeatures.size() == 0) {
-            assert(fUnmappedFeatures.size() > 0);
-            // nothing mapped
-            return REMAP_STATUS_DELETED;
-        } else if (fUnmappedFeatures.size() == 0) {
-            // full mapped
-            if (fMappedFeatures.size() == 1) {
-                return REMAP_STATUS_FULL_CONTIG;
-            } else {
-                return REMAP_STATUS_FULL_FRAGMENT;
-            }
-        } else {
-            // partially mapped
-            if (fMappedFeatures.size() == 1) {
-                return REMAP_STATUS_PARTIAL_CONTIG;
-            } else {
-                return REMAP_STATUS_PARTIAL_FRAGMENT;
-            }
-        }
-    }
+    RemapStatus calcRemapStatus() const;
+
+    /* print for debugging */
+    void dump(ostream& fh) const;
 };
 
 /* Features that were mapped as a set from a single alignment.
@@ -102,6 +81,9 @@ class FeatureMappingSet: public vector<FeatureMapping*> {
         push_back(new FeatureMapping(srcFeature, fSrcSeqInMapping));
         return (*this)[size()-1];
     }
+
+    /* print for debugging */
+    void dump(ostream& fh) const;
 };
 
 

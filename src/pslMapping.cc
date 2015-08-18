@@ -2,6 +2,7 @@
  * Container for a source and resulting mapped PSLs.
  */
 #include "pslMapping.hh"
+#include <algorithm>
 
 /* constructor, sort mapped PSLs */
 PslMapping::PslMapping(struct psl* srcPsl,
@@ -55,6 +56,20 @@ class ScoreCmp {
 };
 
 
+#if 0
+// FIXME: with this seemingly correct sort, the C++ library goes of the end of the vector and SEGVs
+// this happens on g++ 4.8.2 on Linux and 4.9 on OS/X (Mac ports).  It doesn't happen with
+// clang on OS/X.
+/* sort with best (lowest score) first */
+void PslMapping::sortMappedPsls() {
+    //sort(fMappedPsls.begin(), fMappedPsls.end(), ScoreCmp(fSrcPsl));
+    std::sort(fMappedPsls.begin(), fMappedPsls.end(),
+              [this](const struct psl* a, const struct psl* b) -> bool {
+                  return -(PslMapping::calcPslMappingScore(this->fSrcPsl, a)
+                           - PslMapping::calcPslMappingScore(this->fSrcPsl, b));
+              });
+}
+#else
 /* compare two psl to see which is better mapped. */
 static struct psl* gSrcPsl = NULL;
 static int mapScoreCmp(const void *va, const void *vb) {
@@ -66,17 +81,11 @@ static int mapScoreCmp(const void *va, const void *vb) {
 
 /* sort with best (lowest score) first */
 void PslMapping::sortMappedPsls() {
-    // FIXME: with this seemingly correct sort, the C++ library goes of the end of the vector and SEGVs
-    // this happens on g++ 4.8.2 on Linux and 4.9 on OS/X (Mac ports).  It doesn't happen with
-    // clang on OS/X.
-#if 0
-    sort(fMappedPsls.begin(), fMappedPsls.end(), ScoreCmp(fSrcPsl));
-#else
     gSrcPsl = fSrcPsl;
     qsort(static_cast<struct psl**>(&(fMappedPsls[0])), fMappedPsls.size(), sizeof(struct psl*), mapScoreCmp);
     gSrcPsl = NULL;
-#endif
 }
+#endif
 
 
 

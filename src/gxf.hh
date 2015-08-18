@@ -13,6 +13,7 @@
 #include "typeOps.hh"
 #include <queue>
 #include <stdexcept>
+#include <algorithm>
 using namespace std;
 
 /* it seems so stupid to need to keep writing one-off GFF/GTF parsers */
@@ -248,6 +249,18 @@ class GxfFeatureVector: public vector<const GxfFeature*> {
             delete (*this)[i];
         }
         clear();
+    }
+
+    /* sort the vector */
+    void sort() {
+        std::sort(begin(), end(),
+                  [](const GxfFeature* a, const GxfFeature* b) -> bool {
+                      if (a->fStrand == "+") {
+                          return a->fStart > b->fStart;
+                      } else {
+                          return a->fStart < b->fStart;
+                      }   
+                  });
     }
 };
 
