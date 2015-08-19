@@ -71,8 +71,10 @@ class TranscriptMapper {
     
     /* recursive map features below transcript */
     void mapFeatures(GxfFeatureNode* featureNode) {
+        PslMapping* pslMapping = fViaExonsTransMap->mapFeature("someFeature", featureNode->fFeature);
+        FeatureMapper::map(featureNode, pslMapping, fSrcSeqInMapping);
         for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
-            processUnmappedFeatures(featureNode->fChildren[iChild]);
+           mapFeatures(featureNode->fChildren[iChild]);
         }
     }
     
@@ -84,7 +86,7 @@ class TranscriptMapper {
             mapFeatures(transcriptTree->fChildren[iChild]);
         }
     }
-    
+
     /* recursive process features that are unmapped */
     void processUnmappedFeatures(GxfFeatureNode* featureNode) {
         FeatureMapper::map(featureNode, NULL, fSrcSeqInMapping);

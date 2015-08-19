@@ -142,3 +142,10 @@ PslMapping* FeatureTransMap::mapFeatures(const string& qName,
 }
 
 
+/* map a single feature */
+PslMapping* FeatureTransMap::mapFeature(const string& qName,
+                                        const GxfFeature* feature) const {
+    GxfFeatureVector features;
+    features.push_back(feature);
+    return mapFeatures(qName, features);
+}

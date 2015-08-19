@@ -251,6 +251,11 @@ class GxfFeatureVector: public vector<const GxfFeature*> {
         clear();
     }
 
+    /* do we contain a particular feature object? */
+    bool contains(const GxfFeature* feature) const {
+        return std::find(begin(), end(), feature) != end();
+    }
+    
     /* sort the vector */
     void sort() {
         std::sort(begin(), end(),

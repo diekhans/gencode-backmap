@@ -19,7 +19,11 @@ class GxfFeatureNode {
     RemapStatus fRemapStatus;
     GxfFeatureVector fMappedFeatures;
     GxfFeatureVector fUnmappedFeatures;
-    
+
+    private:
+    GxfFeatureVector makeCombinedMappedUnmapped() const;
+
+    public:
     GxfFeatureNode(const GxfFeature* feature):
         fFeature(feature),
         fParent(NULL),
@@ -77,7 +81,10 @@ class GxfFeatureNode {
         fRemapStatus = calcRemapStatus(srcSeqInMapping);
     }
     
-    /* print for debugging */
+    /* print node for debugging */
+    void dumpNode(ostream& fh) const;
+
+    /* recursively print for debugging */
     void dump(ostream& fh) const;
 
     /* depth-first output */

@@ -57,6 +57,11 @@ class FeatureTransMap {
      * negative target strand. */
     PslMapping* mapFeatures(const string& qName,
                             const GxfFeatureVector& features) const;
+
+    /* map a single feature */
+    PslMapping* mapFeature(const string& qName,
+                           const GxfFeature* feature) const;
+
 };
 
 
