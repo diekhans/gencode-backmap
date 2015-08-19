@@ -64,7 +64,7 @@ void TransMap::loadMapChains(const string& chainFile,
     lineFileClose(&chLf);
 }
 
-/* constructor, loading chains */
+/* constructor */
 TransMap::TransMap():
     fMapAlns(genomeRangeTreeNew()) {
 }
@@ -111,19 +111,19 @@ PslVector TransMap::mapPsl(struct psl* inPsl) const {
 }
 
 /* factory from a chain file */
-TransMap* TransMap::chainFileFactory(const string& chainFile,
-                                     bool swapMap) {
+TransMap* TransMap::factoryFromChainFile(const string& chainFile,
+                                         bool swapMap) {
     TransMap* transMap = new TransMap();
     transMap->loadMapChains(chainFile, swapMap);
     return transMap;
 }
 
 /* factory from a list of psls */
-TransMap* TransMap::pslFactory(struct psl* psls,
-                               bool swapMap) {
+TransMap* TransMap::factoryFromPsls(struct psl* psls,
+                                    bool swapMap) {
     TransMap* transMap = new TransMap();
     for (struct psl* psl = psls; psl != NULL; psl = psl->next) {
-        struct psl*pslCp = pslClone(psl);
+        struct psl* pslCp = pslClone(psl);
         if (swapMap)
             pslSwap(pslCp, FALSE);
         transMap->mapAlnsAdd(pslCp);

@@ -30,16 +30,16 @@ class TransMap {
                     SizeMap& sizeMap);
     struct psl* mapPslPair(struct psl *inPsl, struct psl *mapPsl) const;
 
-    /* constructor, loading chains */
+    /* constructor */
     TransMap();
 
     public:
     /* factory from a chain file */
-    static TransMap* chainFileFactory(const string& chainFile,
+    static TransMap* factoryFromChainFile(const string& chainFile,
                                       bool swapMap);
     /* factory from a list of psls */
-    static TransMap* pslFactory(struct psl* psls,
-                                bool swapMap);
+    static TransMap* factoryFromPsls(struct psl* psls,
+                                     bool swapMap);
     
     /* destructor */
     ~TransMap();

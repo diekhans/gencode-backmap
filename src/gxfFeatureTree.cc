@@ -3,6 +3,7 @@
  */
 #include "gxfFeatureTree.hh"
 #include <ostream>
+#include <algorithm> 
 
 /* depth-first output */
 void GxfFeatureNode::write(ostream& fh) const {
@@ -81,6 +82,53 @@ GxfFeatureNode* GxfFeatureTree::findGtfParent(GxfFeatureNode* geneTreeLeaf,
     return parent;
 }
 
+/* compute the remap status of the feature. srcSeqInMapping
+ * indicates of the srcSequence qs in the genomic map */
+RemapStatus GxfFeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
+    if (not srcSeqInMapping) {
+        // couldn't even try mapping, chrom not in map
+        return REMAP_STATUS_NO_SEQ_MAP;
+    } else if (fMappedFeatures.size() == 0) {
+        assert(fUnmappedFeatures.size() > 0);
+        // nothing mapped
+        return REMAP_STATUS_DELETED;
+    } else if (fUnmappedFeatures.size() == 0) {
+        // full mapped
+        if (fMappedFeatures.size() == 1) {
+            return REMAP_STATUS_FULL_CONTIG;
+        } else {
+            return REMAP_STATUS_FULL_FRAGMENT;
+        }
+    } else {
+        // partially mapped
+        if (fMappedFeatures.size() == 1) {
+            return REMAP_STATUS_PARTIAL_CONTIG;
+        } else {
+            return REMAP_STATUS_PARTIAL_FRAGMENT;
+        }
+    }
+}
+
+/* print for debugging */
+void GxfFeatureNode::dump(ostream& fh) const {
+    const string status = remapStatusToStr(fRemapStatus);
+    // combine and sort into order
+    GxfFeatureVector both;
+    both.insert(both.end(), fMappedFeatures.begin(), fMappedFeatures.end());
+    both.insert(both.end(), fUnmappedFeatures.begin(), fUnmappedFeatures.end());
+    fh << "src" << "\t";
+    if (fFeature == NULL) {
+        fh << "NULL" << endl;
+    } else {
+        fh << fFeature->toString() << endl;
+    }
+    for (int i = 0; i < both.size(); i++) {
+        bool isMapped = std::find(fMappedFeatures.begin(), fMappedFeatures.end(), both[i]) != fMappedFeatures.end();
+        fh << (isMapped ? "mapped" : "unmapped") << "\t" << status
+               << "\t" << both[i]->toString() << endl;
+    }
+}
+
 /*
  * Process a GTF record for a gene, which uses knowledge of
  * the GENCODE structure to reproduce the hierarchy.
@@ -156,3 +204,7 @@ GxfFeatureTree::~GxfFeatureTree() {
     delete fGene;
 }
 
+/* print for debugging */
+void GxfFeatureTree::dump(ostream& fh) const {
+    fGene->dump(fh);
+}

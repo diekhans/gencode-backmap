@@ -16,7 +16,7 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& mappingChains,
                            bool swapMap,
                            const string& outGxfFile) {
-    TransMap* genomeTransMap = TransMap::chainFileFactory(mappingChains, swapMap);
+    TransMap* genomeTransMap = TransMap::factoryFromChainFile(mappingChains, swapMap);
     GxfParser gxfParser(inGxfFile, gxfFormat);
     ofstream outGxf(outGxfFile);
     GeneMapper geneMapper(genomeTransMap);

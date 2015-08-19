@@ -18,7 +18,7 @@ class GeneMapper {
     void processGene(GxfParser *gxfParser,
                      const GxfFeature* geneFeature,
                      ostream& outFh) const;
-    void processTranscript(const GxfFeatureNode* transcriptTree) const;
+    void processTranscript(GxfFeatureNode* transcriptTree) const;
 
     public:
     /* Constructor */

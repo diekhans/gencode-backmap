@@ -6,8 +6,27 @@
 #include "pslOps.hh"
 #include "pslMapping.hh"
 
+/**
+ * Check assumption of feature order being increasing on positive strand and
+ * decreasing on negative strand.
+ */
+bool FeaturesToPsl::checkFeatureOrder(const GxfFeatureVector& features) {
+    for (int iFeat = 1; iFeat < features.size(); iFeat++) {
+        if (features[0]->fStrand == "+") {
+            if (features[iFeat]->fStart <= features[iFeat-1]->fEnd) {
+                return false;
+            }
+        } else {
+            if (features[iFeat]->fEnd >= features[iFeat-1]->fStart) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 /** compute total size of features */
-int FeatureTransMap::sumFeatureSizes(const GxfFeatureVector& features) const {
+int FeaturesToPsl::sumFeatureSizes(const GxfFeatureVector& features) {
     int sz = 0;
     for (size_t i = 0; i < features.size(); i++) {
         sz += (features[i]->fEnd - features[i]->fStart)+1;
@@ -16,8 +35,8 @@ int FeatureTransMap::sumFeatureSizes(const GxfFeatureVector& features) const {
 }
 
 /* build blocks for for alignment. */
-void FeatureTransMap::makePslBlocks(struct psl* psl,
-                                    const GxfFeatureVector& features) const {
+void FeaturesToPsl::makePslBlocks(struct psl* psl,
+                                  const GxfFeatureVector& features) {
     assert(pslQStrand(psl) == '+');
     int qStart = 0;
     for (size_t iBlk = 0; iBlk < features.size(); iBlk++) {
@@ -36,9 +55,9 @@ void FeatureTransMap::makePslBlocks(struct psl* psl,
 }
 
 /* construct a PSL */
-struct psl* FeatureTransMap::makeFeaturesPsl(const string& qName,
-                                             int qSize, int tStart, int tEnd, int tSize,
-                                             const GxfFeatureVector& features) const {
+struct psl* FeaturesToPsl::makeFeaturesPsl(const string& qName,
+                                           int qSize, int tStart, int tEnd, int tSize,
+                                           const GxfFeatureVector& features) {
     char strand[3] = {'+', features[0]->fStrand[0], '\0'};
 
     struct psl* psl = pslNew(toCharStr(qName), qSize, 0, qSize,
@@ -54,18 +73,14 @@ struct psl* FeatureTransMap::makeFeaturesPsl(const string& qName,
 /* create a psl from a list of features. assumes features are sorter in
  * ascending order.  Return NULL if sequence in features is not in mapping
  * alignments at all. */
-struct psl* FeatureTransMap::featuresToPsl(const string& qName,
-                                           const GxfFeatureVector& features) const {
+struct psl* FeaturesToPsl::toPsl(const string& qName,
+                                 int tSize,
+                                 const GxfFeatureVector& features) {
     // this does a [1..n] to [0..n) conversion
     if (not checkFeatureOrder(features)) {
         throw invalid_argument("features not in expected order: " + qName);
     }
-    // target is mapping query, which needs to exist to create psl.
-    if (not fTransMaps[0]->haveQuerySeq(features[0]->fSeqid)) {
-        return NULL;
-    }
     int qSize = sumFeatureSizes(features);
-    int tSize = fTransMaps[0]->getQuerySeqSize(features[0]->fSeqid); // target is mapping query
     int tStart, tEnd;
     if (features[0]->fStrand == "+") {
         tStart = features[0]->fStart-1;
@@ -80,25 +95,6 @@ struct psl* FeatureTransMap::featuresToPsl(const string& qName,
                                + " mapping alignment query size " + toString(tSize) + ", does the mapping alignment need swapped?");
     }
     return makeFeaturesPsl(qName, qSize, tStart, tEnd, tSize, features);
-}
-
-/**
- * Check assumption of feature order being increasing on positive strand and
- * decreasing on negative strand.
- */
-bool FeatureTransMap::checkFeatureOrder(const GxfFeatureVector& features) const {
-    for (int iFeat = 1; iFeat < features.size(); iFeat++) {
-        if (features[0]->fStrand == "+") {
-            if (features[iFeat]->fStart <= features[iFeat-1]->fEnd) {
-                return false;
-            }
-        } else {
-            if (features[iFeat]->fEnd >= features[iFeat-1]->fStart) {
-                return false;
-            }
-        }
-    }
-    return true;
 }
 
 /* recursively map a list of PSLs */
@@ -131,7 +127,12 @@ PslVector FeatureTransMap::recursiveMapPsl(struct psl* srcPsl,
  * strand. */
 PslMapping* FeatureTransMap::mapFeatures(const string& qName,
                                          const GxfFeatureVector& features) const {
-    struct psl* srcPsl = featuresToPsl(qName, features);
+    // target is mapping query, which needs to exist to create psl.
+    if (not fTransMaps[0]->haveQuerySeq(features[0]->fSeqid)) {
+        return NULL;
+    }
+    int tSize = fTransMaps[0]->getQuerySeqSize(features[0]->fSeqid); // target is mapping query
+    struct psl* srcPsl = FeaturesToPsl::toPsl(qName, tSize, features);
     if (srcPsl == NULL) {
          return NULL;
     } else {

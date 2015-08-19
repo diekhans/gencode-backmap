@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <functional>
 #include "gxf.hh"
+#include "remapStatus.hh"
 
 /**
  * Tree container for a GxfFeature object and children
@@ -13,16 +14,26 @@
 class GxfFeatureNode {
     public:
     const GxfFeature* fFeature;
-    class GxfFeatureNode* fParent;
-    vector<const GxfFeatureNode*> fChildren;
-
+    GxfFeatureNode* fParent;
+    vector<GxfFeatureNode*> fChildren;
+    RemapStatus fRemapStatus;
+    GxfFeatureVector fMappedFeatures;
+    GxfFeatureVector fUnmappedFeatures;
+    
     GxfFeatureNode(const GxfFeature* feature):
         fFeature(feature),
-        fParent(NULL) {
+        fParent(NULL),
+        fRemapStatus(REMAP_STATUS_NONE) {
     }
 
     ~GxfFeatureNode() {
         delete fFeature;
+        for (size_t i = 0; i < fMappedFeatures.size(); i++) {
+            delete fMappedFeatures[i];
+        }
+        for (size_t i = 0; i < fUnmappedFeatures.size(); i++) {
+            delete fUnmappedFeatures[i];
+        }
         for (size_t i = 0; i < fChildren.size(); i++) {
             delete fChildren[i];
         }
@@ -46,6 +57,28 @@ class GxfFeatureNode {
         fChildren.push_back(node);
         node->fParent = this;
     }
+
+    /* add a mapped and take ownership */
+    void addMapped(const GxfFeature* mappedFeature) {
+        fMappedFeatures.push_back(mappedFeature);
+    }
+
+    /* add a unmapped and take ownership */
+    void addUnmapped(const GxfFeature* unmappedFeature) {
+        fUnmappedFeatures.push_back(unmappedFeature);
+    }
+
+    /* compute the remap status of the feature. srcSeqInMapping
+     * indicates of the srcSequence qs in the genomic map */
+    RemapStatus calcRemapStatus(bool srcSeqInMapping) const;
+
+    /* set the remap status */
+    void setRemapStatus(bool srcSeqInMapping) {
+        fRemapStatus = calcRemapStatus(srcSeqInMapping);
+    }
+    
+    /* print for debugging */
+    void dump(ostream& fh) const;
 
     /* depth-first output */
     void write(ostream& fh) const;
@@ -83,7 +116,10 @@ class GxfFeatureTree {
 
     /* Destructor */
     ~GxfFeatureTree();
-    
+
+    /* print for debugging */
+    void dump(ostream& fh) const;
+
     /* depth-first output */
     void write(ostream& fh) const {
         fGene->write(fh);

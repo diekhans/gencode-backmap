@@ -8,21 +8,28 @@
 struct psl;
 class PslMapping;
 
-/* Mapping of GxF features using transmap  */
+/* conversion of a list of features to a PSL */
+class FeaturesToPsl {
+    private:
+    static bool checkFeatureOrder(const GxfFeatureVector& features);
+    static int sumFeatureSizes(const GxfFeatureVector& features);
+    static void makePslBlocks(struct psl* psl,
+                       const GxfFeatureVector& features);
+    static struct psl* makeFeaturesPsl(const string& qName,
+                                       int qSize, int tStart, int tEnd, int tSize,
+                                       const GxfFeatureVector& features);
+    public:
+    static struct psl* toPsl(const string& qName,
+                             int tSize,
+                             const GxfFeatureVector& features);
+    
+};
+
+/* Mapping of GxF features using transmap. */
 class FeatureTransMap {
     private:
     TransMapVector fTransMaps;  // object(s) to performance mappings
     
-    int sumFeatureSizes(const GxfFeatureVector& features) const;
-    void makePslBlocks(struct psl* psl,
-                       const GxfFeatureVector& features) const;
-    struct psl* makeFeaturesPsl(const string& qName,
-                                int qSize, int tStart, int tEnd, int tSize,
-                                const GxfFeatureVector& features) const;
-    struct psl* featuresToPsl(const string& qName,
-                              const GxfFeatureVector& features) const;
-    bool checkFeatureOrder(const GxfFeatureVector& features) const;
-
     void mapPslVector(const PslVector& srcPsls,
                       int iTransMap,
                       PslVector& mappedPsls) const ;
