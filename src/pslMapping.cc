@@ -25,7 +25,7 @@ PslMapping::~PslMapping() {
 }
 
 /* calculate the number of aligned bases */
-int PslMapping::numPslAligned(const struct psl* psl) {
+int PslMapping::numAlignedBases(const struct psl* psl) {
     return (psl->match + psl->repMatch + psl->misMatch);
 }
 
@@ -34,7 +34,7 @@ int PslMapping::numPslAligned(const struct psl* psl) {
  */
 int PslMapping::calcPslMappingScore(const struct psl* srcPsl,
                                     const struct psl* mappedPsl) {
-    return (numPslAligned(srcPsl) - numPslAligned(mappedPsl))
+    return (numAlignedBases(srcPsl) - numAlignedBases(mappedPsl))
         + abs(int(srcPsl->qNumInsert)-int(mappedPsl->qNumInsert))
         + abs(int(srcPsl->tNumInsert)-int(mappedPsl->tNumInsert));
 }
@@ -65,8 +65,8 @@ void PslMapping::sortMappedPsls() {
     //sort(fMappedPsls.begin(), fMappedPsls.end(), ScoreCmp(fSrcPsl));
     std::sort(fMappedPsls.begin(), fMappedPsls.end(),
               [this](const struct psl* a, const struct psl* b) -> bool {
-                  return -(PslMapping::calcPslMappingScore(this->fSrcPsl, a)
-                           - PslMapping::calcPslMappingScore(this->fSrcPsl, b));
+                  return (PslMapping::calcPslMappingScore(this->fSrcPsl, a)
+                          - PslMapping::calcPslMappingScore(this->fSrcPsl, b));
               });
 }
 #else
@@ -75,8 +75,8 @@ static struct psl* gSrcPsl = NULL;
 static int mapScoreCmp(const void *va, const void *vb) {
     const struct psl *mappedPsl1 = *static_cast<const struct psl *const*>(va);
     const struct psl *mappedPsl2 = *static_cast<const struct psl *const*>(vb);
-    return -(PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl1)
-             - PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl2));
+    return (PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl1)
+            - PslMapping::calcPslMappingScore(gSrcPsl, mappedPsl2));
 }
 
 /* sort with best (lowest score) first */

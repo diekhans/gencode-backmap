@@ -13,7 +13,7 @@ class PslMapping {
     int fScore;  // mapping score of top psl; 0 is perfect
 
     private:
-    static int numPslAligned(const struct psl* psl);
+    static int numAlignedBases(const struct psl* psl);
     void sortMappedPsls();
 
     public:
