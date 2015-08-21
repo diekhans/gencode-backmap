@@ -20,7 +20,7 @@ class TransMap {
     SizeMap fQuerySizes;   // query sequence sizes
     SizeMap fTargetSizes;  // target sequence sizes
     
-    void mapAlnsAdd( struct psl *mapPsl);
+    void mapAlnsAdd(struct psl *mapPsl);
     struct psl* chainToPsl(struct chain *ch,
                            bool swapMap);
     void loadMapChains(const string& chainFile,

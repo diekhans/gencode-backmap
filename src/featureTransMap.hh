@@ -48,7 +48,7 @@ class FeatureTransMap {
     }
     /* Constructor with mulitple transmap object, in order of projection
      * Doesn't own TransMap objects */
-    FeatureTransMap(const TransMapVector transMaps):
+    FeatureTransMap(const TransMapVector& transMaps):
         fTransMaps(transMaps) {
     }
 

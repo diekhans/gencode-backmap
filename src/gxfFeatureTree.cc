@@ -109,22 +109,12 @@ RemapStatus GxfFeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
     }
 }
 
-/* make vector with both mapped and unmaped and unmapped for printing */
-GxfFeatureVector GxfFeatureNode::makeCombinedMappedUnmapped() const {
-    GxfFeatureVector both;
-    both.insert(both.end(), fMappedFeatures.begin(), fMappedFeatures.end());
-    both.insert(both.end(), fUnmappedFeatures.begin(), fUnmappedFeatures.end());
-    both.sort();
-    return both;
-}
-
 /* print node for debugging */
 void GxfFeatureNode::dumpNode(ostream& fh) const {
     const string status = remapStatusToStr(fRemapStatus);
-    GxfFeatureVector both = makeCombinedMappedUnmapped();
     fh << "src" << "\t" << ((fFeature == NULL) ? "NULL" : fFeature->toString()) << endl;
-    for (int i = 0; i < both.size(); i++) {
-        fh << (fMappedFeatures.contains(both[i]) ? "mapped" : "unmapped") << "\t" << status << "\t" << both[i]->toString() << endl;
+    for (int i = 0; i < fAllFeatures.size(); i++) {
+        fh << (fMappedFeatures.contains(fAllFeatures[i]) ? "mapped" : "unmapped") << "\t" << status << "\t" << fAllFeatures[i]->toString() << endl;
     }
 }
 

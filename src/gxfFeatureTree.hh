@@ -19,9 +19,7 @@ class GxfFeatureNode {
     RemapStatus fRemapStatus;
     GxfFeatureVector fMappedFeatures;
     GxfFeatureVector fUnmappedFeatures;
-
-    private:
-    GxfFeatureVector makeCombinedMappedUnmapped() const;
+    GxfFeatureVector fAllFeatures;   // use for debugging, as it tracks order added.
 
     public:
     GxfFeatureNode(const GxfFeature* feature):
@@ -65,11 +63,13 @@ class GxfFeatureNode {
     /* add a mapped and take ownership */
     void addMapped(const GxfFeature* mappedFeature) {
         fMappedFeatures.push_back(mappedFeature);
+        fAllFeatures.push_back(mappedFeature);
     }
 
     /* add a unmapped and take ownership */
     void addUnmapped(const GxfFeature* unmappedFeature) {
         fUnmappedFeatures.push_back(unmappedFeature);
+        fAllFeatures.push_back(unmappedFeature);
     }
 
     /* compute the remap status of the feature. srcSeqInMapping

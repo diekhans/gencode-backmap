@@ -24,6 +24,8 @@ void TransMap::addSeqSize(const string& seqName,
 /* add a map align object to the genomeRangeTree */
 void TransMap::mapAlnsAdd(struct psl *mapPsl) {
     genomeRangeTreeAddVal(fMapAlns, mapPsl->qName, mapPsl->qStart, mapPsl->qEnd, mapPsl, slCatReversed);
+    addSeqSize(mapPsl->qName, mapPsl->qSize, fQuerySizes);
+    addSeqSize(mapPsl->tName, mapPsl->tSize, fTargetSizes);
 }
 
 /* convert a chain to a psl, ignoring match counts, etc */
@@ -39,16 +41,10 @@ struct psl* TransMap::chainToPsl(struct chain *ch,
                              strand, slCount(ch->blockList), 0);
     int iBlk = 0;
     for (struct cBlock *cBlk = ch->blockList; cBlk != NULL; cBlk = cBlk->next, iBlk++) {
-        psl->blockSizes[iBlk] = (cBlk->tEnd - cBlk->tStart);
-        psl->qStarts[iBlk] = cBlk->qStart;
-        psl->tStarts[iBlk] = cBlk->tStart;
-        psl->match += psl->blockSizes[iBlk];
+        pslAddBlock(psl, cBlk->qStart, cBlk->tStart, (cBlk->tEnd - cBlk->tStart));
     }
-    psl->blockCount = iBlk;
     if (swapMap)
         pslSwap(psl, FALSE);
-    addSeqSize(psl->qName, psl->qSize, fQuerySizes);
-    addSeqSize(psl->tName, psl->tSize, fTargetSizes);
     return psl;
 }
 

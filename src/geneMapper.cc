@@ -10,6 +10,9 @@
 #include <fstream>
 #include <iostream>
 
+// FIXME: tmp
+#define debug 0
+
 /**
  * Class to map a single transcript and subfeatures
  * All mapping is done by a two-level alignment.
@@ -54,6 +57,12 @@ class TranscriptMapper {
     
     /* map transMap of exons of a transcript to the genome. */
     static const FeatureTransMap* makeViaExonsTransMap(const PslMapping* exonsMapping) {
+        if (debug) {
+            cerr << "exonsSrc:\t" << pslToString(exonsMapping->fSrcPsl) << endl;
+            for (int i = 0; i < exonsMapping->fMappedPsls.size(); i++) {
+                cerr << "exonsMap[" << i <<"]\t" << pslToString(exonsMapping->fMappedPsls[i]) << endl;
+            }
+        }
         TransMapVector transMaps;
         transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fSrcPsl, true)); // swap map genomeA to exons
         transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fMappedPsls[0], false)); // exons to genomeB
@@ -72,6 +81,12 @@ class TranscriptMapper {
     /* recursive map features below transcript */
     void mapFeatures(GxfFeatureNode* featureNode) {
         PslMapping* pslMapping = fViaExonsTransMap->mapFeature("someFeature", featureNode->fFeature);
+        if (debug && pslMapping != NULL) {
+            cerr << "src\t" << pslToString(pslMapping->fSrcPsl) << endl;
+            if (pslMapping->haveMappings()) {
+                cerr << "mapped\t" << pslToString(pslMapping->fMappedPsls[0]) << endl;
+            }
+        }
         FeatureMapper::map(featureNode, pslMapping, fSrcSeqInMapping);
         for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
            mapFeatures(featureNode->fChildren[iChild]);

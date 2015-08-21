@@ -188,6 +188,9 @@ class GtfFeature: public GxfFeature {
 /* create the appropriate feature type */
 const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
                                     const StringVector& columns) {
+    if (columns.size() != 9) {
+        throw invalid_argument("expected 9 columns in GxF file");
+    }
     if (gxfFormat == GFF3_FORMAT) {
         return new Gff3Feature(columns[0], columns[1], columns[2],
                                stringToInt(columns[3]), stringToInt(columns[4]),

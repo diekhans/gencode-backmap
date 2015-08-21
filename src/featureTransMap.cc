@@ -41,16 +41,10 @@ void FeaturesToPsl::makePslBlocks(struct psl* psl,
     int qStart = 0;
     for (size_t iBlk = 0; iBlk < features.size(); iBlk++) {
         const GxfFeature* feature = features[iBlk];
-        psl->blockSizes[iBlk] = (feature->fEnd - feature->fStart)+1;
-        psl->qStarts[iBlk] = qStart;
-        if (pslTStrand(psl) == '-') {
-            psl->tStarts[iBlk] = psl->tSize-feature->fEnd;
-        } else {
-            psl->tStarts[iBlk] = (feature->fStart-1);
-        }
-        psl->match += psl->blockSizes[iBlk];
+        pslAddBlock(psl, qStart,
+                    ((pslTStrand(psl) == '-') ? psl->tStarts[iBlk] = psl->tSize-feature->fEnd : feature->fStart-1),
+                    (feature->fEnd - feature->fStart)+1);
         qStart += psl->blockSizes[iBlk];
-        psl->blockCount++;
     }
 }
 

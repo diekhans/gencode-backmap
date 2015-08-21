@@ -4,7 +4,10 @@
 #include "remapStatus.hh"
 #include "pslMapping.hh"
 #include "frame.hh"
+#include <iostream>
 
+// FIXME: tmp
+#define debug 0
 
 /* 
  * create an feature for a full or partially mapped feature.
@@ -20,6 +23,10 @@ void FeatureMapper::mkMappedFeature(const GxfFeature* feature,
     // GxF genomic coordinates are always plus strand
     int mappedTStart = mappedPslCursor.getTPosStrand('+');
     int mappedTEnd = mappedTStart + length;
+
+    if (debug) {
+        cerr << "mkMappedFeature: " << off << ": " << mappedTStart << "-" << mappedTEnd << endl;
+    }
 
     // add mapped feature. but don't update id or attributes now
     featureNode->addMapped(
@@ -47,8 +54,12 @@ void FeatureMapper::mkUnmappedFeature(const GxfFeature* feature,
     int unmappedTStart = srcPslCursor.getTPosStrand('+');
     int unmappedTEnd = unmappedTStart + length;
 
+    if (debug) {
+        cerr << "mkUnmappedFeature: " << off << ": " << unmappedTStart << "-" << unmappedTEnd << endl;
+    }
+
     // add unmapped feature. but don't update id or attributes now
-    featureNode->addMapped(        
+    featureNode->addUnmapped(        
         gxfFeatureFactory(feature->getFormat(), feature->fSeqid, feature->fSource, feature->fType,
                           unmappedTStart, unmappedTEnd, feature->fScore, feature->fStrand,
                           frame.toPhaseStr(), feature->fAttrs));
@@ -65,11 +76,17 @@ void FeatureMapper::mapFeaturePart(const GxfFeature* feature,
     if (srcPslCursor.getQPos() < mappedPslCursor.getQPos()) {
         // deleted region; length is minimum of different between starts in feature and how much is left in the feature
         int length = min(mappedPslCursor.getQPos()-srcPslCursor.getQPos(), srcPslCursor.getBlockLeft());
+        if (debug) {
+            cerr << "  mapFeaturePart: unmapped:  " << length << " " << srcPslCursor.toString() << " =>" << mappedPslCursor.toString() << endl;
+        }
         mkUnmappedFeature(feature, srcPslCursor, mappedPslCursor, length, featureNode);
         srcPslCursor = srcPslCursor.advance(length);
     } else {
         // mapped region; length is the minimum left in either block
         int length = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
+        if (debug) {
+            cerr << "  mapFeaturePart: mapped:  " << length << " " << srcPslCursor.toString() << " =>" << mappedPslCursor.toString() << endl;
+        }
         mkMappedFeature(feature, srcPslCursor, mappedPslCursor, length, featureNode);
         srcPslCursor = srcPslCursor.advance(length);
         mappedPslCursor = mappedPslCursor.advance(length);
@@ -85,7 +102,9 @@ void FeatureMapper::mapFeature(const GxfFeature* feature,
                                PslCursor& mappedPslCursor,
                                GxfFeatureNode* featureNode) {
     assert((feature->fEnd-feature->fStart)+1 == srcPslCursor.getBlockLeft());
-
+    if (debug) {
+        cerr << "mapFeature: " << feature->toString() << endl;
+    }
     // note that source blocks can be merged in mapped block, but we don't merge
     // features.
     int srcPslFeatureQEnd = srcPslCursor.getQBlockEnd();
@@ -95,6 +114,9 @@ void FeatureMapper::mapFeature(const GxfFeature* feature,
     if (srcPslCursor.getQPos() < srcPslFeatureQEnd) {
         // unmapped at the end of feature; length is what is left over in this src block
         int length = srcPslCursor.getBlockLeft();
+        if (debug) {
+            cerr << "  mapFeaturePart: unend:  " << length << " " << srcPslCursor.toString() << " =>" << mappedPslCursor.toString() << endl;
+        }
         mkUnmappedFeature(feature, srcPslCursor, mappedPslCursor, length,  featureNode);
         srcPslCursor = srcPslCursor.advance(length);
     }

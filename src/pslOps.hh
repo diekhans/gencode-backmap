@@ -76,6 +76,26 @@ static inline unsigned pslTEndStrand(struct psl *psl, int blkIdx, char strand) {
     }
 }
 
+/* add a psl block to a psl being constructed, updating counts */
+static inline void pslAddBlock(struct psl* psl, unsigned qStart, unsigned tStart, int blockSize) {
+    int iBlk = psl->blockCount;
+    psl->qStarts[iBlk] = qStart;
+    psl->tStarts[iBlk] = tStart;
+    psl->blockSizes[iBlk] = blockSize;
+    psl->match += blockSize;
+    if (iBlk > 0) {
+        if (pslQStart(psl, iBlk) > pslQEnd(psl, iBlk-1)) {
+            psl->qNumInsert++;
+            psl->qBaseInsert += pslQStart(psl, iBlk)-pslQEnd(psl, iBlk-1);
+        }
+        if (pslTStart(psl, iBlk) > pslTEnd(psl, iBlk-1)) {
+            psl->tNumInsert++;
+            psl->tBaseInsert += pslTStart(psl, iBlk)-pslTEnd(psl, iBlk-1);
+        }
+    }
+    psl->blockCount++;
+}
+
 /*
  * Cursor into a PSL.  Tracks position in an alignment.
  */
@@ -144,14 +164,14 @@ class PslCursor {
         if (pslQStrand(fPsl) == strand) {
             return getQPos();
         } else {
-            return fPsl->qSize - getQBlockEnd();
+            return (fPsl->qSize - getQBlockEnd()) + fOff;
         }
     }
     int getTPosStrand(char strand) const {
         if (pslTStrand(fPsl) == strand) {
             return getTPos();
         } else {
-            return fPsl->tSize - getTBlockEnd();
+            return (fPsl->tSize - getTBlockEnd()) + fOff;
         }
     }
 
@@ -200,7 +220,7 @@ class PslCursor {
     string toString() const {
         return ::toString(getQPos()) + ".." + ::toString(getQBlockEnd()) + " <> "
             + ::toString(getTPos()) + ".." + ::toString(getTBlockEnd())
-            + " [" + ::toString(getBlockLeft()) + "]";
+            + " [" + ::toString(fIBlk) + ", " + ::toString(fOff) + ", " + ::toString(getBlockLeft()) + "]";
     }
 };
 
