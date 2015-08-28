@@ -15,12 +15,14 @@ static void gencodeBackmap(const string& inGxfFile,
                            GxfFormat gxfFormat,
                            const string& mappingChains,
                            bool swapMap,
-                           const string& outGxfFile) {
+                           const string& mappedGxfFile,
+                           const string& unmappedGxfFile) {
     TransMap* genomeTransMap = TransMap::factoryFromChainFile(mappingChains, swapMap);
     GxfParser gxfParser(inGxfFile, gxfFormat);
-    ofstream outGxf(outGxfFile);
+    ofstream mappedGxfFh(mappedGxfFile);
+    ofstream unmappedGxfFh(unmappedGxfFile);
     GeneMapper geneMapper(genomeTransMap);
-    geneMapper.mapGxf(&gxfParser, outGxf);
+    geneMapper.mapGxf(&gxfParser, mappedGxfFh, unmappedGxfFh);
     delete genomeTransMap;
 }
 
@@ -43,17 +45,18 @@ int main(int argc, char *argv[]) {
         }
     }    
 
-    if ((argc - optind) != 3) {
-        errAbort(toCharStr("wrong # args: %s [-swapMap] inGxf mappingChains outGxf"), argv[0]);
+    if ((argc - optind) != 4) {
+        errAbort(toCharStr("wrong # args: %s [-swapMap] inGxf mappingChains mappedGxf unmappedGxf"), argv[0]);
     }
     string inGxfFile = argv[optind];
     string mappingChains = argv[optind+1];
-    string outGxfFile = argv[optind+2];
+    string mappedGxfFile = argv[optind+2];
+    string unmappedGxfFile = argv[optind+3];
 
     GxfFormat gxfFormat = (stringEndsWith(inGxfFile, ".gff3") or stringEndsWith(inGxfFile, ".gff3.gz"))
         ? GFF3_FORMAT : GTF_FORMAT;
     try {
-        gencodeBackmap(inGxfFile, gxfFormat, mappingChains, swapMap, outGxfFile);
+        gencodeBackmap(inGxfFile, gxfFormat, mappingChains, swapMap, mappedGxfFile, unmappedGxfFile);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;
         return 1;

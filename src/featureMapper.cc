@@ -160,14 +160,14 @@ bool FeatureMapper::map(FeatureNode* featureNode,
  * range is covered by contained ranges.  Omit new ranges if unmapped.
  */
 void FeatureMapper::mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
-                                const string& targetSeqid, int targetStart, int targetEnd, char targetStrand) {
+                                const string& targetSeqid, int targetStart, int targetEnd, const string& targetStrand) {
     const GxfFeature* feature = featureNode->fFeature;
     if (targetStart >= 0) {
         featureNode->addMapped(
             gxfFeatureFactory(feature->getFormat(), targetSeqid,
                               feature->fSource, feature->fType,
                               targetStart+1, targetEnd, feature->fScore,
-                              string(0, targetStrand), ".", feature->fAttrs));
+                              targetStrand, ".", feature->fAttrs));
     } else {
         featureNode->addUnmapped(featureNode->fFeature->clone());
     }

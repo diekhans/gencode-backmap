@@ -71,7 +71,7 @@ class FeatureMapper {
      * unmapped.
      */
     static void mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
-                            const string& targetSeqid="", int targetStart=-1, int targetEnd=-1, char targetStrand='.');
+                            const string& targetSeqid="", int targetStart=-1, int targetEnd=-1, const string& targetStrand=".");
 
     /*
      * Recursively update node ids and parent links if this is a GFF3.  Also
