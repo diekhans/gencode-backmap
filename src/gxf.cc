@@ -186,8 +186,8 @@ class GtfFeature: public GxfFeature {
 
 
 /* create the appropriate feature type */
-const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                                    const StringVector& columns) {
+GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                              const StringVector& columns) {
     if (columns.size() != 9) {
         throw invalid_argument("expected 9 columns in GxF file");
     }
@@ -203,10 +203,10 @@ const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
 }
 
 /* create the appropriate feature type */
-const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                                    const string& seqid, const string& source, const string& type,
-                                    int start, int end, const string& score, const string& strand, const string& phase,
-                                    const AttrVals& attrs) {
+GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                              const string& seqid, const string& source, const string& type,
+                              int start, int end, const string& score, const string& strand, const string& phase,
+                              const AttrVals& attrs) {
     if (gxfFormat == GFF3_FORMAT) {
         return new Gff3Feature(seqid, source, type, start, end, score, strand, phase, attrs);
     } else {
@@ -236,7 +236,7 @@ GxfParser::~GxfParser() {
 }
 
 /* Read the next record */
-const GxfRecord* GxfParser::read() {
+GxfRecord* GxfParser::read() {
     string line;
     if (not fIn->readLine(line)) {
         return NULL;
@@ -250,9 +250,9 @@ const GxfRecord* GxfParser::read() {
 /* Read the next record, either queued by push() or from the file , use
  * instanceOf to determine the type.  Return NULL on EOF.
  */
-const GxfRecord* GxfParser::next() {
+GxfRecord* GxfParser::next() {
     if (not fPending.empty()) {
-        const GxfRecord* rec = fPending.front();
+        GxfRecord* rec = fPending.front();
         fPending.pop();
         return rec;
     } else {

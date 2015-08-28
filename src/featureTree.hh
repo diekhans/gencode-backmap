@@ -1,8 +1,8 @@
 /*
  * Tree structure use to store genes.
  */
-#ifndef gxfFeatureTree_hh
-#define gxfFeatureTree_hh
+#ifndef featureTree_hh
+#define featureTree_hh
 #include <assert.h>
 #include <functional>
 #include "gxf.hh"
@@ -11,24 +11,24 @@
 /**
  * Tree container for a GxfFeature object and children
  */
-class GxfFeatureNode {
+class FeatureNode {
     public:
-    const GxfFeature* fFeature;
-    GxfFeatureNode* fParent;
-    vector<GxfFeatureNode*> fChildren;
+    GxfFeature* fFeature;
+    FeatureNode* fParent;
+    vector<FeatureNode*> fChildren;
     RemapStatus fRemapStatus;
     GxfFeatureVector fMappedFeatures;
     GxfFeatureVector fUnmappedFeatures;
-    GxfFeatureVector fAllFeatures;   // use for debugging, as it tracks order added.
+    GxfFeatureVector fAllOutputFeatures;   // use for debugging, as it tracks order added.
 
     public:
-    GxfFeatureNode(const GxfFeature* feature):
+    FeatureNode(GxfFeature* feature):
         fFeature(feature),
         fParent(NULL),
         fRemapStatus(REMAP_STATUS_NONE) {
     }
 
-    ~GxfFeatureNode() {
+    ~FeatureNode() {
         delete fFeature;
         for (size_t i = 0; i < fMappedFeatures.size(); i++) {
             delete fMappedFeatures[i];
@@ -54,22 +54,22 @@ class GxfFeatureNode {
     
     
     /* add a child node, linking up parents */
-    void addChild(GxfFeatureNode* node) {
+    void addChild(FeatureNode* node) {
         assert(node->fParent == NULL);
         fChildren.push_back(node);
         node->fParent = this;
     }
 
     /* add a mapped and take ownership */
-    void addMapped(const GxfFeature* mappedFeature) {
+    void addMapped(GxfFeature* mappedFeature) {
         fMappedFeatures.push_back(mappedFeature);
-        fAllFeatures.push_back(mappedFeature);
+        fAllOutputFeatures.push_back(mappedFeature);
     }
 
     /* add a unmapped and take ownership */
-    void addUnmapped(const GxfFeature* unmappedFeature) {
+    void addUnmapped(GxfFeature* unmappedFeature) {
         fUnmappedFeatures.push_back(unmappedFeature);
-        fAllFeatures.push_back(unmappedFeature);
+        fAllOutputFeatures.push_back(unmappedFeature);
     }
 
     /* compute the remap status of the feature. srcSeqInMapping
@@ -94,35 +94,35 @@ class GxfFeatureNode {
 /**
  * group a genes records together in a tree.
  */
-class GxfFeatureTree {
+class FeatureTree {
     private:
     void queueRecords(GxfParser *gxfParser,
                       GxfRecordVector& gxfRecords) const;
-    GxfFeatureNode* findGff3Parent(GxfFeatureNode* geneTreeLeaf,
-                                   const GxfFeature* gxfFeature) const;
-    GxfFeatureNode* loadGff3GeneRecord(const GxfFeature* gxfFeature,
-                                       GxfFeatureNode* geneTreeLeaf) const;
+    FeatureNode* findGff3Parent(FeatureNode* geneTreeLeaf,
+                                const GxfFeature* gxfFeature) const;
+    FeatureNode* loadGff3GeneRecord(GxfFeature* gxfFeature,
+                                    FeatureNode* geneTreeLeaf) const;
     const string& getGtfParentType(const string& featureType) const;
-    GxfFeatureNode* findGtfParent(GxfFeatureNode* geneTreeLeaf,
+    FeatureNode* findGtfParent(FeatureNode* geneTreeLeaf,
                                   const GxfFeature* gxfFeature) const;
-    GxfFeatureNode* loadGtfGeneRecord(const GxfFeature* gxfFeature,
-                                      GxfFeatureNode* geneTreeLeaf) const;    
+    FeatureNode* loadGtfGeneRecord(GxfFeature* gxfFeature,
+                                   FeatureNode* geneTreeLeaf) const;    
     bool loadGeneRecord(GxfParser *gxfParser,
-                        const GxfRecord* gxfRecord,
-                        GxfFeatureNode* geneTreeRoot,
-                        GxfFeatureNode*& geneTreeLeaf,
+                        GxfRecord* gxfRecord,
+                        FeatureNode* geneTreeRoot,
+                        FeatureNode*& geneTreeLeaf,
                         GxfRecordVector& queuedRecords) const;
-    GxfFeatureNode* loadGene(GxfParser *gxfParser,
-                             const GxfFeature* geneFeature);
+    FeatureNode* loadGene(GxfParser *gxfParser,
+                          GxfFeature* geneFeature);
     public:
-    GxfFeatureNode* fGene;
+    FeatureNode* fGene;
 
     /* constructor */
-    GxfFeatureTree(GxfParser *gxfParser,
-                   const GxfFeature* geneFeature);
+    FeatureTree(GxfParser *gxfParser,
+                GxfFeature* geneFeature);
 
     /* Destructor */
-    ~GxfFeatureTree();
+    ~FeatureTree();
 
     /* print for debugging */
     void dump(ostream& fh) const;

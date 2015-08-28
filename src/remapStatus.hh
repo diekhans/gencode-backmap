@@ -20,8 +20,8 @@ typedef enum {
 /* Attribute name used for remap status */
 extern const string REMAP_ATTR_NAME;
 
-/* Attribute name used for previous id before remap */
-extern const string REMAP_PREVIOUS_ID;
+/* Attribute name used for original id before remap */
+extern const string REMAP_ORIGINAL_ID;
 
 /* convert a remap status to a string  */
 const string& remapStatusToStr(RemapStatus remapStatus);

@@ -76,6 +76,23 @@ static inline unsigned pslTEndStrand(struct psl *psl, int blkIdx, char strand) {
     }
 }
 
+/* is the query fully mapped */
+static inline bool pslQueryFullyMapped(struct psl* psl) {
+    // look for any query gaps
+    if (psl->qStart > 0) {
+        return false;
+    }
+    for (int iBlk = 1; iBlk < psl->blockCount; iBlk++) {
+        if (pslQStart(psl, iBlk) != pslQEnd(psl, iBlk-1)) {
+            return false;
+        }
+    }
+    if (psl->qEnd < psl->qSize) {
+        return false;
+    }
+    return true;
+}
+
 /* add a psl block to a psl being constructed, updating counts */
 static inline void pslAddBlock(struct psl* psl, unsigned qStart, unsigned tStart, int blockSize) {
     int iBlk = psl->blockCount;

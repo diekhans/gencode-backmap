@@ -4,8 +4,8 @@
 /* Attribute name used for remap status */
 const string REMAP_ATTR_NAME = "remap_status";
 
-/* Attribute name used for previous id before remap */
-const string REMAP_PREVIOUS_ID = "remap_previous_id";
+/* Attribute name used for original id before remap */
+const string REMAP_ORIGINAL_ID = "remap_original_id";
 
 /* convert a remap status to a string  */
 const string& remapStatusToStr(RemapStatus remapStatus) {

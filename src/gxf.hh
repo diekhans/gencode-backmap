@@ -38,7 +38,7 @@ class GxfRecord {
     /* return record as a string */
     virtual string toString() const = 0;
 };
-typedef vector<const GxfRecord*> GxfRecordVector;
+typedef vector<GxfRecord*> GxfRecordVector;
 
 /*
  * non-feature line.
@@ -96,7 +96,6 @@ class AttrVals: public vector<const AttrVal*> {
             push_back(new AttrVal(*(src[i])));
         }
     }
-
     
     /* destructor */
     ~AttrVals() {
@@ -105,6 +104,11 @@ class AttrVals: public vector<const AttrVal*> {
         }
     }
 
+    /* does the attribute exist */
+    bool exists(const string& name) const {
+        return findIdx(name) >= 0;
+    }
+    
     /* find the index of an attribute or -1 if not found */
     int findIdx(const string& name) const {
         for (int i = 0; i < size(); i++) {
@@ -117,7 +121,7 @@ class AttrVals: public vector<const AttrVal*> {
 
     
     /* get a attribute, NULL if it doesn't exist */
-    const AttrVal* findAttr(const string& name) const {
+    const AttrVal* find(const string& name) const {
         int i = findIdx(name);
         if (i < 0) {
             return NULL;
@@ -127,8 +131,8 @@ class AttrVals: public vector<const AttrVal*> {
     }
     
     /* get a attribute, error it doesn't exist */
-    const AttrVal* getAttr(const string& name) const {
-        const AttrVal* attrVal = findAttr(name);
+    const AttrVal* get(const string& name) const {
+        const AttrVal* attrVal = find(name);
         if (attrVal == NULL) {
             throw invalid_argument("Attribute not found: " + name);
         }
@@ -177,7 +181,7 @@ public:
     const string fScore;
     const string fStrand;
     const string fPhase;
-    const AttrVals fAttrs;
+    AttrVals fAttrs;     // attribute maybe modified
 
     protected:
     string baseColumnsAsString() const;
@@ -208,15 +212,24 @@ public:
         return fAttrs;
     }
 
+    /* get all attribute */
+    AttrVals& getAttrs() {
+        return fAttrs;
+    }
+    
+    /* does the attribute exist */
+    bool hasAttr(const string& name) const {
+        return fAttrs.exists(name);
+    }
 
     /* get a attribute, NULL if it doesn't exist */
     const AttrVal* findAttr(const string& name) const {
-        return fAttrs.findAttr(name);
+        return fAttrs.find(name);
     }
 
     /* get a attribute, error it doesn't exist */
     const AttrVal* getAttr(const string& name) const {
-        return fAttrs.getAttr(name);
+        return fAttrs.get(name);
     }
 
     /* get a attribute value, error it doesn't exist */
@@ -231,17 +244,17 @@ public:
 };
 
 /* create the appropriate feature type */
-const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                                    const StringVector& columns);
+GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                              const StringVector& columns);
 
 /* create the appropriate feature type */
-const GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                                    const string& seqid, const string& source, const string& type,
-                                    int start, int end, const string& score, const string& strand,
-                                    const string& phase, const AttrVals& attrs);
+GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                              const string& seqid, const string& source, const string& type,
+                              int start, int end, const string& score, const string& strand,
+                              const string& phase, const AttrVals& attrs);
 
 /* vector of feature objects, doesn't own features */
-class GxfFeatureVector: public vector<const GxfFeature*> {
+class GxfFeatureVector: public vector<GxfFeature*> {
     public:
     /* free all features in the vector */
     void free() {
@@ -276,10 +289,10 @@ class GxfParser {
     private:
     FIOStream* fIn;  // input stream
     GxfFormat fGxfFormat; // format of file
-    queue<const GxfRecord*> fPending; // FIFO of pushed records to be read before file
+    queue<GxfRecord*> fPending; // FIFO of pushed records to be read before file
 
     StringVector splitFeatureLine(const string& line) const;
-    const GxfRecord* read();
+    GxfRecord* read();
     
     public:
     /* constructor that opens file, which maybe compressed */
@@ -292,10 +305,10 @@ class GxfParser {
     /* Read the next record, either queued by push() or from the file , use
      * instanceOf to determine the type.  Return NULL on EOF.
      */
-    const GxfRecord* next();
+    GxfRecord* next();
 
     /* Return a record to be read before the file. */
-    void push(const GxfRecord* gxfRecord) {
+    void push(GxfRecord* gxfRecord) {
         fPending.push(gxfRecord);
     }
 

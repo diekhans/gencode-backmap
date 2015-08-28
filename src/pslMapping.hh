@@ -28,7 +28,7 @@ class PslMapping {
     bool haveMappings() const {
         return fMappedPsls.size() > 0;
     }
-    
+
     /* Compute a mapping score between the src and mapped psl.  A perfect
      * mapping is a zero score.  Extra inserts count against the score. */
     static int calcPslMappingScore(const struct psl* srcPsl,

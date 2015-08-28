@@ -4,7 +4,7 @@
 #ifndef geneMapper_hh
 #define geneMapper_hh
 #include "gxf.hh"
-#include "gxfFeatureTree.hh"
+#include "featureTree.hh"
 class TransMap;
 class PslMapping;
 struct psl;
@@ -16,9 +16,9 @@ class GeneMapper {
     const TransMap* fGenomeTransMap;
     
     void processGene(GxfParser *gxfParser,
-                     const GxfFeature* geneFeature,
+                     GxfFeature* geneFeature,
                      ostream& outFh) const;
-    void processTranscript(GxfFeatureNode* transcriptTree) const;
+    void processTranscript(FeatureNode* transcriptTree) const;
 
     public:
     /* Constructor */

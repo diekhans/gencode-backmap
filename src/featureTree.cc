@@ -1,12 +1,12 @@
 /*
  * Tree structure use to store genes
  */
-#include "gxfFeatureTree.hh"
+#include "featureTree.hh"
 #include <ostream>
 #include <algorithm> 
 
 /* depth-first output */
-void GxfFeatureNode::write(ostream& fh) const {
+void FeatureNode::write(ostream& fh) const {
     fh << fFeature->toString() << endl;
     for (size_t i = 0; i < fChildren.size(); i++) {
         fChildren[i]->write(fh);
@@ -15,8 +15,8 @@ void GxfFeatureNode::write(ostream& fh) const {
 
 
 /* Return a list records, moving from gxfRecords vector  */
-void GxfFeatureTree::queueRecords(GxfParser *gxfParser,
-                                  GxfRecordVector& gxfRecords) const {
+void FeatureTree::queueRecords(GxfParser *gxfParser,
+                               GxfRecordVector& gxfRecords) const {
     for (size_t i = 0; i < gxfRecords.size(); i++) {
         gxfParser->push(gxfRecords[i]);
     }
@@ -26,10 +26,10 @@ void GxfFeatureTree::queueRecords(GxfParser *gxfParser,
 /*
  * Find the parent for GFF3.
  */
-GxfFeatureNode* GxfFeatureTree::findGff3Parent(GxfFeatureNode* geneTreeLeaf,
+FeatureNode* FeatureTree::findGff3Parent(FeatureNode* geneTreeLeaf,
                                                const GxfFeature* gxfFeature) const {
     const string& parentId = gxfFeature->getAttrValue("Parent");
-    GxfFeatureNode* parent = geneTreeLeaf;
+    FeatureNode* parent = geneTreeLeaf;
     while ((parent != NULL) and (parent->fFeature->getAttrValue("ID") != parentId)) {
         parent = parent->fParent;
     }
@@ -43,10 +43,10 @@ GxfFeatureNode* GxfFeatureTree::findGff3Parent(GxfFeatureNode* geneTreeLeaf,
  * Process a FF3 record for a gene, which uses the explicit tree.
  * Return the new leaf node.
  */
-GxfFeatureNode* GxfFeatureTree::loadGff3GeneRecord(const GxfFeature* gxfFeature,
-                                                   GxfFeatureNode* geneTreeLeaf) const {
-    GxfFeatureNode* parent = findGff3Parent(geneTreeLeaf, gxfFeature);
-    GxfFeatureNode* child = new GxfFeatureNode(gxfFeature);
+FeatureNode* FeatureTree::loadGff3GeneRecord(GxfFeature* gxfFeature,
+                                             FeatureNode* geneTreeLeaf) const {
+    FeatureNode* parent = findGff3Parent(geneTreeLeaf, gxfFeature);
+    FeatureNode* child = new FeatureNode(gxfFeature);
     parent->addChild(child);
     return child;
 }
@@ -56,7 +56,7 @@ GxfFeatureNode* GxfFeatureTree::loadGff3GeneRecord(const GxfFeature* gxfFeature,
  * gene->transcript->{everything else}
  * FIXME: this is what GFF3 does, which might not be right.
  */
-const string& GxfFeatureTree::getGtfParentType(const string& featureType) const {
+const string& FeatureTree::getGtfParentType(const string& featureType) const {
     assert(featureType != GxfFeature::GENE);
     if (featureType == GxfFeature::TRANSCRIPT) {
         return GxfFeature::GENE;
@@ -69,10 +69,10 @@ const string& GxfFeatureTree::getGtfParentType(const string& featureType) const 
  * Find the parent for a GTF record.  This is painful guess based on the
  * GENCODE file order and know how GENCODE is structures.
  */
-GxfFeatureNode* GxfFeatureTree::findGtfParent(GxfFeatureNode* geneTreeLeaf,
-                                              const GxfFeature* gxfFeature) const {
+FeatureNode* FeatureTree::findGtfParent(FeatureNode* geneTreeLeaf,
+                                           const GxfFeature* gxfFeature) const {
     const string& parentType = getGtfParentType(gxfFeature->fType);
-    GxfFeatureNode* parent = geneTreeLeaf;
+    FeatureNode* parent = geneTreeLeaf;
     while ((parent != NULL) and (parent->fFeature->fType != parentType)) {
         parent = parent->fParent;
     }
@@ -84,7 +84,7 @@ GxfFeatureNode* GxfFeatureTree::findGtfParent(GxfFeatureNode* geneTreeLeaf,
 
 /* compute the remap status of the feature. srcSeqInMapping
  * indicates of the srcSequence qs in the genomic map */
-RemapStatus GxfFeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
+RemapStatus FeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
     if (not srcSeqInMapping) {
         // couldn't even try mapping, chrom not in map
         return REMAP_STATUS_NO_SEQ_MAP;
@@ -110,16 +110,16 @@ RemapStatus GxfFeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
 }
 
 /* print node for debugging */
-void GxfFeatureNode::dumpNode(ostream& fh) const {
+void FeatureNode::dumpNode(ostream& fh) const {
     const string status = remapStatusToStr(fRemapStatus);
     fh << "src" << "\t" << ((fFeature == NULL) ? "NULL" : fFeature->toString()) << endl;
-    for (int i = 0; i < fAllFeatures.size(); i++) {
-        fh << (fMappedFeatures.contains(fAllFeatures[i]) ? "mapped" : "unmapped") << "\t" << status << "\t" << fAllFeatures[i]->toString() << endl;
+    for (int i = 0; i < fAllOutputFeatures.size(); i++) {
+        fh << (fMappedFeatures.contains(fAllOutputFeatures[i]) ? "mapped" : "unmapped") << "\t" << status << "\t" << fAllOutputFeatures[i]->toString() << endl;
     }
 }
 
 /* recursively print for debugging */
-void GxfFeatureNode::dump(ostream& fh) const {
+void FeatureNode::dump(ostream& fh) const {
     dumpNode(fh);
     for (size_t i = 0; i < fChildren.size(); i++) {
         fChildren[i]->dump(fh);
@@ -131,10 +131,10 @@ void GxfFeatureNode::dump(ostream& fh) const {
  * the GENCODE structure to reproduce the hierarchy.
  * Return the new leaf node.
  */
-GxfFeatureNode* GxfFeatureTree::loadGtfGeneRecord(const GxfFeature* gxfFeature,
-                                                  GxfFeatureNode* geneTreeLeaf) const {
-    GxfFeatureNode* parent = findGtfParent(geneTreeLeaf, gxfFeature);
-    GxfFeatureNode* child = new GxfFeatureNode(gxfFeature);
+FeatureNode* FeatureTree::loadGtfGeneRecord(GxfFeature* gxfFeature,
+                                            FeatureNode* geneTreeLeaf) const {
+    FeatureNode* parent = findGtfParent(geneTreeLeaf, gxfFeature);
+    FeatureNode* child = new FeatureNode(gxfFeature);
     parent->addChild(child);
     return child;
 }
@@ -142,16 +142,16 @@ GxfFeatureNode* GxfFeatureTree::loadGtfGeneRecord(const GxfFeature* gxfFeature,
 /*
  * Process a GxfRecord for a gene, return False if no more for this gene.
  */
-bool GxfFeatureTree::loadGeneRecord(GxfParser *gxfParser,
-                                    const GxfRecord* gxfRecord,
-                                    GxfFeatureNode* geneTreeRoot,
-                                    GxfFeatureNode*& geneTreeLeaf,
-                                    GxfRecordVector& queuedRecords) const {
+bool FeatureTree::loadGeneRecord(GxfParser *gxfParser,
+                                 GxfRecord* gxfRecord,
+                                 FeatureNode* geneTreeRoot,
+                                 FeatureNode*& geneTreeLeaf,
+                                 GxfRecordVector& queuedRecords) const {
     if (instanceOf(gxfRecord, GxfLine)) {
         queuedRecords.push_back(gxfRecord);
         return true;
     } else {
-        const GxfFeature* gxfFeature = dynamic_cast<const GxfFeature*>(gxfRecord);
+        GxfFeature* gxfFeature = dynamic_cast<GxfFeature*>(gxfRecord);
         if (gxfFeature->fType == GxfFeature::GENE) {
             queuedRecords.push_back(gxfRecord); // next gene
             return false;
@@ -172,14 +172,14 @@ bool GxfFeatureTree::loadGeneRecord(GxfParser *gxfParser,
  * of genes to be moved to the end, but GENCODE doesn't do this.  This whole
  * thing is annoying due to the lack of explicit structure in GTF.
  */
-GxfFeatureNode* GxfFeatureTree::loadGene(GxfParser *gxfParser,
-                                         const GxfFeature* geneFeature) {
+FeatureNode* FeatureTree::loadGene(GxfParser *gxfParser,
+                                   GxfFeature* geneFeature) {
     assert(geneFeature->fType == GxfFeature::GENE);
 
-    GxfFeatureNode* geneTreeRoot = new GxfFeatureNode(geneFeature);
-    GxfFeatureNode* geneTreeLeaf = geneTreeRoot;  // were we are currently working
+    FeatureNode* geneTreeRoot = new FeatureNode(geneFeature);
+    FeatureNode* geneTreeLeaf = geneTreeRoot;  // were we are currently working
     GxfRecordVector queuedRecords;
-    const GxfRecord* gxfRecord = NULL;
+    GxfRecord* gxfRecord = NULL;
     while ((gxfRecord = gxfParser->next()) != NULL) {
         if (not loadGeneRecord(gxfParser, gxfRecord, geneTreeRoot, geneTreeLeaf, queuedRecords)) {
             break;
@@ -190,18 +190,18 @@ GxfFeatureNode* GxfFeatureTree::loadGene(GxfParser *gxfParser,
 }
 
 /* constructor */
-GxfFeatureTree::GxfFeatureTree(GxfParser *gxfParser,
-                               const GxfFeature* geneFeature):
+FeatureTree::FeatureTree(GxfParser *gxfParser,
+                         GxfFeature* geneFeature):
     fGene(NULL) {
     fGene = loadGene(gxfParser, geneFeature);
 }
 
 /* Destructor */
-GxfFeatureTree::~GxfFeatureTree() {
+FeatureTree::~FeatureTree() {
     delete fGene;
 }
 
 /* print for debugging */
-void GxfFeatureTree::dump(ostream& fh) const {
+void FeatureTree::dump(ostream& fh) const {
     fGene->dump(fh);
 }
