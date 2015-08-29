@@ -38,14 +38,12 @@ endif
 
 CXXFLAGS += ${KENTINC} ${CXXDEBUG}
 
-HDRS = FIOStream.hh gxf.hh gzstream.hh typeOps.hh pslOps.hh frame.hh pslMapping.hh transMap.hh \
-	featureTree.hh remapStatus.hh featureTransMap.hh featureMapper.hh geneMapper.hh \
-	jkinclude.hh
 SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc pslOps.cc frame.cc pslMapping.cc transMap.cc \
-	featureTree.cc remapStatus.hh featureTransMap.cc featureMapper.cc geneMapper.cc \
+	featureTree.cc remapStatus.cc featureTransMap.cc featureMapper.cc geneMapper.cc \
 	gencode-backmap.cc
 
-OBJS = $(foreach b,$(basename ${SRCS}),${OBJDIR}/${b}.o)
+OBJS =  ${SRCS:%.cc=${OBJDIR}/%.o}
+DEPENDS =  ${SRCS:%.cc=%.depend}
 
 all: ${PROG}
 
@@ -53,14 +51,19 @@ ${PROG}: ${OBJS}
 	@mkdir -p $(dir $@)
 	${CXX} ${CXXFLAGS} -o $@ ${OBJS} ${KENTLIBS} ${LIBS}
 
-${OBJDIR}/%.o: %.cc ${HDRS}
+# dependency file is generate as part of compile
+${OBJDIR}/%.o: %.cc
 	@mkdir -p $(dir $@)
+	${CXX} ${CXXFLAGS} -c -MM -MT $@ $< >$*.depend
 	${CXX} ${CXXFLAGS} -c -o $@ $<
 
 clean:
-	rm -f ${OBJS} ${PROG}
+	rm -f ${OBJS} ${PROG} ${DEPENDS}
 savebak:
 	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh HOLD ../tests/data
 
 test:
 	cd ../tests && ${MAKE} test
+
+# don't fail on missing dependencies, they are first time the .o is generates
+-include ${DEPENDS}

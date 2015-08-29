@@ -14,6 +14,10 @@
 // FIXME: tmp
 #define debug 0
 
+/* fraction of gene expansion that causes a rejection */
+const float geneExpansionThreshold = 0.20;  
+
+
 /**
  * Class to map a single transcript and subfeatures
  * All mapping is done by a two-level alignment.
@@ -82,8 +86,6 @@ class TranscriptMapper {
         if (not pslQueryFullyMapped(mappedPsl)) {
             FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping);
         }
-
-        
     }
     
     /* recursive map features below transcript */
@@ -164,9 +166,9 @@ void GeneMapper::processTranscript(FeatureNode* transcriptTree) const {
 }
 
 /* process all transcripts of gene. */
-void GeneMapper::processTranscripts(FeatureNode* geneNode) const {
-    for (size_t i = 0; i < geneNode->fChildren.size(); i++) {
-        FeatureNode* transcriptTree = geneNode->fChildren[i];
+void GeneMapper::processTranscripts(FeatureNode* geneTree) const {
+    for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
+        FeatureNode* transcriptTree = geneTree->fChildren[i];
         if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
             throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
         }
@@ -174,49 +176,136 @@ void GeneMapper::processTranscripts(FeatureNode* geneNode) const {
     }
 }
 
+/* Recursively made features fulled unmapped, removing mapped and partially
+ * mapped entries.  Used when we discover conflicts at the gene level. */
+void GeneMapper::forceTranscriptToUnmapped(FeatureNode* featureNode,
+                                           RemapStatus remapStatus) const {
+    FeatureMapper::forceToUnmapped(featureNode, remapStatus);
+    for (size_t i = 0; i < featureNode->fChildren.size(); i++) {
+        forceTranscriptToUnmapped(featureNode->fChildren[i], remapStatus);
+    }
+}
+
+/* Force all transcript features to fulled unmapped.  Used when we discover
+ * conflicts at the gene level. */
+void GeneMapper::forceTranscriptsToUnmapped(FeatureNode* geneTree,
+                                            RemapStatus remapStatus) const {
+    for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
+        forceTranscriptToUnmapped(geneTree->fChildren[i], remapStatus);
+    }
+}
+
 /* are there any mapped transcripts? */
-bool GeneMapper::haveMappedTranscripts(FeatureNode* geneNode) const {
-    return (geneNode->fChildren.size() > 0) and (geneNode->fChildren[0]->fMappedFeatures.size() > 0);
+bool GeneMapper::haveMappedTranscripts(FeatureNode* geneTree) const {
+    return (geneTree->fChildren.size() > 0) and (geneTree->fChildren[0]->fMappedFeatures.size() > 0);
 }
 
 /* are there any unmapped transcripts? */
-bool GeneMapper::haveUnmappedTranscripts(FeatureNode* geneNode) const {
-    return (geneNode->fChildren.size() > 0) and (geneNode->fChildren[0]->fUnmappedFeatures.size() > 0);
+bool GeneMapper::haveUnmappedTranscripts(FeatureNode* geneTree) const {
+    return (geneTree->fChildren.size() > 0) and (geneTree->fChildren[0]->fUnmappedFeatures.size() > 0);
+}
+
+/* check if gene contains transcripts with different mapped seqid/strand  */
+bool GeneMapper::hasMixedMappedSeqStrand(FeatureNode* geneTree) const {
+    string seqid, strand;
+    for (int i = 0; i < geneTree->fChildren.size(); i++) {
+        FeatureNode* transcriptTree = geneTree->fChildren[i];
+        if (transcriptTree->fMappedFeatures.size() > 0) {
+            GxfFeature* mappedTranscript = transcriptTree->fMappedFeatures[0];
+            if (seqid == "") {
+                seqid = mappedTranscript->fSeqid;
+                strand = mappedTranscript->fStrand;
+            } else if ((mappedTranscript->fSeqid != seqid)
+                       or (mappedTranscript->fStrand != strand)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/* compute the length of a mapped gene */
+int GeneMapper::calcMappedGeneLength(FeatureNode* geneTree) const {
+    int start = 0, end = 0;
+    for (int i = 0; i < geneTree->fChildren.size(); i++) {
+        FeatureNode* transcriptTree = geneTree->fChildren[i];
+        if (transcriptTree->fMappedFeatures.size() > 0) {
+            GxfFeature* mappedTranscript = transcriptTree->fMappedFeatures[0];
+            if (start == 0) {
+                start = mappedTranscript->fStart;
+                end = mappedTranscript->fEnd;
+            } else {
+                start = min(start, mappedTranscript->fStart);
+                end = max(end, mappedTranscript->fEnd);
+            }
+        }
+    }
+    return (start == 0) ? 0 : (end-start)+1;
+}
+
+/* check if gene transcripts cause the gene to expand it's length
+ * beyond a threshold*/
+bool GeneMapper::hasExcessiveExpansion(FeatureNode* geneTree) const {
+    int srcGeneLength = geneTree->fFeature->size();
+    int mappedGeneLength = calcMappedGeneLength(geneTree);
+    if (mappedGeneLength > srcGeneLength) {
+        return (float(mappedGeneLength-srcGeneLength) / float(srcGeneLength)) > geneExpansionThreshold;
+    } else {
+        return false;
+    }
+}
+
+/* update gene bounds given a mapped transcript */
+void GeneMapper::updateMappedGeneBounds(FeatureNode* transcriptTree,
+                                        string& seqid, string& strand,
+                                        int& start, int& end) const {
+    assert(transcriptTree->fMappedFeatures.size() == 1);
+    GxfFeature* mappedTranscript = transcriptTree->fMappedFeatures[0];
+    assert(mappedTranscript->fType == GxfFeature::TRANSCRIPT);
+    if (seqid == "") {
+        // first
+        seqid = mappedTranscript->fSeqid;
+        strand = mappedTranscript->fStrand;
+        start = mappedTranscript->fStart;
+        end = mappedTranscript->fEnd;
+    } else {
+        start = min(start, mappedTranscript->fStart);
+        end = max(end, mappedTranscript->fEnd);
+    }
 }
 
 /* If there are any mapped transcripts of a gene, add a gene
  * record for the bounds */
-void GeneMapper::buildMappedGeneFeature(FeatureNode* geneNode,
+void GeneMapper::buildMappedGeneFeature(FeatureNode* geneTree,
                                         bool srcSeqInMapping) const {
-    // first transcripts bounds
-    FeatureNode* transcriptTree = geneNode->fChildren[0];
-    assert(transcriptTree->fMappedFeatures.size() == 1);
-    GxfFeature* feature = transcriptTree->fMappedFeatures[0];
-    const string& seqid = feature->fSeqid;
-    const string& strand = feature->fStrand;
-    int start = feature->fStart, end = feature->fEnd;
-    // other transcripts bounds
-    for (int i = 1; i < geneNode->fChildren.size(); i++) {
-        transcriptTree = geneNode->fChildren[i];
-        assert(transcriptTree->fMappedFeatures.size() == 1);
-        feature = transcriptTree->fMappedFeatures[0];
-        if (feature->fSeqid != seqid) {
-            throw logic_error("gene has transcripts on different sequences: " + feature->toString());
+    // calculate bounds
+    string seqid, strand;
+    int start = 0, end = 0;
+    for (int i = 0; i < geneTree->fChildren.size(); i++) {
+        FeatureNode* transcriptTree = geneTree->fChildren[i];
+        if (transcriptTree->fMappedFeatures.size() > 0) {
+            updateMappedGeneBounds(transcriptTree, seqid, strand, start, end);
         }
-        if (feature->fStrand != strand) {
-            throw logic_error("gene has transcripts on different strands: " + feature->toString());
-        }
-        start = min(start, feature->fStart);
-        end = max(end, feature->fEnd);
     }
-    FeatureMapper::mapBounding(geneNode, isSrcSeqInMapping(transcriptTree), seqid, start, end, strand);
+    FeatureMapper::mapBounding(geneTree, isSrcSeqInMapping(geneTree), seqid, start, end, strand);
 }
 
 /* If there are any unmapped transcripts of a gene, add a gene
  * record for the bounds */
-void GeneMapper::buildUnmappedGeneFeature(FeatureNode* geneNode,
+void GeneMapper::buildUnmappedGeneFeature(FeatureNode* geneTree,
                                           bool srcSeqInMapping) const {
-    FeatureMapper::mapBounding(geneNode, isSrcSeqInMapping(geneNode));
+    FeatureMapper::mapBounding(geneTree, isSrcSeqInMapping(geneTree));
+}
+
+/* Build gene features */
+void GeneMapper::buildGeneFeatures(FeatureNode* geneTree) const {
+    bool srcSeqInMapping = fGenomeTransMap->haveTargetSeq(geneTree->fFeature->fSeqid);
+    if (haveMappedTranscripts(geneTree)) {
+        buildMappedGeneFeature(geneTree, srcSeqInMapping);
+    }
+    if (haveUnmappedTranscripts(geneTree)) {
+        buildUnmappedGeneFeature(geneTree, srcSeqInMapping);
+    }
 }
 
 /* output GFF3 mapped ##sequence-region if not already written */
@@ -255,6 +344,19 @@ void GeneMapper::outputUnmapped(FeatureNode* featureNode,
     }
 }
 
+/* output genes */
+void GeneMapper::output(FeatureNode* geneNode,
+                        ostream& mappedGxfFh,
+                        ostream& unmappedGxfFh) {
+    if (haveMappedTranscripts(geneNode)) {
+        outputMappedSeqRegionIfNeed(geneNode->fFeature, mappedGxfFh);
+        outputMapped(geneNode, mappedGxfFh);
+    }
+    if (haveUnmappedTranscripts(geneNode)) {
+        outputUnmapped(geneNode, unmappedGxfFh);
+    }
+}
+
 /*
  * map and output one gene's annotations
  */
@@ -263,20 +365,20 @@ void GeneMapper::processGene(GxfParser *gxfParser,
                              ostream& mappedGxfFh,
                              ostream& unmappedGxfFh) {
     FeatureTree* geneTree = new FeatureTree(gxfParser, geneFeature);
-    processTranscripts(geneTree->fGene);
-    bool srcSeqInMapping = fGenomeTransMap->haveTargetSeq(geneTree->fGene->fFeature->fSeqid);
-    if (haveMappedTranscripts(geneTree->fGene)) {
-        buildMappedGeneFeature(geneTree->fGene, srcSeqInMapping);
-        outputMappedSeqRegionIfNeed(geneTree->fGene->fFeature, mappedGxfFh);
-        outputMapped(geneTree->fGene, mappedGxfFh);
+    FeatureNode* geneNode = geneTree->fGene;
+    processTranscripts(geneNode);
+    // handle gene level conflicted */
+    if (hasMixedMappedSeqStrand(geneNode)) {
+        forceTranscriptsToUnmapped(geneNode, REMAP_STATUS_GENE_CONFLICT);
     }
-    if (haveUnmappedTranscripts(geneTree->fGene)) {
-        buildUnmappedGeneFeature(geneTree->fGene, srcSeqInMapping);
-        outputUnmapped(geneTree->fGene, unmappedGxfFh);
+    if (hasExcessiveExpansion(geneNode)) {
+        forceTranscriptsToUnmapped(geneNode, REMAP_STATUS_GENE_EXPAND);
     }
+    buildGeneFeatures(geneNode);
+    geneNode->setRemapStatusAttr();
+    output(geneNode, mappedGxfFh, unmappedGxfFh);
     delete geneTree;
 }
-
 
 /* process a record, this may consume additional feature records  */
 void GeneMapper::processRecord(GxfParser *gxfParser,
@@ -296,7 +398,6 @@ void GeneMapper::processRecord(GxfParser *gxfParser,
         delete gxfRecord;
     }
 }
-
 
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfParser *gxfParser,

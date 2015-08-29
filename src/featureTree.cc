@@ -5,6 +5,26 @@
 #include <ostream>
 #include <algorithm> 
 
+/* Remap status attribute name */
+const string REMAP_STATUS_ATTR = "remap_status";
+
+/* Attribute name used for original id before remap */
+const string REMAP_ORIGINAL_ID_ATTR = "remap_original_id";
+
+/* recursively set the remap status attribute */
+void FeatureNode::setRemapStatusAttr() {
+    AttrVal remapStatusAttr(REMAP_STATUS_ATTR, remapStatusToStr(fRemapStatus));
+    for (int i = 0; i < fMappedFeatures.size(); i++) {
+        fMappedFeatures[i]->getAttrs().add(remapStatusAttr);
+    }
+    for (int i = 0; i < fUnmappedFeatures.size(); i++) {
+        fUnmappedFeatures[i]->getAttrs().add(remapStatusAttr);
+    }
+    for (int i = 0; i < fChildren.size(); i++) {
+        fChildren[i]->setRemapStatusAttr();
+    }
+}
+
 /* depth-first output */
 void FeatureNode::write(ostream& fh) const {
     fh << fFeature->toString() << endl;

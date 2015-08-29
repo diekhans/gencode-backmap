@@ -17,13 +17,14 @@ class GeneMapper {
     const TransMap* fGenomeTransMap;  // genomic mapping
     
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
+    typedef pair<string, bool> SeqIdMapPair;
     SeqIdMap fMappedSeqRegionsWritten;  // mapped sequence ids that have been written
 
     /* check if a seqregion for seqid has been written, if so, return true,
      * otherwise record it and return false.  */
     bool checkRecordSeqRegionWritten(const string& seqid) {
         if (fMappedSeqRegionsWritten.find(seqid) == fMappedSeqRegionsWritten.end()) {
-            fMappedSeqRegionsWritten.insert(pair<const string, bool>(seqid, true));
+            fMappedSeqRegionsWritten.insert(SeqIdMapPair(seqid, true));
             return false;
         } else {
             return true;
@@ -32,19 +33,34 @@ class GeneMapper {
     
     bool isSrcSeqInMapping(FeatureNode* featureNode) const;
     void processTranscript(FeatureNode* transcriptTree) const;
-    void processTranscripts(FeatureNode* geneNode) const;
-    bool haveMappedTranscripts(FeatureNode* geneNode) const;
-    bool haveUnmappedTranscripts(FeatureNode* geneNode) const;
-    void buildMappedGeneFeature(FeatureNode* geneNode,
+    void processTranscripts(FeatureNode* geneTree) const;
+    void forceTranscriptToUnmapped(FeatureNode* featureNode,
+                                   RemapStatus remapStatus) const;
+    void forceTranscriptsToUnmapped(FeatureNode* geneTree,
+                                    RemapStatus remapStatus) const;
+    bool haveMappedTranscripts(FeatureNode* geneTree) const;
+    bool haveUnmappedTranscripts(FeatureNode* geneTree) const;
+    bool hasMixedMappedSeqStrand(FeatureNode* geneTree) const;
+    int calcMappedGeneLength(FeatureNode* geneTree) const;
+    bool hasExcessiveExpansion(FeatureNode* geneTree) const;
+
+    void updateMappedGeneBounds(FeatureNode* transcriptTree,
+                                string& seqid, string& strand,
+                                int& start, int& end) const;
+    void buildMappedGeneFeature(FeatureNode* geneTree,
                                 bool srcSeqInMapping) const;
-    void buildUnmappedGeneFeature(FeatureNode* geneNode,
+    void buildUnmappedGeneFeature(FeatureNode* geneTree,
                                   bool srcSeqInMapping) const;
+    void buildGeneFeatures(FeatureNode* geneTree) const;
     void outputMappedSeqRegionIfNeed(const GxfFeature* feature,
                                      ostream& mappedGxfFh);
     void outputMapped(FeatureNode* featureNode,
                       ostream& mappedGxfFh);
     void outputUnmapped(FeatureNode* featureNode,
                         ostream& unmappedGxfFh);
+    void output(FeatureNode* geneNode,
+                ostream& mappedGxfFh,
+                ostream& unmappedGxfFh);
     void processGene(GxfParser *gxfParser,
                      GxfFeature* geneFeature,
                      ostream& mappedGxfFh,

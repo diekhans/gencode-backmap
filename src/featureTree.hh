@@ -8,6 +8,13 @@
 #include "gxf.hh"
 #include "remapStatus.hh"
 
+/* Remap status attribute name */
+extern const string REMAP_STATUS_ATTR;
+
+/* Attribute name used for original id before remap */
+extern const string REMAP_ORIGINAL_ID_ATTR;
+
+
 /**
  * Tree container for a GxfFeature object and children
  */
@@ -76,9 +83,15 @@ class FeatureNode {
      * indicates of the srcSequence qs in the genomic map */
     RemapStatus calcRemapStatus(bool srcSeqInMapping) const;
 
-    /* set the remap status */
-    void setRemapStatus(bool srcSeqInMapping) {
-        fRemapStatus = calcRemapStatus(srcSeqInMapping);
+    /* set the remap status, if remapStatus is REMAP_STATUS_NONE, calculate
+     * it */
+    void setRemapStatus(bool srcSeqInMapping,
+                        RemapStatus remapStatus=REMAP_STATUS_NONE) {
+        if (remapStatus == REMAP_STATUS_NONE) {
+            fRemapStatus = calcRemapStatus(srcSeqInMapping);
+        } else {
+            fRemapStatus = remapStatus;
+        }
     }
     
     /* print node for debugging */
@@ -86,6 +99,9 @@ class FeatureNode {
 
     /* recursively print for debugging */
     void dump(ostream& fh) const;
+
+    /* recursively set the remap status attribute */
+    void setRemapStatusAttr();
 
     /* depth-first output */
     void write(ostream& fh) const;

@@ -195,6 +195,8 @@ public:
         fStart(start), fEnd(end),
         fScore(score), fStrand(strand),
         fPhase(phase), fAttrs(attrs) {
+        assert(strand.size() == 1);
+        assert(phase.size() == 1);
     }
 
     /* clone the feature */

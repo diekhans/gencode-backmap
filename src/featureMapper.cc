@@ -33,7 +33,7 @@ void FeatureMapper::mkMappedFeature(const GxfFeature* feature,
         gxfFeatureFactory(feature->getFormat(), string(mappedPslCursor.getPsl()->tName),
                           feature->fSource, feature->fType,
                           mappedTStart+1, mappedTEnd, feature->fScore,
-                          string(0, pslQStrand(srcPslCursor.getPsl())),
+                          charToString(pslQStrand(srcPslCursor.getPsl())),
                           frame.toPhaseStr(), feature->fAttrs));
 }
 
@@ -186,7 +186,7 @@ bool FeatureMapper::shouldSplitIds(const GxfFeatureVector& outputFeatures) {
 void FeatureMapper::splitId(GxfFeature* outputFeature,
                             int partIdx) {
     const string& id = outputFeature->getAttrValue("ID");
-    outputFeature->getAttrs().add(AttrVal(REMAP_ORIGINAL_ID, id));
+    outputFeature->getAttrs().add(AttrVal(REMAP_ORIGINAL_ID_ATTR, id));
     outputFeature->getAttrs().update(AttrVal("ID", id+"_"+toString(partIdx)));
 }
 
@@ -268,4 +268,15 @@ void FeatureMapper::updateIds(FeatureNode* featureNode,
     for (int i = 0; i < featureNode->fChildren.size(); i++) {
         updateIds(featureNode->fChildren[i], featureNode);
     }
+}
+
+/* Convert a feature to full unmapped, removing any partial unmapped features.
+ * Used when transcript conflicts withing a gene are found.
+ */
+void FeatureMapper::forceToUnmapped(FeatureNode* featureNode,
+                                    RemapStatus remapStatus) {
+    featureNode->fMappedFeatures.clear();
+    featureNode->fUnmappedFeatures.clear();
+    featureNode->addUnmapped(featureNode->fFeature->clone());
+    featureNode->setRemapStatus(false, remapStatus);
 }

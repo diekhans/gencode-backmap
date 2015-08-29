@@ -38,5 +38,8 @@ output/
 # Editor
 .emacs.bak/
 
+# Dependencies
+*.depend
+
 # override above rules
 !COPYING.LIB

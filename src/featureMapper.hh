@@ -4,6 +4,7 @@
 #ifndef featureMapper_hh
 #define featureMapper_hh
 #include <string>
+#include "remapStatus.hh"
 using namespace std;
 
 
@@ -81,5 +82,10 @@ class FeatureMapper {
      */
     static void updateIds(FeatureNode* featureNode,
                           FeatureNode* parentNode=NULL);
+    /* Convert a feature to full unmapped, removing any partial unmapped features.
+     * Used when transcript conflicts withing a gene are found.
+     */
+    static void forceToUnmapped(FeatureNode* featureNode,
+                                RemapStatus remapStatus);
 };
 #endif
