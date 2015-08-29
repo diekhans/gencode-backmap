@@ -32,7 +32,8 @@ class TranscriptMapper {
     private:
     const bool fSrcSeqInMapping;                 // do we have source sequence in genomic mapps
     const PslMapping* fExonsMapping;            // exons as psl and genome mapping of exons.
-    const FeatureTransMap* fViaExonsTransMap;   // two-level transmap, NULL if can't map (owned)
+    TransMapVector fVaiExonsTransMaps;          // transmap objects that are combined
+    const FeatureTransMap* fViaExonsFeatureTransMap;   // two-level transmap, NULL if can't map (owned)
     
     /* get exon features */
     static GxfFeatureVector getExons(const FeatureNode* transcriptTree) {
@@ -60,8 +61,8 @@ class TranscriptMapper {
         }
     }
     
-    /* map transMap of exons of a transcript to the genome. */
-    static const FeatureTransMap* makeViaExonsTransMap(const PslMapping* exonsMapping) {
+    /* create transMap objects used to do two level mapping via exons. */
+    static const TransMapVector makeViaExonsTransMap(const PslMapping* exonsMapping) {
         if (debug) {
             cerr << "exonsSrc:\t" << pslToString(exonsMapping->fSrcPsl) << endl;
             for (int i = 0; i < exonsMapping->fMappedPsls.size(); i++) {
@@ -71,7 +72,7 @@ class TranscriptMapper {
         TransMapVector transMaps;
         transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fSrcPsl, true)); // swap map genomeA to exons
         transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fMappedPsls[0], false)); // exons to genomeB
-        return new FeatureTransMap(transMaps);
+        return transMaps;
     }
 
     /* create a new transcript record that covers the alignment */
@@ -90,7 +91,7 @@ class TranscriptMapper {
     
     /* recursive map features below transcript */
     void mapFeatures(FeatureNode* featureNode) {
-        PslMapping* pslMapping = fViaExonsTransMap->mapFeature("someFeature", featureNode->fFeature);
+        PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature("someFeature", featureNode->fFeature);
         if (debug && pslMapping != NULL) {
             cerr << "src\t" << pslToString(pslMapping->fSrcPsl) << endl;
             if (pslMapping->haveMappings()) {
@@ -101,6 +102,7 @@ class TranscriptMapper {
         for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
            mapFeatures(featureNode->fChildren[iChild]);
         }
+        delete pslMapping;
     }
     
     /* do work of mapping features when we have transmap mapping alignments
@@ -127,16 +129,18 @@ class TranscriptMapper {
                      bool srcSeqInMapping):
         fSrcSeqInMapping(srcSeqInMapping),
         fExonsMapping(exonTransMap(genomeTransMap, transcriptTree)),
-        fViaExonsTransMap(NULL) {
+        fViaExonsFeatureTransMap(NULL) {
         if (fExonsMapping != NULL) {
-            fViaExonsTransMap = makeViaExonsTransMap(fExonsMapping);
+            fVaiExonsTransMaps = makeViaExonsTransMap(fExonsMapping);
+            fViaExonsFeatureTransMap = new FeatureTransMap(fVaiExonsTransMaps);
         }
     }
 
     /* destructor */
     ~TranscriptMapper() {
         delete fExonsMapping;
-        delete fViaExonsTransMap;
+        fVaiExonsTransMaps.free();
+        delete fViaExonsFeatureTransMap;
     }
     
     /*
@@ -144,7 +148,7 @@ class TranscriptMapper {
      */
     void mapTranscript(FeatureNode* transcriptTree) {
         assert(transcriptTree->fFeature->fType == GxfFeature::TRANSCRIPT);
-        if (fViaExonsTransMap != NULL) {
+        if (fViaExonsFeatureTransMap != NULL) {
             mapTranscriptFeatures(transcriptTree);
         } else {
             processUnmappedFeatures(transcriptTree);

@@ -275,8 +275,8 @@ void FeatureMapper::updateIds(FeatureNode* featureNode,
  */
 void FeatureMapper::forceToUnmapped(FeatureNode* featureNode,
                                     RemapStatus remapStatus) {
-    featureNode->fMappedFeatures.clear();
-    featureNode->fUnmappedFeatures.clear();
+    featureNode->fMappedFeatures.free();
+    featureNode->fUnmappedFeatures.free();
     featureNode->addUnmapped(featureNode->fFeature->clone());
     featureNode->setRemapStatus(false, remapStatus);
 }

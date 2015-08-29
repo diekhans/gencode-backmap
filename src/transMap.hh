@@ -41,6 +41,10 @@ class TransMap {
     static TransMap* factoryFromPsls(struct psl* psls,
                                      bool swapMap);
     
+    /* factory from a  psl file */
+    static TransMap* factoryFromPslFile(const string& pslFile,
+                                        bool swapMap);
+    
     /* destructor */
     ~TransMap();
 

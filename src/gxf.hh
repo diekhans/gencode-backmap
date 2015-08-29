@@ -22,6 +22,7 @@ class GxfFeature;
 class FIOStream;
 
 typedef enum {
+    UNKNOWN_FORMAT,
     GFF3_FORMAT,
     GTF_FORMAT,
 } GxfFormat;

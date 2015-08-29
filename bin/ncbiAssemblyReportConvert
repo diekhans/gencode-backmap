@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+# Copyright 2006-2015 Mark Diekhans
+
+import sys, os
+myBinDir = os.path.normpath(os.path.abspath(os.path.dirname(sys.argv[0])))
+sys.path.append(myBinDir + "/../lib")
+import argparse
+from pycbio.ncbi.assembly import AssemblyReport
+from pycbio.sys import fileOps
+
+ID_TYPE_SEQUENCE_NAME = "sequenceName"
+ID_TYPE_GENBANK_ACCN = "genBankAccn"
+ID_TYPE_REFSEQ_ACCN = "refSeqAccn"
+ID_TYPE_UCSC_STYLE_NAME = "ucscStyleName"
+ID_TYPE_GENCODE = "gencode"
+
+ID_TYPES = (ID_TYPE_SEQUENCE_NAME, ID_TYPE_GENBANK_ACCN, ID_TYPE_REFSEQ_ACCN, ID_TYPE_UCSC_STYLE_NAME, ID_TYPE_GENCODE)
+
+OUTPUT_LIFT = "lift"
+OUTPUT_SIZES = "sizes"
+
+def parseArgs():
+    usage="""%prog outputType assemblyReport outFile
+
+Convert or extract information from an NCBI assembly report file.
+Id types based on columns in file, or special handling for gencode naming.
+"""
+    parser = argparse.ArgumentParser(description=usage)
+    parser.add_argument('--fromIdType', type=str, choices=ID_TYPES, help="from sequence id type")
+    parser.add_argument('--toIdType', type=str, choices=ID_TYPES, help="map to sequence id type")
+    parser.add_argument('outputType', type=str, choices = (OUTPUT_LIFT, OUTPUT_SIZES), help="type of output to create; one of lift or sizes")
+    parser.add_argument('assemblyReport', type=str, help="NCBI assembly report file")
+    parser.add_argument('outFile', type=str, help="output of the specified type")
+    args = parser.parse_args()
+    if args.outputType == OUTPUT_LIFT:
+        if (args.fromIdType == None) or (args.toIdType == None):
+            parser.error("output of " + OUTPUT_LIFT + " requires --fromIdType and --toIdType")
+    elif args.outputType == OUTPUT_SIZES:
+        if args.fromIdType == None:
+            parser.error("output of " + OUTPUT_SIZES + " requires --fromIdType")
+        if args.toIdType != None:
+            parser.error("--toIdType not valid with output of " + OUTPUT_SIZES)
+    return args
+
+def getGencodeId(seq):
+    """GENCODE uses UCSC name for primary chromosomes and mitochondia and GENBANK accessions
+    for others"""
+    if seq.sequenceRole == "assembled-molecule":
+        return seq.ucscStyleName
+    else:
+        return seq.genBankAccn
+
+def getId(seq, idType):
+    if idType == ID_TYPE_GENCODE:
+        return getGencodeId(seq)
+    else:
+        return getattr(seq, idType)
+
+def createLift(asmReport, fromIdType, toIdType, outFh):
+    for seq in asmReport.seqs:
+        fileOps.prRowv(outFh, 0,
+                       getId(seq, fromIdType), seq.sequenceLength,
+                       getId(seq, toIdType), seq.sequenceLength)
+
+def createSizes(asmReport, fromIdType, outFh):
+    for seq in asmReport.seqs:
+        fileOps.prRowv(outFh, getId(seq, fromIdType), seq.sequenceLength)
+
+args = parseArgs()
+asmReport = AssemblyReport(args.assemblyReport)
+with open(args.outFile, "w") as outFh:
+    if args.outputType == OUTPUT_LIFT:
+        createLift(asmReport, args.fromIdType, args.toIdType, outFh)
+    elif args.outputType == OUTPUT_SIZES:
+        createSizes(asmReport, args.fromIdType, outFh)

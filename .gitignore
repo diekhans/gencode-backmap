@@ -31,8 +31,8 @@
 # Debug files
 *.dSYM/
 
-# output directories
-bin/
+# output directories or files
+bin/gencode-backmap
 output/
 
 # Editor

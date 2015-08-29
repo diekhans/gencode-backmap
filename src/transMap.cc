@@ -127,3 +127,11 @@ TransMap* TransMap::factoryFromPsls(struct psl* psls,
     return transMap;
 }
     
+/* factory from a psl file */
+TransMap* TransMap::factoryFromPslFile(const string& pslFile,
+                                       bool swapMap) {
+    struct psl* psls = pslLoadAll(toCharStr(pslFile));
+    TransMap* transMap = factoryFromPsls(psls, swapMap);
+    pslFreeList(&psls);
+    return transMap;
+}

@@ -1,4 +1,5 @@
-src/gzstream.{hh,cc}
+this applies to src/gzstream.{hh,cc}
+
 Copyright (C) 2001  Deepak Bandyopadhyay, Lutz Kettner
 are cover by the LGNU license
 

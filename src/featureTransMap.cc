@@ -131,7 +131,7 @@ PslMapping* FeatureTransMap::mapFeatures(const string& qName,
          return NULL;
     } else {
         PslVector mappedPsls = recursiveMapPsl(srcPsl, 0);
-        return new PslMapping(pslClone(srcPsl), mappedPsls);
+        return new PslMapping(srcPsl, mappedPsls);
     }
 }
 

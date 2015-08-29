@@ -28,7 +28,7 @@ class FeaturesToPsl {
 /* Mapping of GxF features using transmap. */
 class FeatureTransMap {
     private:
-    TransMapVector fTransMaps;  // object(s) to performance mappings
+    TransMapVector fTransMaps;  // object(s) to performance mappings. NOT OWNED!
     
     void mapPslVector(const PslVector& srcPsls,
                       int iTransMap,
@@ -50,6 +50,10 @@ class FeatureTransMap {
      * Doesn't own TransMap objects */
     FeatureTransMap(const TransMapVector& transMaps):
         fTransMaps(transMaps) {
+    }
+
+    /* destructor */
+    ~FeatureTransMap() {
     }
 
     /* Convert features to PSL and map via mapping alignment(s).  PSL will be
