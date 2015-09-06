@@ -10,6 +10,7 @@ PslMapping::PslMapping(struct psl* srcPsl,
     fSrcPsl(srcPsl),
     fMappedPsls(mappedPsls),
     fScore(-1) {
+    assert(pslQStrand(srcPsl) == '+');
     if (fMappedPsls.size() > 0) {
         sortMappedPsls();
         fScore = calcPslMappingScore(srcPsl, fMappedPsls[0]); // best score due to sort

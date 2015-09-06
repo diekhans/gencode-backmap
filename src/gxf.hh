@@ -240,6 +240,17 @@ public:
         return getAttr(name)->fVal;
     }
 
+    /* get a attribute value, default it doesn't exist */
+    const string& getAttrValue(const string& name, 
+                               const string& defaultVal) const {
+        const AttrVal* attrVal = findAttr(name);
+        if (attrVal == NULL) {
+            return defaultVal;
+        } else {
+            return attrVal->fVal;
+        }
+    }
+
     /* get the size of the feature */
     int size() const {
         return (fEnd - fStart)+1;

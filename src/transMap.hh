@@ -28,7 +28,9 @@ class TransMap {
     void addSeqSize(const string& seqName,
                     int seqSize,
                     SizeMap& sizeMap);
-    struct psl* mapPslPair(struct psl *inPsl, struct psl *mapPsl) const;
+    void mapPslPair(struct psl *inPsl,
+                    struct psl *mapPsl,
+                    PslVector& allMappedPsls) const;
 
     /* constructor */
     TransMap();
@@ -68,8 +70,8 @@ class TransMap {
         return fTargetSizes.at(tName);
     }
     
-    /* Map a single input PSL and return a list of resulting mappings.
-     * Keep PSL in the same order, even if it creates a `-' on the target. */
+    /* Map a single input PSL and return a list of resulting mappings.  Keep
+     * PSL in the same query order, even if it creates a `-' on the target. */
     PslVector mapPsl(struct psl* inPsl) const;
 };
 

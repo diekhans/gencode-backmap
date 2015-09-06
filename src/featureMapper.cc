@@ -3,11 +3,13 @@
 #include "featureTree.hh"
 #include "remapStatus.hh"
 #include "pslMapping.hh"
+#include "pslCursor.hh"
 #include "frame.hh"
 #include <iostream>
 
 // FIXME: tmp
 #define debug 0
+#define debug2 0
 
 /* 
  * create an feature for a full or partially mapped feature.
@@ -17,24 +19,40 @@ void FeatureMapper::mkMappedFeature(const GxfFeature* feature,
                                     const PslCursor& mappedPslCursor,
                                     int length,
                                     FeatureNode* featureNode) {
-    int off = srcPslCursor.getTPosStrand('+') - (feature->fStart-1);
+    assert(length > 0);
+    int off = srcPslCursor.getQPos() - srcPslCursor.getQStart();
     Frame frame(Frame::fromPhaseStr(feature->fPhase).incr(off));
 
     // GxF genomic coordinates are always plus strand
-    int mappedTStart = mappedPslCursor.getTPosStrand('+');
-    int mappedTEnd = mappedTStart + length;
+    int mappedTStart, mappedTEnd;
+    mappedPslCursor.getTRangeStrand('+', length, &mappedTStart, &mappedTEnd);
 
-    if (debug) {
-        cerr << "mkMappedFeature: " << off << ": " << mappedTStart << "-" << mappedTEnd << endl;
-    }
-
-    // add mapped feature. but don't update id or attributes now
-    featureNode->addMapped(
+    // add mapped feature. but don't update id now
+    GxfFeature* mappedFeature =
         gxfFeatureFactory(feature->getFormat(), string(mappedPslCursor.getPsl()->tName),
                           feature->fSource, feature->fType,
                           mappedTStart+1, mappedTEnd, feature->fScore,
-                          charToString(pslQStrand(srcPslCursor.getPsl())),
-                          frame.toPhaseStr(), feature->fAttrs));
+                          charToString(pslTStrand(mappedPslCursor.getPsl())),
+                          frame.toPhaseStr(), feature->fAttrs);
+    featureNode->addMapped(mappedFeature);
+
+    // save original coordinates for this region
+    int srcTStart, srcTEnd;
+    srcPslCursor.getTRangeStrand('+', length, &srcTStart, &srcTEnd);
+    assert((feature->fStart-1 <= srcTStart) and (srcTEnd <= feature->fEnd));
+    string origLocation = feature->fSeqid + ":" + feature->fStrand
+        + ":" + toString(srcTStart+1) + "-" + toString(srcTEnd);
+    mappedFeature->getAttrs().add(AttrVal(REMAP_ORIGINAL_LOCATION_ATTR, origLocation));
+    if (debug2) {
+        cerr << "MAP:   " << feature->getAttrValue("ID","none")  << " [" << length << "] " << srcTStart << ".." << srcTEnd << " => "
+             << mappedTStart << ".." << mappedTEnd
+             << " from " << srcPslCursor.toString(length) << " <> " << mappedPslCursor.toString(length)
+             << endl;
+    }
+    if (debug) {
+        cerr << "mkMappedFeature:   " << feature->fType << " " << srcTStart << "-" << srcTEnd << " => " << mappedTStart << "-" << mappedTEnd << " [" << off << " for " << length << "]" << endl;
+    }
+
 }
 
 /* 
@@ -47,22 +65,28 @@ void FeatureMapper::mkUnmappedFeature(const GxfFeature* feature,
                                       const PslCursor& mappedPslCursor,
                                       int length,
                                       FeatureNode* featureNode) {
-    int off = srcPslCursor.getTPosStrand('+') - (feature->fStart-1);
+    assert(length > 0);
+    int off = srcPslCursor.getQPos() - srcPslCursor.getQStart();
     Frame frame(Frame::fromPhaseStr(feature->fPhase).incr(off));
 
     // GxF genomic coordinates are always plus strand
-    int unmappedTStart = srcPslCursor.getTPosStrand('+');
-    int unmappedTEnd = unmappedTStart + length;
+    int unmappedTStart, unmappedTEnd;
+    srcPslCursor.getTRangeStrand('+', length, &unmappedTStart, &unmappedTEnd);
+    assert((feature->fStart-1 <= unmappedTStart) and (unmappedTEnd <= feature->fEnd));
 
     if (debug) {
-        cerr << "mkUnmappedFeature: " << off << ": " << unmappedTStart << "-" << unmappedTEnd << endl;
+        cerr << "mkUnmappedFeature: " << feature->fType << " " << unmappedTStart << "-" << unmappedTEnd << " [" << off << " for " << length << "]" << endl;
     }
 
-    // add unmapped feature. but don't update id or attributes now
-    featureNode->addUnmapped(        
+    // add unmapped feature. but don't update id now. 
+    featureNode->addUnmapped(
         gxfFeatureFactory(feature->getFormat(), feature->fSeqid, feature->fSource, feature->fType,
                           unmappedTStart+1, unmappedTEnd, feature->fScore, feature->fStrand,
                           frame.toPhaseStr(), feature->fAttrs));
+    if (debug2) {
+        cerr << "UNMAP: " << feature->getAttrValue("ID","none")  << " [" << length << "] " << unmappedTStart << ".." << unmappedTEnd << " => "
+             << "null" << " from " << srcPslCursor.toString(length) << " <> null" << endl;
+    }
 }
 
 /*
@@ -77,7 +101,7 @@ void FeatureMapper::mapFeaturePart(const GxfFeature* feature,
         // deleted region; length is minimum of different between starts in feature and how much is left in the feature
         int length = min(mappedPslCursor.getQPos()-srcPslCursor.getQPos(), srcPslCursor.getBlockLeft());
         if (debug) {
-            cerr << "  mapFeaturePart: unmapped:  " << length << " " << srcPslCursor.toString() << " =>" << mappedPslCursor.toString() << endl;
+            cerr << "mapFeaturePart: unmapped:  " << length << " " << srcPslCursor.toString(length) << " => " << mappedPslCursor.toString(length) << endl;
         }
         mkUnmappedFeature(feature, srcPslCursor, mappedPslCursor, length, featureNode);
         srcPslCursor = srcPslCursor.advance(length);
@@ -85,7 +109,7 @@ void FeatureMapper::mapFeaturePart(const GxfFeature* feature,
         // mapped region; length is the minimum left in either block
         int length = min(srcPslCursor.getBlockLeft(), mappedPslCursor.getBlockLeft());
         if (debug) {
-            cerr << "  mapFeaturePart: mapped:  " << length << " " << srcPslCursor.toString() << " =>" << mappedPslCursor.toString() << endl;
+            cerr << "mapFeaturePart: mapped:  " << length << " " << srcPslCursor.toString(length) << " => " << mappedPslCursor.toString(length) << endl;
         }
         mkMappedFeature(feature, srcPslCursor, mappedPslCursor, length, featureNode);
         srcPslCursor = srcPslCursor.advance(length);
@@ -101,9 +125,15 @@ void FeatureMapper::mapFeature(const GxfFeature* feature,
                                PslCursor& srcPslCursor,
                                PslCursor& mappedPslCursor,
                                FeatureNode* featureNode) {
+    assert(sameString(srcPslCursor.getPsl()->qName, mappedPslCursor.getPsl()->qName));
+    assert(pslQStrand(srcPslCursor.getPsl()) == pslQStrand(mappedPslCursor.getPsl()));
+    assert(srcPslCursor.getPsl()->qSize == mappedPslCursor.getPsl()->qSize);
     assert((feature->fEnd-feature->fStart)+1 == srcPslCursor.getBlockLeft());
     if (debug) {
-        cerr << "mapFeature: " << feature->toString() << endl;
+        cerr << "mapFeature: " << feature->toString() << endl
+             << "    srcPsl: " << pslToString(srcPslCursor.getPsl()) << endl
+             << " mappedPsl: " << pslToString(mappedPslCursor.getPsl()) << endl;
+        
     }
     // note that source blocks can be merged in mapped block, but we don't merge
     // features.
@@ -115,7 +145,7 @@ void FeatureMapper::mapFeature(const GxfFeature* feature,
         // unmapped at the end of feature; length is what is left over in this src block
         int length = srcPslCursor.getBlockLeft();
         if (debug) {
-            cerr << "  mapFeaturePart: unend:  " << length << " " << srcPslCursor.toString() << " =>" << mappedPslCursor.toString() << endl;
+            cerr << "  mapFeaturePart: unend:  " << length << " " << srcPslCursor.toString(length) << " => " << mappedPslCursor.toString(length) << endl;
         }
         mkUnmappedFeature(feature, srcPslCursor, mappedPslCursor, length,  featureNode);
         srcPslCursor = srcPslCursor.advance(length);
@@ -157,17 +187,25 @@ bool FeatureMapper::map(FeatureNode* featureNode,
 }
 
 /* Map as single, bounding feature, like a gene or transcript record.  it's
- * range is covered by contained ranges.  Omit new ranges if unmapped.
+ * range is covered by contained ranges.  Omit new ranges if unmapped.  If
+ * numMultiMap is specified and great than, storage as attribute indicating
+ * the total number of mappings.
  */
 void FeatureMapper::mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
-                                const string& targetSeqid, int targetStart, int targetEnd, const string& targetStrand) {
+                                const string& targetSeqid, int targetStart, int targetEnd, const string& targetStrand,
+                                int numMultiMap) {
     const GxfFeature* feature = featureNode->fFeature;
     if (targetStart >= 0) {
-        featureNode->addMapped(
+        GxfFeature* mappedFeature =
             gxfFeatureFactory(feature->getFormat(), targetSeqid,
                               feature->fSource, feature->fType,
                               targetStart+1, targetEnd, feature->fScore,
-                              targetStrand, ".", feature->fAttrs));
+                              targetStrand, ".", feature->fAttrs);
+        featureNode->addMapped(mappedFeature);
+        if (numMultiMap > 1) {
+            // save count of multi-mappers
+            mappedFeature->getAttrs().add(AttrVal(REMAP_MULTI_MAP_ATTR, toString(numMultiMap)));
+        }
     } else {
         featureNode->addUnmapped(featureNode->fFeature->clone());
     }

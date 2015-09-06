@@ -1,7 +1,7 @@
 
 Test data
 
-- data/GRCh38-GRCh37.mapping.chains
+- data/GRCh38-GRCh37.liftover.chains
   Subset of chains needed to test mappings.  This was generated with:
 
      gff3ToGenePred data/gencode.v22.annotation.gff3 test.gp

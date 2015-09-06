@@ -14,6 +14,14 @@ extern const string REMAP_STATUS_ATTR;
 /* Attribute name used for original id before remap */
 extern const string REMAP_ORIGINAL_ID_ATTR;
 
+/* Attribute name used for original location before remap */
+extern const string REMAP_ORIGINAL_LOCATION_ATTR;
+
+/* Attribute name used for original location before remap */
+extern const string REMAP_ORIGINAL_LOCATION_ATTR;
+
+/* Attribute name used for mapping count with multiple mappings */
+extern const string REMAP_MULTI_MAP_ATTR;
 
 /**
  * Tree container for a GxfFeature object and children

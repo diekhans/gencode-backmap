@@ -4,6 +4,9 @@
 #include "transMap.hh"
 #include "jkinclude.hh"
 #include "typeOps.hh"
+#include <iostream>
+
+#define debug 0 // FIXME: TMP
 
 /* slCat that reverses parameter order, as the first list in rangeTreeAddVal
  * mergeVals function tends to be larger in degenerate cases of a huge number
@@ -30,12 +33,12 @@ void TransMap::mapAlnsAdd(struct psl *mapPsl) {
 
 /* convert a chain to a psl, ignoring match counts, etc */
 struct psl* TransMap::chainToPsl(struct chain *ch,
-                                    bool swapMap) {
+                                 bool swapMap) {
     int qStart = ch->qStart, qEnd = ch->qEnd;
-    char strand[2] = {ch->qStrand, '\0'};
     if (ch->qStrand == '-') {
         reverseIntRange(&qStart, &qEnd, ch->qSize);
     }
+    char strand[2] = {ch->qStrand, '\0'};
     struct psl* psl = pslNew(ch->qName, ch->qSize, qStart, qEnd,
                              ch->tName, ch->tSize, ch->tStart, ch->tEnd,
                              strand, slCount(ch->blockList), 0);
@@ -82,25 +85,41 @@ TransMap::~TransMap() {
 
 
 
-/* map one pair of query and target PSL */
-struct psl* TransMap::mapPslPair(struct psl *inPsl, struct psl *mapPsl) const {
+/* map one pair of query and mapping PSL */
+void TransMap::mapPslPair(struct psl *inPsl,
+                          struct psl *mapPsl,
+                          PslVector& allMappedPsls) const {
     if (inPsl->tSize != mapPsl->qSize)
         errAbort(toCharStr("Error: inPsl %s tSize (%d) != mapping alignment %s qSize (%d) (perhaps you need to specify -swapMap?)"),
                  inPsl->tName, inPsl->tSize, mapPsl->qName, mapPsl->qSize);
-    return pslTransMap(pslTransMapKeepTrans, inPsl, mapPsl);
+    struct psl* mappedPsls = pslTransMap(pslTransMapKeepTrans, inPsl, mapPsl);
+    if (debug) {
+        cerr << "transMap: inPsl: " << pslToString(inPsl) << endl;
+        cerr << "         mapPsl: " << pslToString(mapPsl) << endl;
+        if (mappedPsls == NULL) {
+            cerr << "      mappedPsl: NULL" << endl;
+        }
+        for (struct psl* psl = mappedPsls; psl != NULL; psl = psl->next) {
+            cerr << "      mappedPsl: " << pslToString(psl) << endl;
+        }
+    }
+    struct psl* mappedPsl;
+    while ((mappedPsl = static_cast<struct psl*>(slPopHead(&mappedPsls))) != NULL) {
+        if (pslQStrand(mappedPsl) != pslQStrand(inPsl)) {
+            pslRc(mappedPsl);
+        }
+        allMappedPsls.push_back(mappedPsl);
+    }
 }
 
-/* Map a single input PSL and return a list of resulting mappings.
- * Keep PSL in the same order, even if it creates a `-' on the target. */
+/* Map a single input PSL and return a list of resulting mappings.  * Keep PSL
+in the same query order, even if it creates a `-' on the target. */
 PslVector TransMap::mapPsl(struct psl* inPsl) const {
     PslVector mappedPsls;
     struct range *overMapAlnNodes = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);
     for (struct range *overMapAlnNode = overMapAlnNodes; overMapAlnNode != NULL; overMapAlnNode = overMapAlnNode->next) {
         for (struct psl *overMapPsl = static_cast<struct psl*>(overMapAlnNode->val); overMapPsl != NULL; overMapPsl = overMapPsl->next) {
-            struct psl* mappedPsl = mapPslPair(inPsl, overMapPsl);
-            if (mappedPsl != NULL) {
-                mappedPsls.push_back(mappedPsl);
-            }
+            mapPslPair(inPsl, overMapPsl, mappedPsls);
         }
     }
     return mappedPsls;

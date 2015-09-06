@@ -14,6 +14,8 @@
 // FIXME: tmp
 #define debug 0
 
+// FIXME: put transcript map in model
+
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.20;  
 
@@ -44,8 +46,7 @@ class TranscriptMapper {
         return exons;
     }
 
-    /*
-     * build exon PSL to query and mapping to target genome.  Return NULL if
+    /* build exon PSL to query and mapping to target genome.  Return NULL if
      * no mappings for whatever reason.*/
     static PslMapping* exonTransMap(const TransMap* genomeTransMap,
                                     const FeatureNode* transcriptTree) {
@@ -82,7 +83,8 @@ class TranscriptMapper {
         FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping,
                                    string(mappedPsl->tName),
                                    mappedPsl->tStart, mappedPsl->tEnd,
-                                   charToString(pslQStrand(mappedPsl)));
+                                   charToString(pslQStrand(mappedPsl)),
+                                   fExonsMapping->fMappedPsls.size());
         // if any was unmapped, also need a copy of the original transcript
         if (not pslQueryFullyMapped(mappedPsl)) {
             FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping);
@@ -91,7 +93,9 @@ class TranscriptMapper {
     
     /* recursive map features below transcript */
     void mapFeatures(FeatureNode* featureNode) {
-        PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature("someFeature", featureNode->fFeature);
+        const AttrVal* idAttr = featureNode->fFeature->findAttr("ID");
+        const string& nodeId = (idAttr != NULL) ? idAttr->fVal : "someFeature";
+        PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fFeature);
         if (debug && pslMapping != NULL) {
             cerr << "src\t" << pslToString(pslMapping->fSrcPsl) << endl;
             if (pslMapping->haveMappings()) {

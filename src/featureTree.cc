@@ -11,6 +11,12 @@ const string REMAP_STATUS_ATTR = "remap_status";
 /* Attribute name used for original id before remap */
 const string REMAP_ORIGINAL_ID_ATTR = "remap_original_id";
 
+/* Attribute name used for original localization before remap */
+const string REMAP_ORIGINAL_LOCATION_ATTR = "remap_original_location";
+
+/* Attribute name used for mapping count with multiple mappings */
+const string REMAP_MULTI_MAP_ATTR = "remap_multi_map";
+
 /* recursively set the remap status attribute */
 void FeatureNode::setRemapStatusAttr() {
     AttrVal remapStatusAttr(REMAP_STATUS_ATTR, remapStatusToStr(fRemapStatus));

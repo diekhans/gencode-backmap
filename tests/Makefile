@@ -7,7 +7,7 @@ valgrind = valgrind --leak-check=full --num-callers=50
 
 all: test
 
-test: gff3UcscTest gtfUcscTest
+test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest
 
 gff3UcscTest: mkdirs
 	${PROG} --swapMap data/gencode.v22.annotation.gff3 data/GRCh38-GRCh37.liftover.chain output/$@.mapped.gff3 output/$@.unmapped.gff3
@@ -18,6 +18,20 @@ gff3UcscTest: mkdirs
 
 gtfUcscTest: mkdirs
 	${PROG} --swapMap data/gencode.v22.annotation.gtf data/GRCh38-GRCh37.liftover.chain output/$@.mapped.gtf output/$@.unmapped.gtf
+	gtfToGenePred output/$@.mapped.gtf /dev/null
+	gtfToGenePred output/$@.unmapped.gtf /dev/null
+	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
+	diff -u expected/$@.unmapped.gtf output/$@.unmapped.gtf
+
+gff3NcbiTest: mkdirs
+	${PROG} --swapMap data/gencode.v22.annotation.gff3 data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
+	diff -u expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+
+gtfNcbiTest: mkdirs
+	${PROG} --swapMap data/gencode.v22.annotation.gtf data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf
 	gtfToGenePred output/$@.mapped.gtf /dev/null
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
 	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
@@ -37,7 +51,7 @@ v22Dir = /hive/data/genomes/hg38/bed/gencodeV22/data/release_22
 v22Gff3 = ${v22Dir}/gencode.v22.chr_patch_hapl_scaff.annotation.gff3.gz
 v22Gtf = ${v22Dir}/gencode.v22.chr_patch_hapl_scaff.annotation.gtf.gz
 
-bigTest: bigGff3UcscTest bigGtfUcscTest
+bigTest: bigGff3UcscTest bigGtfUcscTest bigGff3NcbiTest bigGtfNcbiTest
 
 bigGff3UcscTest: mkdirs
 	${PROG} --swapMap ${v22Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 >& output/$@.gff3.log
@@ -46,6 +60,16 @@ bigGff3UcscTest: mkdirs
 
 bigGtfUcscTest: mkdirs
 	${PROG} --swapMap ${v22Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf >& output/$@.gtf.log
+	gtfToGenePred output/$@.mapped.gtf /dev/null
+	gtfToGenePred output/$@.unmapped.gtf /dev/null
+
+bigGff3NcbiTest: mkdirs
+	${PROG} --swapMap ${v22Gff3} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 >& output/$@.gff3.log
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+
+bigGtfNcbiTest: mkdirs
+	${PROG} --swapMap ${v22Gtf} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf >& output/$@.gtf.log
 	gtfToGenePred output/$@.mapped.gtf /dev/null
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
 
