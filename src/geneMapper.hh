@@ -31,6 +31,7 @@ class GeneMapper {
         }
     }
     
+    bool isSrcSeqInMapping(const GxfFeature* feature) const;
     bool isSrcSeqInMapping(FeatureNode* featureNode) const;
     void processTranscript(FeatureNode* transcriptTree) const;
     void processTranscripts(FeatureNode* geneTree) const;

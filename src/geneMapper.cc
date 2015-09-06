@@ -162,8 +162,13 @@ class TranscriptMapper {
 };
 
 /* is the source sequence for a feature in the mapping at all? */
+bool GeneMapper::isSrcSeqInMapping(const GxfFeature* feature) const {
+    return fGenomeTransMap->haveTargetSeq(feature->fSeqid);
+}
+
+/* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(FeatureNode* featureNode) const {
-    return fGenomeTransMap->haveTargetSeq(featureNode->fFeature->fSeqid);
+    return isSrcSeqInMapping(featureNode->fFeature);
 }
 
 /* process one transcript */
@@ -320,6 +325,7 @@ void GeneMapper::buildGeneFeatures(FeatureNode* geneTree) const {
 void GeneMapper::outputMappedSeqRegionIfNeed(const GxfFeature* feature,
                                              ostream& mappedGxfFh) {
     if ((feature->getFormat() == GFF3_FORMAT)
+        and isSrcSeqInMapping(feature)
         and (not checkRecordSeqRegionWritten(feature->fSeqid))) {
         mappedGxfFh << "##sequence-region " << feature->fSeqid << " 1 "
                     << fGenomeTransMap->getTargetSeqSize(feature->fSeqid) << endl;
