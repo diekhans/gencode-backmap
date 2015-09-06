@@ -6,8 +6,6 @@
 #include "typeOps.hh"
 #include <iostream>
 
-#define debug 0 // FIXME: TMP
-
 /* slCat that reverses parameter order, as the first list in rangeTreeAddVal
  * mergeVals function tends to be larger in degenerate cases of a huge number
  * of chains */
@@ -93,16 +91,6 @@ void TransMap::mapPslPair(struct psl *inPsl,
         errAbort(toCharStr("Error: inPsl %s tSize (%d) != mapping alignment %s qSize (%d) (perhaps you need to specify -swapMap?)"),
                  inPsl->tName, inPsl->tSize, mapPsl->qName, mapPsl->qSize);
     struct psl* mappedPsls = pslTransMap(pslTransMapKeepTrans, inPsl, mapPsl);
-    if (debug) {
-        cerr << "transMap: inPsl: " << pslToString(inPsl) << endl;
-        cerr << "         mapPsl: " << pslToString(mapPsl) << endl;
-        if (mappedPsls == NULL) {
-            cerr << "      mappedPsl: NULL" << endl;
-        }
-        for (struct psl* psl = mappedPsls; psl != NULL; psl = psl->next) {
-            cerr << "      mappedPsl: " << pslToString(psl) << endl;
-        }
-    }
     struct psl* mappedPsl;
     while ((mappedPsl = static_cast<struct psl*>(slPopHead(&mappedPsls))) != NULL) {
         if (pslQStrand(mappedPsl) != pslQStrand(inPsl)) {

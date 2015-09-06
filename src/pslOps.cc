@@ -1,7 +1,5 @@
 #include "pslOps.hh"
 
-// FIXME: put cursor in own module
-
 /*
  * convert an autoSql unsiged array to a commastring */
 static string unsignedArrayToString(unsigned len,

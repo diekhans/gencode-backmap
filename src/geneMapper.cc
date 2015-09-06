@@ -11,11 +11,6 @@
 #include <iostream>
 #include <stdexcept>
 
-// FIXME: tmp
-#define debug 0
-
-// FIXME: put transcript map in model
-
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.20;  
 
@@ -64,12 +59,6 @@ class TranscriptMapper {
     
     /* create transMap objects used to do two level mapping via exons. */
     static const TransMapVector makeViaExonsTransMap(const PslMapping* exonsMapping) {
-        if (debug) {
-            cerr << "exonsSrc:\t" << pslToString(exonsMapping->fSrcPsl) << endl;
-            for (int i = 0; i < exonsMapping->fMappedPsls.size(); i++) {
-                cerr << "exonsMap[" << i <<"]\t" << pslToString(exonsMapping->fMappedPsls[i]) << endl;
-            }
-        }
         TransMapVector transMaps;
         transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fSrcPsl, true)); // swap map genomeA to exons
         transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fMappedPsls[0], false)); // exons to genomeB
@@ -96,12 +85,6 @@ class TranscriptMapper {
         const AttrVal* idAttr = featureNode->fFeature->findAttr("ID");
         const string& nodeId = (idAttr != NULL) ? idAttr->fVal : "someFeature";
         PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fFeature);
-        if (debug && pslMapping != NULL) {
-            cerr << "src\t" << pslToString(pslMapping->fSrcPsl) << endl;
-            if (pslMapping->haveMappings()) {
-                cerr << "mapped\t" << pslToString(pslMapping->fMappedPsls[0]) << endl;
-            }
-        }
         FeatureMapper::map(featureNode, pslMapping, fSrcSeqInMapping);
         for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
            mapFeatures(featureNode->fChildren[iChild]);
