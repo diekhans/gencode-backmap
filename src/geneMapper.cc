@@ -14,6 +14,14 @@
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.20;  
 
+/*  TSV headers, terminated by NULL */
+static const char* mappingInfoHeaders[] = {
+    "id", "type",
+    "srcChrom", "srcStart", "srcEnd", "srcStrand",
+    "mappedChrom", "mappedStart", "mappedEnd", "mappedStrand",
+    "mappingStatus", "numMappings", NULL
+};
+
 
 /**
  * Class to map a single transcript and subfeatures
@@ -72,9 +80,9 @@ class TranscriptMapper {
         FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping,
                                    string(mappedPsl->tName),
                                    mappedPsl->tStart, mappedPsl->tEnd,
-                                   charToString(pslQStrand(mappedPsl)),
-                                   fExonsMapping->fMappedPsls.size());
-        // if any was unmapped, also need a copy of the original transcript
+                                   charToString(pslQStrand(mappedPsl)));
+        transcriptNode->fNumMappings = fExonsMapping->fMappedPsls.size();
+        // if any parts was unmapped, also need a copy of the original transcript
         if (not pslQueryFullyMapped(mappedPsl)) {
             FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping);
         }
@@ -141,6 +149,7 @@ class TranscriptMapper {
             processUnmappedFeatures(transcriptTree);
         }
         FeatureMapper::updateIds(transcriptTree);
+        transcriptTree->setNumMappingsAttr();
     }
 };
 
@@ -251,6 +260,13 @@ bool GeneMapper::hasExcessiveExpansion(FeatureNode* geneTree) const {
     }
 }
 
+/* set the number of mappings of the gene  */
+void GeneMapper::setNumGeneMappings(FeatureNode* geneTree) const {
+    for (int i = 0; i < geneTree->fChildren.size(); i++) {
+        geneTree->fNumMappings = max(geneTree->fNumMappings, geneTree->fChildren[i]->fNumMappings);
+    }
+}
+
 /* update gene bounds given a mapped transcript */
 void GeneMapper::updateMappedGeneBounds(FeatureNode* transcriptTree,
                                         string& seqid, string& strand,
@@ -294,8 +310,9 @@ void GeneMapper::buildUnmappedGeneFeature(FeatureNode* geneTree,
 }
 
 /* Build gene features */
-void GeneMapper::buildGeneFeatures(FeatureNode* geneTree) const {
+void GeneMapper::buildGeneFeature(FeatureNode* geneTree) const {
     bool srcSeqInMapping = fGenomeTransMap->haveTargetSeq(geneTree->fFeature->fSeqid);
+    setNumGeneMappings(geneTree);
     if (haveMappedTranscripts(geneTree)) {
         buildMappedGeneFeature(geneTree, srcSeqInMapping);
     }
@@ -342,15 +359,61 @@ void GeneMapper::outputUnmapped(FeatureNode* featureNode,
 }
 
 /* output genes */
-void GeneMapper::output(FeatureNode* geneNode,
-                        ostream& mappedGxfFh,
-                        ostream& unmappedGxfFh) {
-    if (haveMappedTranscripts(geneNode)) {
-        outputMappedSeqRegionIfNeed(geneNode->fFeature, mappedGxfFh);
-        outputMapped(geneNode, mappedGxfFh);
+void GeneMapper::outputFeatures(FeatureNode* geneTree,
+                                ostream& mappedGxfFh,
+                                ostream& unmappedGxfFh) {
+    if (haveMappedTranscripts(geneTree)) {
+        outputMappedSeqRegionIfNeed(geneTree->fFeature, mappedGxfFh);
+        outputMapped(geneTree, mappedGxfFh);
     }
-    if (haveUnmappedTranscripts(geneNode)) {
-        outputUnmapped(geneNode, unmappedGxfFh);
+    if (haveUnmappedTranscripts(geneTree)) {
+        outputUnmapped(geneTree, unmappedGxfFh);
+    }
+}
+
+/* output info TSV header */
+void GeneMapper::outputInfoHeader(ostream& mappingInfoFh) {
+    for (int i = 0; mappingInfoHeaders[i] != NULL; i++) {
+        if (i > 0) {
+            mappingInfoFh << "\t";
+        }
+        mappingInfoFh << mappingInfoHeaders[i];
+    }
+    mappingInfoFh << endl;
+}
+
+/* output info on one bounding feature */
+void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
+                                   ostream& mappingInfoFh) {
+    assert(featureNode->fMappedFeatures.size() <= 1);  // only handles bounding features
+    mappingInfoFh << featureNode->fFeature->getTypeId() << "\t"
+                  << featureNode->fFeature->fType << "\t"
+                  << featureNode->fFeature->fSeqid << "\t"
+                  << featureNode->fFeature->fStart << "\t"
+                  << featureNode->fFeature->fEnd << "\t"
+                  << featureNode->fFeature->fStrand << "\t";
+    if (featureNode->fMappedFeatures.size() > 0) {
+        const GxfFeature* mappedFeature = featureNode->fMappedFeatures[0];
+        mappingInfoFh << mappedFeature->fSeqid << "\t"
+                      << mappedFeature->fStart << "\t"
+                      << mappedFeature->fEnd << "\t"
+                      << mappedFeature->fStrand << "\t";
+    } else {
+        mappingInfoFh << "\t0\t0\t.\t";
+    }
+    mappingInfoFh << remapStatusToStr(featureNode->fRemapStatus) << "\t"
+                  << featureNode->fNumMappings << endl;
+}
+
+/*
+ * Output information about gene mapping
+ */
+void GeneMapper::outputInfo(FeatureNode* geneNode,
+                            ostream& mappingInfoFh) {
+    outputFeatureInfo(geneNode, mappingInfoFh);
+    // transcripts
+    for (int i = 0; i < geneNode->fChildren.size(); i++) {
+        outputFeatureInfo(geneNode->fChildren[i], mappingInfoFh);
     }
 }
 
@@ -360,20 +423,22 @@ void GeneMapper::output(FeatureNode* geneNode,
 void GeneMapper::processGene(GxfParser *gxfParser,
                              GxfFeature* geneFeature,
                              ostream& mappedGxfFh,
-                             ostream& unmappedGxfFh) {
-    FeatureTree* geneTree = new FeatureTree(gxfParser, geneFeature);
-    FeatureNode* geneNode = geneTree->fGene;
-    processTranscripts(geneNode);
+                             ostream& unmappedGxfFh,
+                             ostream& mappingInfoFh) {
+    FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
+    processTranscripts(geneTree);
     // handle gene level conflicted */
-    if (hasMixedMappedSeqStrand(geneNode)) {
-        forceTranscriptsToUnmapped(geneNode, REMAP_STATUS_GENE_CONFLICT);
+    if (hasMixedMappedSeqStrand(geneTree)) {
+        forceTranscriptsToUnmapped(geneTree, REMAP_STATUS_GENE_CONFLICT);
     }
-    if (hasExcessiveExpansion(geneNode)) {
-        forceTranscriptsToUnmapped(geneNode, REMAP_STATUS_GENE_EXPAND);
+    if (hasExcessiveExpansion(geneTree)) {
+        forceTranscriptsToUnmapped(geneTree, REMAP_STATUS_GENE_EXPAND);
     }
-    buildGeneFeatures(geneNode);
-    geneNode->setRemapStatusAttr();
-    output(geneNode, mappedGxfFh, unmappedGxfFh);
+    buildGeneFeature(geneTree);
+    geneTree->setRemapStatusAttr();
+    geneTree->setNumMappingsAttr();
+    outputFeatures(geneTree, mappedGxfFh, unmappedGxfFh);
+    outputInfo(geneTree, mappingInfoFh);
     delete geneTree;
 }
 
@@ -381,9 +446,10 @@ void GeneMapper::processGene(GxfParser *gxfParser,
 void GeneMapper::processRecord(GxfParser *gxfParser,
                                GxfRecord* gxfRecord,
                                ostream& mappedGxfFh,
-                               ostream& unmappedGxfFh) {
+                               ostream& unmappedGxfFh,
+                               ostream& mappingInfoFh) {
     if (instanceOf(gxfRecord, GxfFeature)) {
-        processGene(gxfParser, dynamic_cast<GxfFeature*>(gxfRecord), mappedGxfFh, unmappedGxfFh);
+        processGene(gxfParser, dynamic_cast<GxfFeature*>(gxfRecord), mappedGxfFh, unmappedGxfFh, mappingInfoFh);
     } else if ((gxfParser->getGxfFormat() == GFF3_FORMAT) and (gxfRecord->toString().find("##sequence-region") == 0)) {
         // mapped ##sequence-region records are created based on sequences written
         unmappedGxfFh << gxfRecord->toString() << endl;
@@ -399,10 +465,12 @@ void GeneMapper::processRecord(GxfParser *gxfParser,
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfParser *gxfParser,
                         ostream& mappedGxfFh,
-                        ostream& unmappedGxfFh) {
+                        ostream& unmappedGxfFh,
+                        ostream& mappingInfoFh) {
+    outputInfoHeader(mappingInfoFh);
     GxfRecord* gxfRecord;
     while ((gxfRecord = gxfParser->next()) != NULL) {
-        processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh);
+        processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh, mappingInfoFh);
     }
 }
 

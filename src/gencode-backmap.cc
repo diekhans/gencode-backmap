@@ -5,8 +5,7 @@
 #include <getopt.h>
 #include "gxf.hh"
 #include "typeOps.hh"
-#include <fstream>
-#include <iostream>
+#include "FIOStream.hh"
 #include "transMap.hh"
 #include "geneMapper.hh"
 
@@ -17,22 +16,24 @@ static void gencodeBackmap(const string& inGxfFile,
                            bool chainAlignments,
                            bool swapMap,
                            const string& mappedGxfFile,
-                           const string& unmappedGxfFile) {
+                           const string& unmappedGxfFile,
+                           const string& mappingInfoTsv) {
     TransMap* genomeTransMap = chainAlignments
         ? TransMap::factoryFromChainFile(mappingAligns, swapMap)
         : TransMap::factoryFromPslFile(mappingAligns, swapMap);
 
     GxfParser gxfParser(inGxfFile, gxfFormat);
-    ofstream mappedGxfFh(mappedGxfFile);
-    ofstream unmappedGxfFh(unmappedGxfFile);
+    FIOStream mappedGxfFh(mappedGxfFile, ios::out);
+    FIOStream unmappedGxfFh(unmappedGxfFile, ios::out);
+    FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     GeneMapper geneMapper(genomeTransMap);
-    geneMapper.mapGxf(&gxfParser, mappedGxfFh, unmappedGxfFh);
+    geneMapper.mapGxf(&gxfParser, mappedGxfFh, unmappedGxfFh, mappingInfoFh);
     delete genomeTransMap;
 }
 
 /* Entry point.  Parse arguments. */
 int main(int argc, char *argv[]) {
-    const string usage = "%s [options] inGxf mappingAligns mappedGxf unmappedGxf\n\n"
+    const string usage = "%s [options] inGxf mappingAligns mappedGxf unmappedGxf mappingInfoTsv\n\n"
         "Map GENCODE annotations between assemblies projecting through genomic\n"
         "alignments. This operates on GENCODE GFF3 and GTF files and makes assumptions\n"
         "about their organization.\n\n"
@@ -44,10 +45,9 @@ int main(int argc, char *argv[]) {
         "          a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
         "          additional .gz extensionn\n"
         "  mappingAligns - Alignments between the two genomes.  The \n"
-        "  mappedGxf - \n"
-        "  unmappedGxf - \n"
-
-;
+        "  mappedGxf - GxF file of mapped features on target genome\n"
+        "  unmappedGxf - GxF file of unmapped features on source genome\n"
+        "  mappingInfoTsv - TSV file with information about each gene and transcript mapping\n";
 
     const struct option long_options[] = {
         {"help", 0, NULL, 'h'},
@@ -76,13 +76,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if ((argc - optind) != 4) {
+    if ((argc - optind) != 5) {
         errAbort(toCharStr("wrong # args: " + usage), argv[0]);
     }
     string inGxfFile = argv[optind];
     string mappingAligns = argv[optind+1];
     string mappedGxfFile = argv[optind+2];
     string unmappedGxfFile = argv[optind+3];
+    string mappingInfoTsv = argv[optind+4];
 
     GxfFormat gxfFormat = UNKNOWN_FORMAT;
     if (stringEndsWith(inGxfFile, ".gff3") or stringEndsWith(inGxfFile, ".gff3.gz")) {
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]) {
         errAbort(toCharStr("Error: expected mapping alignment file with an extension of .chain, .chain.gz, .psl, or .psl.gz"));
     }
     try {
-        gencodeBackmap(inGxfFile, gxfFormat, mappingAligns, chainAlignments, swapMap, mappedGxfFile, unmappedGxfFile);
+        gencodeBackmap(inGxfFile, gxfFormat, mappingAligns, chainAlignments, swapMap, mappedGxfFile, unmappedGxfFile, mappingInfoTsv);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;
         return 1;

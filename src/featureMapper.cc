@@ -151,13 +151,11 @@ bool FeatureMapper::map(FeatureNode* featureNode,
 }
 
 /* Map as single, bounding feature, like a gene or transcript record.  it's
- * range is covered by contained ranges.  Omit new ranges if unmapped.  If
- * numMultiMap is specified and great than, storage as attribute indicating
+ * range is covered by contained ranges.  Omit new ranges if unmapped.
  * the total number of mappings.
  */
 void FeatureMapper::mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
-                                const string& targetSeqid, int targetStart, int targetEnd, const string& targetStrand,
-                                int numMultiMap) {
+                                const string& targetSeqid, int targetStart, int targetEnd, const string& targetStrand) {
     const GxfFeature* feature = featureNode->fFeature;
     if (targetStart >= 0) {
         GxfFeature* mappedFeature =
@@ -166,10 +164,6 @@ void FeatureMapper::mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
                               targetStart+1, targetEnd, feature->fScore,
                               targetStrand, ".", feature->fAttrs);
         featureNode->addMapped(mappedFeature);
-        if (numMultiMap > 1) {
-            // save count of multi-mappers
-            mappedFeature->getAttrs().add(AttrVal(REMAP_MULTI_MAP_ATTR, toString(numMultiMap)));
-        }
     } else {
         featureNode->addUnmapped(featureNode->fFeature->clone());
     }

@@ -17,11 +17,8 @@ extern const string REMAP_ORIGINAL_ID_ATTR;
 /* Attribute name used for original location before remap */
 extern const string REMAP_ORIGINAL_LOCATION_ATTR;
 
-/* Attribute name used for original location before remap */
-extern const string REMAP_ORIGINAL_LOCATION_ATTR;
-
-/* Attribute name used for mapping count with multiple mappings */
-extern const string REMAP_MULTI_MAP_ATTR;
+/* Attribute name for count of mappings, set on transcripts or genes */
+extern const string REMAP_NUM_MAPPINGS_ATTR;
 
 /**
  * Tree container for a GxfFeature object and children
@@ -32,6 +29,7 @@ class FeatureNode {
     FeatureNode* fParent;
     vector<FeatureNode*> fChildren;
     RemapStatus fRemapStatus;
+    int fNumMappings;    // Number of location feature was mapped too.  Not set for all node types.
     GxfFeatureVector fMappedFeatures;
     GxfFeatureVector fUnmappedFeatures;
     GxfFeatureVector fAllOutputFeatures;   // use for debugging, as it tracks order added.
@@ -40,7 +38,8 @@ class FeatureNode {
     FeatureNode(GxfFeature* feature):
         fFeature(feature),
         fParent(NULL),
-        fRemapStatus(REMAP_STATUS_NONE) {
+        fRemapStatus(REMAP_STATUS_NONE),
+        fNumMappings(0) {
     }
 
     ~FeatureNode() {
@@ -101,12 +100,15 @@ class FeatureNode {
             fRemapStatus = remapStatus;
         }
     }
-    
+
     /* print node for debugging */
     void dumpNode(ostream& fh) const;
 
     /* recursively print for debugging */
     void dump(ostream& fh) const;
+
+    /* set the remap number of mappings attribute on this node  */
+    void setNumMappingsAttr();
 
     /* recursively set the remap status attribute */
     void setRemapStatusAttr();
@@ -116,45 +118,32 @@ class FeatureNode {
 };
 
 /**
- * group a genes records together in a tree.
+ * Group genes records together in a tree.
  */
-class FeatureTree {
+class GeneTree {
     private:
-    void queueRecords(GxfParser *gxfParser,
-                      GxfRecordVector& gxfRecords) const;
-    FeatureNode* findGff3Parent(FeatureNode* geneTreeLeaf,
-                                const GxfFeature* gxfFeature) const;
-    FeatureNode* loadGff3GeneRecord(GxfFeature* gxfFeature,
-                                    FeatureNode* geneTreeLeaf) const;
-    const string& getGtfParentType(const string& featureType) const;
-    FeatureNode* findGtfParent(FeatureNode* geneTreeLeaf,
-                                  const GxfFeature* gxfFeature) const;
-    FeatureNode* loadGtfGeneRecord(GxfFeature* gxfFeature,
-                                   FeatureNode* geneTreeLeaf) const;    
-    bool loadGeneRecord(GxfParser *gxfParser,
-                        GxfRecord* gxfRecord,
-                        FeatureNode* geneTreeRoot,
-                        FeatureNode*& geneTreeLeaf,
-                        GxfRecordVector& queuedRecords) const;
-    FeatureNode* loadGene(GxfParser *gxfParser,
-                          GxfFeature* geneFeature);
+    static void queueRecords(GxfParser *gxfParser,
+                             GxfRecordVector& gxfRecords);
+    static FeatureNode* findGff3Parent(FeatureNode* geneTreeLeaf,
+                                const GxfFeature* gxfFeature);
+    static FeatureNode* loadGff3GeneRecord(GxfFeature* gxfFeature,
+                                    FeatureNode* geneTreeLeaf);
+    static const string& getGtfParentType(const string& featureType);
+    static FeatureNode* findGtfParent(FeatureNode* geneTreeLeaf,
+                                  const GxfFeature* gxfFeature);
+    static FeatureNode* loadGtfGeneRecord(GxfFeature* gxfFeature,
+                                   FeatureNode* geneTreeLeaf);    
+    static bool loadGeneRecord(GxfParser *gxfParser,
+                               GxfRecord* gxfRecord,
+                               FeatureNode* geneTreeRoot,
+                               FeatureNode*& geneTreeLeaf,
+                               GxfRecordVector& queuedRecords);
+    static FeatureNode* loadGene(GxfParser *gxfParser,
+                                 GxfFeature* geneFeature);
     public:
-    FeatureNode* fGene;
-
-    /* constructor */
-    FeatureTree(GxfParser *gxfParser,
-                GxfFeature* geneFeature);
-
-    /* Destructor */
-    ~FeatureTree();
-
-    /* print for debugging */
-    void dump(ostream& fh) const;
-
-    /* depth-first output */
-    void write(ostream& fh) const {
-        fGene->write(fh);
-    }
+    /* factory */
+    static FeatureNode* geneTreeFactory(GxfParser *gxfParser,
+                                        GxfFeature* geneFeature);
 };
 
 #endif

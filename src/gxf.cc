@@ -36,6 +36,22 @@ string GxfFeature::baseColumnsAsString() const {
         + to_string(fEnd) + "\t" + fScore + "\t" + fStrand + "\t" + fPhase + "\t";
 }
 
+/* get the id base on feature type, or empty string if it doesn't have an
+ * id */
+const string& GxfFeature::getTypeId() const {
+    static const string emptyStr;
+    if (fType == GxfFeature::GENE) {
+        return getAttrValue("gene_id", emptyStr);
+    } else if (fType == GxfFeature::TRANSCRIPT) {
+        return getAttrValue("transcript_id", emptyStr);
+    } else if (fType == GxfFeature::EXON) {
+        return getAttrValue("exon_id", emptyStr);
+    } else {
+        return emptyStr;
+    }
+}
+
+
 /*
  * GFF3 Feature
  */

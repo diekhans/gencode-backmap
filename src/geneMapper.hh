@@ -45,6 +45,7 @@ class GeneMapper {
     int calcMappedGeneLength(FeatureNode* geneTree) const;
     bool hasExcessiveExpansion(FeatureNode* geneTree) const;
 
+    void setNumGeneMappings(FeatureNode* geneTree) const;
     void updateMappedGeneBounds(FeatureNode* transcriptTree,
                                 string& seqid, string& strand,
                                 int& start, int& end) const;
@@ -52,24 +53,31 @@ class GeneMapper {
                                 bool srcSeqInMapping) const;
     void buildUnmappedGeneFeature(FeatureNode* geneTree,
                                   bool srcSeqInMapping) const;
-    void buildGeneFeatures(FeatureNode* geneTree) const;
+    void buildGeneFeature(FeatureNode* geneTree) const;
     void outputMappedSeqRegionIfNeed(const GxfFeature* feature,
                                      ostream& mappedGxfFh);
     void outputMapped(FeatureNode* featureNode,
                       ostream& mappedGxfFh);
     void outputUnmapped(FeatureNode* featureNode,
                         ostream& unmappedGxfFh);
-    void output(FeatureNode* geneNode,
-                ostream& mappedGxfFh,
-                ostream& unmappedGxfFh);
+    void outputFeatures(FeatureNode* geneNode,
+                        ostream& mappedGxfFh,
+                        ostream& unmappedGxfFh);
+    void outputInfoHeader(ostream& mappingInfoFh);
+    void outputFeatureInfo(FeatureNode* featureNode,
+                           ostream& mappingInfoFh);
+    void outputInfo(FeatureNode* geneNode,
+                    ostream& mappingInfoFh);
     void processGene(GxfParser *gxfParser,
                      GxfFeature* geneFeature,
                      ostream& mappedGxfFh,
-                     ostream& unmappedGxfFh);
+                     ostream& unmappedGxfFh,
+                     ostream& mappingInfoFh);
     void processRecord(GxfParser *gxfParser,
                        GxfRecord* gxfRecord,
                        ostream& mappedGxfFh,
-                       ostream& unmappedGxfFh);
+                       ostream& unmappedGxfFh,
+                       ostream& mappingInfoFh);
     public:
     /* Constructor */
     GeneMapper(const TransMap* genomeTransMap):
@@ -79,7 +87,8 @@ class GeneMapper {
     /* Map a GFF3/GTF */
     void mapGxf(GxfParser *gxfParser,
                 ostream& mappedGxfFh,
-                ostream& unmappedGxfFh);
+                ostream& unmappedGxfFh,
+                ostream& mappingInfoFh);
 };
 
 #endif

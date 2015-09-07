@@ -251,6 +251,10 @@ public:
         }
     }
 
+    /* get the id base on feature type, or empty string if it doesn't have an
+     * id */
+    const string& getTypeId() const;
+    
     /* get the size of the feature */
     int size() const {
         return (fEnd - fStart)+1;

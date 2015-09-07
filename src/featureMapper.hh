@@ -69,12 +69,10 @@ class FeatureMapper {
 
     /* Map as single, bounding feature, like a gene or transcript record.
      * it's range is covered by contained ranges.  Omit new ranges if
-     * unmapped.  If numMultiMap is specified and great than, storage as attribute
-     * indicating the total number of mappings.
+     * unmapped.
      */
     static void mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
-                            const string& targetSeqid="", int targetStart=-1, int targetEnd=-1, const string& targetStrand=".",
-                            int numMultiMap=-1);
+                            const string& targetSeqid="", int targetStart=-1, int targetEnd=-1, const string& targetStrand=".");
 
     /*
      * Recursively update node ids and parent links if this is a GFF3.  Also
