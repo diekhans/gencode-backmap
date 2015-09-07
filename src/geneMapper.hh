@@ -35,15 +35,13 @@ class GeneMapper {
     bool isSrcSeqInMapping(FeatureNode* featureNode) const;
     void processTranscript(FeatureNode* transcriptTree) const;
     void processTranscripts(FeatureNode* geneTree) const;
-    void forceTranscriptToUnmapped(FeatureNode* featureNode,
-                                   RemapStatus remapStatus) const;
-    void forceTranscriptsToUnmapped(FeatureNode* geneTree,
-                                    RemapStatus remapStatus) const;
+    void forceToUnmapped(FeatureNode* featureNode,
+                         RemapStatus remapStatus) const;
     bool haveMappedTranscripts(FeatureNode* geneTree) const;
     bool haveUnmappedTranscripts(FeatureNode* geneTree) const;
     bool hasMixedMappedSeqStrand(FeatureNode* geneTree) const;
     int calcMappedGeneLength(FeatureNode* geneTree) const;
-    bool hasExcessiveExpansion(FeatureNode* geneTree) const;
+    bool hasExcessiveSizeChange(FeatureNode* geneTree) const;
 
     void setNumGeneMappings(FeatureNode* geneTree) const;
     void updateMappedGeneBounds(FeatureNode* transcriptTree,
@@ -54,7 +52,7 @@ class GeneMapper {
     void buildUnmappedGeneFeature(FeatureNode* geneTree,
                                   bool srcSeqInMapping) const;
     void buildGeneFeature(FeatureNode* geneTree) const;
-    void outputMappedSeqRegionIfNeed(const GxfFeature* feature,
+    void outputMappedSeqRegionIfNeed(FeatureNode* geneTree,
                                      ostream& mappedGxfFh);
     void outputMapped(FeatureNode* featureNode,
                       ostream& mappedGxfFh);

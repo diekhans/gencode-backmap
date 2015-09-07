@@ -36,8 +36,8 @@ const string& remapStatusToStr(RemapStatus remapStatus) {
             static const string status("gene_conflict");
             return status;
         }
-        case REMAP_STATUS_GENE_EXPAND: {
-            static const string status("gene_expand");
+        case REMAP_STATUS_GENE_SIZE_CHANGE: {
+            static const string status("gene_size_change");
             return status;
         }
     }

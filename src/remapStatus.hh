@@ -16,7 +16,7 @@ typedef enum {
     REMAP_STATUS_DELETED,            // completely deleted
     REMAP_STATUS_NO_SEQ_MAP,         // no mapping alignments for sequence
     REMAP_STATUS_GENE_CONFLICT,      // transcripts disagree on sequence/strand
-    REMAP_STATUS_GENE_EXPAND,        // size of gene expansion has exceeded threshold
+    REMAP_STATUS_GENE_SIZE_CHANGE,    // change in size of gene has exceeded threshold
 } RemapStatus;
 
 /* convert a remap status to a string  */

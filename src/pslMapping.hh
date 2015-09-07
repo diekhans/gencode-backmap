@@ -29,6 +29,11 @@ class PslMapping {
         return fMappedPsls.size() > 0;
     }
 
+    /* dump for debugging purposes, adding optional description */
+    void dump(ostream& fh,
+              const string& description="",
+              const string& indent="") const;
+    
     /* Compute a mapping score between the src and mapped psl.  A perfect
      * mapping is a zero score.  Extra inserts count against the score. */
     static int calcPslMappingScore(const struct psl* srcPsl,

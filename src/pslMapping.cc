@@ -3,6 +3,7 @@
  */
 #include "pslMapping.hh"
 #include <algorithm>
+#include <ostream>
 
 /* constructor, sort mapped PSLs */
 PslMapping::PslMapping(struct psl* srcPsl,
@@ -38,6 +39,23 @@ int PslMapping::calcPslMappingScore(const struct psl* srcPsl,
     return (numAlignedBases(srcPsl) - numAlignedBases(mappedPsl))
         + abs(int(srcPsl->qNumInsert)-int(mappedPsl->qNumInsert))
         + abs(int(srcPsl->tNumInsert)-int(mappedPsl->tNumInsert));
+}
+
+/* dump for debugging purposes, adding optional description */
+void PslMapping::dump(ostream& fh,
+                      const string& description,
+                      const string& indent) const {
+    if (description != "") {
+        fh  << description << endl;
+    }
+    fh << indent << "srcPsl:       " << pslToString(fSrcPsl) << endl;
+    if (fMappedPsls.size() == 0) {
+        fh << indent << "mappedPsl[0]: none" << endl;
+    } else {
+        for (int i = 0; i < fMappedPsls.size(); i++) {
+            fh << indent << "mappedPsl[" << i << "]: " << pslToString(fMappedPsls[i]) << endl;
+        }
+    }
 }
 
 /* comparison functor based on lowest store. */
