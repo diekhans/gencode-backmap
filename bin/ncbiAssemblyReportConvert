@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# Copyright 2006-2015 Mark Diekhans
 
 import sys, os
 myBinDir = os.path.normpath(os.path.abspath(os.path.dirname(sys.argv[0])))
@@ -20,12 +19,10 @@ OUTPUT_LIFT = "lift"
 OUTPUT_SIZES = "sizes"
 
 def parseArgs():
-    usage="""%prog outputType assemblyReport outFile
-
-Convert or extract information from an NCBI assembly report file.
+    desc="""Convert or extract information from an NCBI assembly report file.
 Id types based on columns in file, or special handling for gencode naming.
 """
-    parser = argparse.ArgumentParser(description=usage)
+    parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--fromIdType', type=str, choices=ID_TYPES, help="from sequence id type")
     parser.add_argument('--toIdType', type=str, choices=ID_TYPES, help="map to sequence id type")
     parser.add_argument('outputType', type=str, choices = (OUTPUT_LIFT, OUTPUT_SIZES), help="type of output to create; one of lift or sizes")

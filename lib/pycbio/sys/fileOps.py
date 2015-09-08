@@ -3,15 +3,6 @@
 
 import os, errno, sys, stat, fcntl, socket
 
-_pipelineMod = None
-def _getPipelineClass():
-    """To avoid mutual import issues, we get the Pipeline class dynamically on
-    first use"""
-    global _pipelineMod
-    if _pipelineMod == None:
-        _pipelineMod = __import__("pycbio.sys.pipeline", fromlist=["pycbio.sys.pipeline"])
-    return _pipelineMod.Pipeline
-
 def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""
     try: 
@@ -77,20 +68,6 @@ def decompressCmd(path, default="cat"):
         return "bzcat"
     else:
         return default
-
-# FIXME: should this use python gzip/bzip2 classes??
-def opengz(file, mode="r"):
-    """open a file, if it ends in an extension indicating compression, open
-    with a decompression pipe.  Only reading is currently supported"""
-    # FIXME: implement write
-    if (mode != "r"):
-        raise Exception("opengz only supports read access: " + file)
-    decompCmd = decompressCmd(file)
-    if decompCmd != None:
-        open(file).close()  # ensure it exists
-        return _getPipelineClass()([decompCmd, file])
-    else:
-        return open(file, mode)
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
 # keyword for flush

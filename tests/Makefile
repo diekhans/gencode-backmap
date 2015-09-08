@@ -7,7 +7,7 @@ valgrind = valgrind --leak-check=full --num-callers=50
 
 all: test
 
-test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest
+test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest mapInfoSumTest
 
 gff3UcscTest: mkdirs
 	${PROG} --swapMap data/gencode.v22.annotation.gff3 data/GRCh38-GRCh37.liftover.chain output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
@@ -40,6 +40,11 @@ gtfNcbiTest: mkdirs
 	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
 	diff -u expected/$@.unmapped.gtf output/$@.unmapped.gtf
 	diff -u expected/$@.map-info output/$@.map-info
+
+# liftover has more wierd cases, so use for tests
+mapInfoSumTest: mkdirs
+	../bin/mapInfoSummary expected/gff3UcscTest.map-info output/$@.map-info-summary
+	diff -u expected/$@.map-info-summary output/$@.map-info-summary
 
 valgrindTest: gff3UcscValgrind gtfUcscValgrind
 
