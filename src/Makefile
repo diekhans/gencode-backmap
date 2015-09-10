@@ -39,8 +39,8 @@ endif
 CXXFLAGS += ${KENTINC} ${CXXDEBUG}
 
 SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc pslOps.cc frame.cc pslMapping.cc transMap.cc \
-	featureTree.cc remapStatus.cc featureTransMap.cc featureMapper.cc geneMapper.cc \
-	gencode-backmap.cc
+	featureTree.cc remapStatus.cc featureTransMap.cc featureMapper.cc transcriptMapper.cc \
+	geneMapper.cc targetAnnotations.cc gencode-backmap.cc
 
 OBJS =  ${SRCS:%.cc=${OBJDIR}/%.o}
 DEPENDS =  ${SRCS:%.cc=%.depend}

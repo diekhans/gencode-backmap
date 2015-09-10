@@ -30,6 +30,15 @@ const string GxfFeature::UTR = "UTR";
 const string GxfFeature::STOP_CODON = "stop_codon";
 const string GxfFeature::STOP_CODON_REDEFINED_AS_SELENOCYSTEINE = "stop_codon_redefined_as_selenocysteine";
 
+
+// standard attribute names
+const string GxfFeature::ID_ATTR = "ID";
+const string GxfFeature::PARENT_ATTR = "Parent";
+const string GxfFeature::GENE_ID_ATTR = "gene_id";
+const string GxfFeature::TRANSCRIPT_ID_ATTR = "transcript_id";
+const string GxfFeature::EXON_ID_ATTR = "exon_id";
+    
+
 /* return base columns (excluding attributes) as a string */
 string GxfFeature::baseColumnsAsString() const {
     return fSeqid + "\t" + fSource + "\t" + fType + "\t" + to_string(fStart) + "\t"
@@ -41,11 +50,11 @@ string GxfFeature::baseColumnsAsString() const {
 const string& GxfFeature::getTypeId() const {
     static const string emptyStr;
     if (fType == GxfFeature::GENE) {
-        return getAttrValue("gene_id", emptyStr);
+        return getAttrValue(GxfFeature::GENE_ID_ATTR, emptyStr);
     } else if (fType == GxfFeature::TRANSCRIPT) {
-        return getAttrValue("transcript_id", emptyStr);
+        return getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR, emptyStr);
     } else if (fType == GxfFeature::EXON) {
-        return getAttrValue("exon_id", emptyStr);
+        return getAttrValue(GxfFeature::EXON_ID_ATTR, emptyStr);
     } else {
         return emptyStr;
     }
@@ -239,16 +248,29 @@ StringVector GxfParser::splitFeatureLine(const string& line) const {
     return columns;
 }
 
-/* constructor that opens file, which maybe compressed */
+/* constructor that opens file, which maybe compressed. If gxfFormat is
+ * unknown, guess from filename */
 GxfParser::GxfParser(const string& fileName,
                      GxfFormat gxfFormat):
     fIn(new FIOStream(fileName)),
-    fGxfFormat(gxfFormat) {
+    fGxfFormat((gxfFormat==GXF_UNKNOWN_FORMAT) ? formatFromFileName(fileName) : gxfFormat) {
 }
 
 /* destructor */
 GxfParser::~GxfParser() {
     delete fIn;
+}
+
+/* Get format from file name, or error */
+GxfFormat GxfParser::formatFromFileName(const string& fileName) {
+    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")) {
+        return GFF3_FORMAT;
+    } else if (stringEndsWith(fileName, ".gtf") or stringEndsWith(fileName, ".gtf.gz")) {
+        return GTF_FORMAT;
+    } else {
+        errAbort(toCharStr("Error: expected input annotation with an extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
+        return GXF_UNKNOWN_FORMAT;
+    }
 }
 
 /* Read the next record */

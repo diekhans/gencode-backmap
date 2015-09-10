@@ -22,10 +22,20 @@ class GxfFeature;
 class FIOStream;
 
 typedef enum {
-    UNKNOWN_FORMAT,
+    GXF_UNKNOWN_FORMAT,
     GFF3_FORMAT,
     GTF_FORMAT,
 } GxfFormat;
+
+/* get a base id, deleting the version, if it exists */
+static inline string getBaseId(const string& id) {
+    size_t idot = id.find_last_of('.');
+    if (idot == string::npos) {
+        return id;
+    } else {
+        return id.substr(0, idot);
+    }
+}
 
 /*
  * GxF base record type.  Use instanceOf to determine actually type
@@ -172,6 +182,12 @@ public:
     static const string STOP_CODON;
     static const string STOP_CODON_REDEFINED_AS_SELENOCYSTEINE;
 
+    // standard attribute names
+    static const string ID_ATTR;
+    static const string PARENT_ATTR;
+    static const string GENE_ID_ATTR;
+    static const string TRANSCRIPT_ID_ATTR;
+    static const string EXON_ID_ATTR;
     
     // columns parsed from file.
     const string fSeqid;
@@ -313,13 +329,18 @@ class GxfParser {
     GxfRecord* read();
     
     public:
-    /* constructor that opens file, which maybe compressed */
+    /* constructor that opens file, which maybe compressed.
+    * if gxfFormat is unknown, guess from filename*/
     GxfParser(const string& fileName,
-              GxfFormat gxfFormat);
+              GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
+
+    /* Get format from file name, or error */
+    static GxfFormat formatFromFileName(const string& fileName);
 
     /* destructor */
     ~GxfParser();
 
+    
     /* Read the next record, either queued by push() or from the file , use
      * instanceOf to determine the type.  Return NULL on EOF.
      */

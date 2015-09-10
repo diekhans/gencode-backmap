@@ -4,31 +4,46 @@
 #ifndef pslMapping_hh
 #define pslMapping_hh
 #include "pslOps.hh"
+#include <iostream>
+class GxfFeature;
 
 /* set of mapped alignments */
 class PslMapping {
     public:
     struct psl* fSrcPsl;
-    PslVector fMappedPsls;  // top one is best scoring
-    int fScore;  // mapping score of top psl; 0 is perfect
+    struct psl* fMappedPsl; // best mapped PSL, or NULL if none mapped
+    PslVector fMappedPsls;  // all mapped PSLs, [0] is fMappedPsl
 
     private:
     static int numAlignedBases(const struct psl* psl);
-    void sortMappedPsls();
 
     public:
     /* constructor, sort mapped PSLs */
     PslMapping(struct psl* srcPsl,
-               PslVector& mappedPsls);
+               PslVector& mappedPsls,
+               const GxfFeature* primaryTarget=NULL,
+               const GxfFeature* secondaryTarget=NULL);
 
     /* free up psls */
     ~PslMapping();
+
+    /* sort or restore the mapped PSLs  Kind of a hack to allow restore so
+     * we don't have to pass primaryTarget/secondaryTargets everywhere */
+    void sortMappedPsls(const GxfFeature* primaryTarget=NULL,
+                        const GxfFeature* secondaryTarget=NULL);
 
     /* are there any mappings? */
     bool haveMappings() const {
         return fMappedPsls.size() > 0;
     }
 
+    /** write the mapped PSLs */
+    void writeMapped(ostream& fh) const {
+        for (size_t i = 0; i < fMappedPsls.size(); i++) {
+            fh << pslToString(fMappedPsls[i]) << endl;
+        }
+    }
+    
     /* dump for debugging purposes, adding optional description */
     void dump(ostream& fh,
               const string& description="",

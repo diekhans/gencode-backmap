@@ -64,13 +64,13 @@ void GeneTree::queueRecords(GxfParser *gxfParser,
  */
 FeatureNode* GeneTree::findGff3Parent(FeatureNode* geneTreeLeaf,
                                       const GxfFeature* gxfFeature) {
-    const string& parentId = gxfFeature->getAttrValue("Parent");
+    const string& parentId = gxfFeature->getAttrValue(GxfFeature::PARENT_ATTR);
     FeatureNode* parent = geneTreeLeaf;
-    while ((parent != NULL) and (parent->fFeature->getAttrValue("ID") != parentId)) {
+    while ((parent != NULL) and (parent->fFeature->getAttrValue(GxfFeature::ID_ATTR) != parentId)) {
         parent = parent->fParent;
     }
     if (parent == NULL) {
-        throw invalid_argument("parent node " +  parentId + " for " + gxfFeature->getAttrValue("ID") + " not found");
+        throw invalid_argument("parent node " +  parentId + " for " + gxfFeature->getAttrValue(GxfFeature::ID_ATTR) + " not found");
     }
     return parent;
 }

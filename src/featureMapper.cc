@@ -121,7 +121,7 @@ void FeatureMapper::mapFeature(const GxfFeature* feature,
 void FeatureMapper::processMappedFeature(FeatureNode* featureNode,
                                          const PslMapping* pslMapping) {
     PslCursor srcPslCursor(pslMapping->fSrcPsl);
-    PslCursor mappedPslCursor(pslMapping->fMappedPsls[0]);
+    PslCursor mappedPslCursor(pslMapping->fMappedPsl);
     mapFeature(featureNode->fFeature, srcPslCursor, mappedPslCursor, featureNode);
     featureNode->setRemapStatus(true);
 }
@@ -173,7 +173,7 @@ void FeatureMapper::mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
 /* Determine if an ID should be split into multiple unique ids. */
 bool FeatureMapper::shouldSplitIds(const GxfFeatureVector& outputFeatures) {
     // FIXME: add check for discontinious ids.
-    return (outputFeatures.size() > 1) && outputFeatures[0]->hasAttr("ID");
+    return (outputFeatures.size() > 1) && outputFeatures[0]->hasAttr(GxfFeature::ID_ATTR);
 }
 
 
@@ -181,9 +181,9 @@ bool FeatureMapper::shouldSplitIds(const GxfFeatureVector& outputFeatures) {
  */
 void FeatureMapper::splitId(GxfFeature* outputFeature,
                             int partIdx) {
-    const string& id = outputFeature->getAttrValue("ID");
+    const string& id = outputFeature->getAttrValue(GxfFeature::ID_ATTR);
     outputFeature->getAttrs().add(AttrVal(REMAP_ORIGINAL_ID_ATTR, id));
-    outputFeature->getAttrs().update(AttrVal("ID", id+"_"+toString(partIdx)));
+    outputFeature->getAttrs().update(AttrVal(GxfFeature::ID_ATTR, id+"_"+toString(partIdx)));
 }
 
 
@@ -225,9 +225,9 @@ GxfFeature* FeatureMapper::findContaining(GxfFeature* child,
 void FeatureMapper::updateParent(GxfFeature* child,
                                  GxfFeatureVector& parentParts) {
     GxfFeature* parent = findContaining(child, parentParts);  // validates even if not used
-    const AttrVal* parentAttr = child->getAttrs().find("Parent");
+    const AttrVal* parentAttr = child->getAttrs().find(GxfFeature::PARENT_ATTR);
     if (parentAttr != NULL) {
-        child->getAttrs().update(AttrVal(parentAttr->fName, parent->getAttrValue("ID"),
+        child->getAttrs().update(AttrVal(parentAttr->fName, parent->getAttrValue(GxfFeature::ID_ATTR),
                                          parentAttr->fQuoted));
     }
 }

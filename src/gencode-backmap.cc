@@ -8,27 +8,29 @@
 #include "FIOStream.hh"
 #include "transMap.hh"
 #include "geneMapper.hh"
+#include "targetAnnotations.hh"
 
 /* map to different assembly */
 static void gencodeBackmap(const string& inGxfFile,
-                           GxfFormat gxfFormat,
                            const string& mappingAligns,
-                           bool chainAlignments,
                            bool swapMap,
                            const string& mappedGxfFile,
                            const string& unmappedGxfFile,
-                           const string& mappingInfoTsv) {
-    TransMap* genomeTransMap = chainAlignments
-        ? TransMap::factoryFromChainFile(mappingAligns, swapMap)
-        : TransMap::factoryFromPslFile(mappingAligns, swapMap);
-
-    GxfParser gxfParser(inGxfFile, gxfFormat);
+                           const string& mappingInfoTsv,
+                           const string& targetGxf,
+                           const string& transcriptPsls) {
+    TransMap* genomeTransMap = TransMap::factoryFromFile(mappingAligns, swapMap);
+    TargetAnnotations* targetAnnotations = (targetGxf.size() > 0) ? new TargetAnnotations(targetGxf) : NULL;
+    GxfParser gxfParser(inGxfFile);
     FIOStream mappedGxfFh(mappedGxfFile, ios::out);
     FIOStream unmappedGxfFh(unmappedGxfFile, ios::out);
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
-    GeneMapper geneMapper(genomeTransMap);
-    geneMapper.mapGxf(&gxfParser, mappedGxfFh, unmappedGxfFh, mappingInfoFh);
+    FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
+    GeneMapper geneMapper(genomeTransMap, targetAnnotations);
+    geneMapper.mapGxf(&gxfParser, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete genomeTransMap;
+    delete targetAnnotations;
+    delete transcriptPslFh;
 }
 
 /* Entry point.  Parse arguments. */
@@ -40,6 +42,11 @@ int main(int argc, char *argv[]) {
         "Options:\n"
         "  --help - print this message and exit\n"
         "  --swapMap - swap the query and target sides of the mapping alignments\n"
+        "  --targetGxf=gxfFile - GFF3 or GTF of gene annotations on target genome.\n"
+        "    If specified, prefer multi-mappings to location of previous version of\n"
+        "    gene or transcript.\n"
+        "  --transcriptPsls=pslFile - write all mapped transcript-level PSL to this file, including\n"
+        "    multiple mappers.\n"
         "Arguments:\n"
         "  inGxf - Input GENCODE GFF3 or GTF file. The format is recognize identified\n"
         "          a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
@@ -52,13 +59,17 @@ int main(int argc, char *argv[]) {
     const struct option long_options[] = {
         {"help", 0, NULL, 'h'},
         {"swapMap", 0, NULL, 's'},
+        {"targetGxf", 1, NULL, 't'},
+        {"transcriptPsls", 1, NULL, 'p'},
         {NULL, 0, NULL, 0}
     };
     bool swapMap = false;
     bool help = false;
+    string targetGxf;
+    string transcriptPsls;
     opterr = 0;  // we print error message
     while (true) {
-        int optc = getopt_long(argc, argv, "sch", long_options, NULL);
+        int optc = getopt_long(argc, argv, "hst:p:", long_options, NULL);
         if (optc == -1) {
             break;
         } else if (optc == 'h') {
@@ -66,6 +77,10 @@ int main(int argc, char *argv[]) {
             break;  // check no more
         } else if (optc == 's') {
             swapMap = true;
+        } else if (optc == 't') {
+            targetGxf = string(optarg);
+        } else if (optc == 'p') {
+            transcriptPsls = string(optarg);
         } else {
             errAbort(toCharStr("invalid option %s"), argv[optind-1]);
         }
@@ -85,25 +100,8 @@ int main(int argc, char *argv[]) {
     string unmappedGxfFile = argv[optind+3];
     string mappingInfoTsv = argv[optind+4];
 
-    GxfFormat gxfFormat = UNKNOWN_FORMAT;
-    if (stringEndsWith(inGxfFile, ".gff3") or stringEndsWith(inGxfFile, ".gff3.gz")) {
-        gxfFormat = GFF3_FORMAT;
-    } else if (stringEndsWith(inGxfFile, ".gtf") or stringEndsWith(inGxfFile, ".gtf.gz")) {
-        gxfFormat = GTF_FORMAT;
-    } else {
-        errAbort(toCharStr("Error: expected input annotation with an extension of .gff3, .gff3.gz, .gtf, or .gtf.gz"));
-    }
-    
-    bool chainAlignments = false;
-    if (stringEndsWith(mappingAligns, ".chain") or stringEndsWith(mappingAligns, ".chain.gz")) {
-        chainAlignments = true;
-    } else if (stringEndsWith(mappingAligns, ".psl") or stringEndsWith(mappingAligns, ".psl.gz")) {
-         chainAlignments = false;
-    } else {
-        errAbort(toCharStr("Error: expected mapping alignment file with an extension of .chain, .chain.gz, .psl, or .psl.gz"));
-    }
     try {
-        gencodeBackmap(inGxfFile, gxfFormat, mappingAligns, chainAlignments, swapMap, mappedGxfFile, unmappedGxfFile, mappingInfoTsv);
+        gencodeBackmap(inGxfFile, mappingAligns, swapMap, mappedGxfFile, unmappedGxfFile, mappingInfoTsv, targetGxf, transcriptPsls);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;
         return 1;

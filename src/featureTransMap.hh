@@ -19,6 +19,8 @@ class FeaturesToPsl {
                                        int qSize, int tStart, int tEnd, int tSize,
                                        const GxfFeatureVector& features);
     public:
+    /* create a psl from a list of features. Assumes features are sorter in
+     * ascending order.  */
     static struct psl* toPsl(const string& qName,
                              int tSize,
                              const GxfFeatureVector& features);

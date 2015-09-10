@@ -13,6 +13,19 @@ static void *slCatReversed(void *va, void *vb) {
     return slCat(vb, va);
 }
 
+/* is a mapping alignment file a chain or psl? */
+bool TransMap::isChainMappingAlign(const string& fileName) {
+    if (stringEndsWith(fileName, ".chain") or stringEndsWith(fileName, ".chain.gz")) {
+        return true;
+    } else if (stringEndsWith(fileName, ".psl") or stringEndsWith(fileName, ".psl.gz")) {
+        return false;
+    } else {
+        errAbort(toCharStr("Error: expected mapping alignments file with an extension of .chain, .chain.gz, .psl, or .psl.gz: " + fileName));
+        return false;
+    }
+    
+}
+
 /* add a query or target size if it doesn't already exist */
 void TransMap::addSeqSize(const string& seqName,
                           int seqSize,

@@ -36,16 +36,28 @@ class TransMap {
     TransMap();
 
     public:
+    /* is a mapping alignment file a chain or psl? */
+    static bool isChainMappingAlign(const string& fileName);
+
     /* factory from a chain file */
     static TransMap* factoryFromChainFile(const string& chainFile,
                                       bool swapMap);
     /* factory from a list of psls */
     static TransMap* factoryFromPsls(struct psl* psls,
                                      bool swapMap);
-    
     /* factory from a  psl file */
     static TransMap* factoryFromPslFile(const string& pslFile,
                                         bool swapMap);
+    
+    /* factory from a chain or psl file */
+    static TransMap* factoryFromFile(const string& fileName,
+                                     bool swapMap) {
+        if (isChainMappingAlign(fileName)) {
+            return factoryFromChainFile(fileName, swapMap);
+        } else {
+            return factoryFromPslFile(fileName, swapMap);
+        }
+    }
     
     /* destructor */
     ~TransMap();

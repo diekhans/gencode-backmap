@@ -64,9 +64,8 @@ struct psl* FeaturesToPsl::makeFeaturesPsl(const string& qName,
     return psl;
 }
 
-/* create a psl from a list of features. assumes features are sorter in
- * ascending order.  Return NULL if sequence in features is not in mapping
- * alignments at all. */
+/* create a psl from a list of features. Assumes features are sorter in
+ * ascending order.  */
 struct psl* FeaturesToPsl::toPsl(const string& qName,
                                  int tSize,
                                  const GxfFeatureVector& features) {
@@ -127,12 +126,8 @@ PslMapping* FeatureTransMap::mapFeatures(const string& qName,
     }
     int tSize = fTransMaps[0]->getQuerySeqSize(features[0]->fSeqid); // target is mapping query
     struct psl* srcPsl = FeaturesToPsl::toPsl(qName, tSize, features);
-    if (srcPsl == NULL) {
-         return NULL;
-    } else {
-        PslVector mappedPsls = recursiveMapPsl(srcPsl, 0);
-        return new PslMapping(srcPsl, mappedPsls);
-    }
+    PslVector mappedPsls = recursiveMapPsl(srcPsl, 0);
+    return new PslMapping(srcPsl, mappedPsls);
 }
 
 

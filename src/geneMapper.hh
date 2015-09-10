@@ -10,12 +10,14 @@ class TransMap;
 class PslMapping;
 struct psl;
 class PslCursor;
+class TargetAnnotations;
 
 /* class that maps a gene to the new assemble */
 class GeneMapper {
     private:
     const TransMap* fGenomeTransMap;  // genomic mapping
-    
+    const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
+
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
     typedef pair<string, bool> SeqIdMapPair;
     SeqIdMap fMappedSeqRegionsWritten;  // mapped sequence ids that have been written
@@ -33,8 +35,10 @@ class GeneMapper {
     
     bool isSrcSeqInMapping(const GxfFeature* feature) const;
     bool isSrcSeqInMapping(FeatureNode* featureNode) const;
-    void processTranscript(FeatureNode* transcriptTree) const;
-    void processTranscripts(FeatureNode* geneTree) const;
+    void processTranscript(FeatureNode* transcriptTree,
+                           ostream* transcriptPslFh) const;
+    void processTranscripts(FeatureNode* geneTree,
+                            ostream* transcriptPslFh) const;
     void forceToUnmapped(FeatureNode* featureNode,
                          RemapStatus remapStatus) const;
     bool haveMappedTranscripts(FeatureNode* geneTree) const;
@@ -70,23 +74,28 @@ class GeneMapper {
                      GxfFeature* geneFeature,
                      ostream& mappedGxfFh,
                      ostream& unmappedGxfFh,
-                     ostream& mappingInfoFh);
+                     ostream& mappingInfoFh,
+                     ostream* transcriptPslFh);
     void processRecord(GxfParser *gxfParser,
                        GxfRecord* gxfRecord,
                        ostream& mappedGxfFh,
                        ostream& unmappedGxfFh,
-                       ostream& mappingInfoFh);
+                       ostream& mappingInfoFh,
+                       ostream* transcriptPslFh);
     public:
     /* Constructor */
-    GeneMapper(const TransMap* genomeTransMap):
-        fGenomeTransMap(genomeTransMap) {
+    GeneMapper(const TransMap* genomeTransMap,
+               const TargetAnnotations* targetAnnotations):
+        fGenomeTransMap(genomeTransMap),
+        fTargetAnnotations(targetAnnotations) {
     }
 
     /* Map a GFF3/GTF */
     void mapGxf(GxfParser *gxfParser,
                 ostream& mappedGxfFh,
                 ostream& unmappedGxfFh,
-                ostream& mappingInfoFh);
+                ostream& mappingInfoFh,
+                ostream* transcriptPslFh);
 };
 
 #endif

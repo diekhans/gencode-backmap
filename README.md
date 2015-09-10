@@ -10,6 +10,7 @@ The maps all GENCODE GTF and GFF3 files. It does not map the PolyA_feature
 file.
 
 http://www.ncbi.nlm.nih.gov/genome/tools/remap/docs/alignments
+ftp://ftp.ncbi.nlm.nih.gov/genomes/README_GFF3.txt
 
 ### Usage
 

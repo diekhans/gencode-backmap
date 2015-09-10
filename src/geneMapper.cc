@@ -2,16 +2,10 @@
 #include "featureMapper.hh"
 #include "jkinclude.hh"
 #include "gxf.hh"
-#include "pslOps.hh"
-#include "pslMapping.hh"
-#include "featureTransMap.hh"
-#include "typeOps.hh"
-#include "frame.hh"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-
-#define debug 0
+#include "transcriptMapper.hh"
 
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.20;  
@@ -25,139 +19,6 @@ static const char* mappingInfoHeaders[] = {
 };
 
 
-/**
- * Class to map a single transcript and subfeatures
- * All mapping is done by a two-level alignment.
- * with mapping alignments.
- *  - to map cdsA in  annotation of genomeA to genomeB:
- *    - an alignment of [genomeA->exonsA]
- *    - an alignment of [exonsA->genomeB]
- *    - do a two level transmap:
- *      cdsA->genomeA =>  [genomeA->exonsA] => cdsA->exonA => [exonsA->genomeB] => cdsA->genomeB
- */
-class TranscriptMapper {
-    private:
-    const bool fSrcSeqInMapping;                 // do we have source sequence in genomic mapps
-    const PslMapping* fExonsMapping;            // exons as psl and genome mapping of exons.
-    TransMapVector fVaiExonsTransMaps;          // transmap objects that are combined
-    const FeatureTransMap* fViaExonsFeatureTransMap;   // two-level transmap, NULL if can't map (owned)
-    
-    /* get exon features */
-    static GxfFeatureVector getExons(const FeatureNode* transcriptTree) {
-        GxfFeatureVector exons;
-        transcriptTree->getMatching(exons, [](const GxfFeature* f) {
-                return f->fType == GxfFeature::EXON;
-            });
-        return exons;
-    }
-
-    /* build transcript exons PSL to query and mapping to target genome.
-     * Return NULL if no mappings for whatever reason.*/
-    static PslMapping* exonTransMap(const TransMap* genomeTransMap,
-                                    const FeatureNode* transcriptTree) {
-        const string& qName(transcriptTree->fFeature->getAttr("transcript_id")->fVal);
-        GxfFeatureVector exons = getExons(transcriptTree);
-        // get alignment of exons to srcGenome and to targetGenome
-        PslMapping* exonsMapping = FeatureTransMap(genomeTransMap).mapFeatures(qName, exons);
-        if (debug) {
-            exonsMapping->dump(cerr, "Transcript Exons:", "    ");
-        }
-        if ((exonsMapping == NULL) or (not exonsMapping->haveMappings())) {
-            delete exonsMapping;
-            return NULL;
-        } else {
-            return exonsMapping;
-        }
-    }
-    
-    /* create transMap objects used to do two level mapping via exons. */
-    static const TransMapVector makeViaExonsTransMap(const PslMapping* exonsMapping) {
-        TransMapVector transMaps;
-        transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fSrcPsl, true)); // swap map genomeA to exons
-        transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->fMappedPsls[0], false)); // exons to genomeB
-        return transMaps;
-    }
-
-    /* create a new transcript record that covers the alignment */
-    void mapTranscriptFeature(FeatureNode* transcriptNode) {
-        struct psl* mappedPsl = fExonsMapping->fMappedPsls[0];
-        // transcript for mapped PSLs
-        FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping,
-                                   string(mappedPsl->tName),
-                                   mappedPsl->tStart, mappedPsl->tEnd,
-                                   charToString(pslQStrand(mappedPsl)));
-        transcriptNode->fNumMappings = fExonsMapping->fMappedPsls.size();
-        // if any parts was unmapped, also need a copy of the original transcript
-        if (not pslQueryFullyMapped(mappedPsl)) {
-            FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping);
-        }
-    }
-    
-    /* recursive map features below transcript */
-    void mapFeatures(FeatureNode* featureNode) {
-        const AttrVal* idAttr = featureNode->fFeature->findAttr("ID");
-        const string& nodeId = (idAttr != NULL) ? idAttr->fVal : "someFeature";
-        PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fFeature);
-        FeatureMapper::map(featureNode, pslMapping, fSrcSeqInMapping);
-        for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
-           mapFeatures(featureNode->fChildren[iChild]);
-        }
-        delete pslMapping;
-    }
-    
-    /* do work of mapping features when we have transmap mapping alignments
-     * and know something will map */
-    void mapTranscriptFeatures(FeatureNode* transcriptTree) {
-        mapTranscriptFeature(transcriptTree);
-        for (int iChild = 0; iChild < transcriptTree->fChildren.size(); iChild++) {
-            mapFeatures(transcriptTree->fChildren[iChild]);
-        }
-    }
-
-    /* recursive process features that are unmapped */
-    void processUnmappedFeatures(FeatureNode* featureNode) {
-        FeatureMapper::map(featureNode, NULL, fSrcSeqInMapping);
-        for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
-            processUnmappedFeatures(featureNode->fChildren[iChild]);
-        }
-    }
-
-    public:
-    /* constructor */
-    TranscriptMapper(const TransMap* genomeTransMap,
-                     FeatureNode* transcriptTree,
-                     bool srcSeqInMapping):
-        fSrcSeqInMapping(srcSeqInMapping),
-        fExonsMapping(exonTransMap(genomeTransMap, transcriptTree)),
-        fViaExonsFeatureTransMap(NULL) {
-        if (fExonsMapping != NULL) {
-            fVaiExonsTransMaps = makeViaExonsTransMap(fExonsMapping);
-            fViaExonsFeatureTransMap = new FeatureTransMap(fVaiExonsTransMaps);
-        }
-    }
-
-    /* destructor */
-    ~TranscriptMapper() {
-        delete fExonsMapping;
-        fVaiExonsTransMaps.free();
-        delete fViaExonsFeatureTransMap;
-    }
-    
-    /*
-     * map one transcript's annotations.  Fill in transcriptTree
-     */
-    void mapTranscript(FeatureNode* transcriptTree) {
-        assert(transcriptTree->fFeature->fType == GxfFeature::TRANSCRIPT);
-        if (fViaExonsFeatureTransMap != NULL) {
-            mapTranscriptFeatures(transcriptTree);
-        } else {
-            processUnmappedFeatures(transcriptTree);
-        }
-        FeatureMapper::updateIds(transcriptTree);
-        transcriptTree->setNumMappingsAttr();
-    }
-};
-
 /* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(const GxfFeature* feature) const {
     return fGenomeTransMap->haveQuerySeq(feature->fSeqid);
@@ -169,20 +30,22 @@ bool GeneMapper::isSrcSeqInMapping(FeatureNode* featureNode) const {
 }
 
 /* process one transcript */
-void GeneMapper::processTranscript(FeatureNode* transcriptTree) const {
-    TranscriptMapper transcriptMapper(fGenomeTransMap, transcriptTree,
-                                      isSrcSeqInMapping(transcriptTree));
-    transcriptMapper.mapTranscript(transcriptTree);
+void GeneMapper::processTranscript(FeatureNode* transcriptTree,
+                                   ostream* transcriptPslFh) const {
+    TranscriptMapper transcriptMapper(fGenomeTransMap, transcriptTree, fTargetAnnotations,
+                                      isSrcSeqInMapping(transcriptTree), transcriptPslFh);
+    transcriptMapper.mapTranscriptFeatures(transcriptTree);
 }
 
 /* process all transcripts of gene. */
-void GeneMapper::processTranscripts(FeatureNode* geneTree) const {
+void GeneMapper::processTranscripts(FeatureNode* geneTree,
+                                    ostream* transcriptPslFh) const {
     for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
         FeatureNode* transcriptTree = geneTree->fChildren[i];
         if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
             throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
         }
-        processTranscript(transcriptTree);
+        processTranscript(transcriptTree, transcriptPslFh);
     }
 }
 
@@ -417,9 +280,10 @@ void GeneMapper::processGene(GxfParser *gxfParser,
                              GxfFeature* geneFeature,
                              ostream& mappedGxfFh,
                              ostream& unmappedGxfFh,
-                             ostream& mappingInfoFh) {
+                             ostream& mappingInfoFh,
+                             ostream* transcriptPslFh) {
     FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
-    processTranscripts(geneTree);
+    processTranscripts(geneTree, transcriptPslFh);
     buildGeneFeature(geneTree);
     // handle gene level conflicted */
     if (hasMixedMappedSeqStrand(geneTree)) {
@@ -439,9 +303,10 @@ void GeneMapper::processRecord(GxfParser *gxfParser,
                                GxfRecord* gxfRecord,
                                ostream& mappedGxfFh,
                                ostream& unmappedGxfFh,
-                               ostream& mappingInfoFh) {
+                               ostream& mappingInfoFh,
+                               ostream* transcriptPslFh) {
     if (instanceOf(gxfRecord, GxfFeature)) {
-        processGene(gxfParser, dynamic_cast<GxfFeature*>(gxfRecord), mappedGxfFh, unmappedGxfFh, mappingInfoFh);
+        processGene(gxfParser, dynamic_cast<GxfFeature*>(gxfRecord), mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     } else if ((gxfParser->getGxfFormat() == GFF3_FORMAT) and (gxfRecord->toString().find("##sequence-region") == 0)) {
         // mapped ##sequence-region records are created based on sequences written
         unmappedGxfFh << gxfRecord->toString() << endl;
@@ -458,11 +323,12 @@ void GeneMapper::processRecord(GxfParser *gxfParser,
 void GeneMapper::mapGxf(GxfParser *gxfParser,
                         ostream& mappedGxfFh,
                         ostream& unmappedGxfFh,
-                        ostream& mappingInfoFh) {
+                        ostream& mappingInfoFh,
+                        ostream* transcriptPslFh) {
     outputInfoHeader(mappingInfoFh);
     GxfRecord* gxfRecord;
     while ((gxfRecord = gxfParser->next()) != NULL) {
-        processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh, mappingInfoFh);
+        processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     }
 }
 
