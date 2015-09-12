@@ -1,133 +1,133 @@
-id	type	srcChrom	srcStart	srcEnd	srcStrand	mappedChrom	mappedStart	mappedEnd	mappedStrand	mappingStatus	numMappings
-ENSG00000223972.5	gene	chr1	11869	14409	+	chr1	11870	14409	+	full_contig	1
-ENST00000456328.2	transcript	chr1	11869	14409	+	chr1	11869	14409	+	full_contig	1
-ENST00000450305.2	transcript	chr1	12010	13670	+	chr1	12010	13670	+	full_contig	1
-ENSG00000227232.5	gene	chr1	14404	29570	-	chr1	14405	29570	+	full_contig	1
-ENST00000488147.1	transcript	chr1	14404	29570	-	chr1	14404	29570	+	full_contig	1
-ENSG00000278267.1	gene	chr1	17369	17436	-	chr1	17370	17436	+	full_contig	1
-ENST00000619216.1	transcript	chr1	17369	17436	-	chr1	17369	17436	+	full_contig	1
-ENSG00000243485.3	gene	chr1	29554	31109	+	chr1	29555	31109	+	full_contig	1
-ENST00000473358.1	transcript	chr1	29554	31097	+	chr1	29554	31097	+	full_contig	1
-ENST00000469289.1	transcript	chr1	30267	31109	+	chr1	30267	31109	+	full_contig	1
-ENSG00000274890.1	gene	chr1	30366	30503	+	chr1	30367	30503	+	full_contig	1
-ENST00000607096.1	transcript	chr1	30366	30503	+	chr1	30366	30503	+	full_contig	1
-ENSG00000241860.5	gene	chr1	141474	173862	-	chr1	141475	173862	+	full_contig	1
-ENST00000484859.1	transcript	chr1	141474	149707	-	chr1	141474	149707	+	full_contig	1
-ENST00000490997.4	transcript	chr1	142808	146831	-	chr1	142808	146831	+	full_contig	1
-ENST00000466557.5	transcript	chr1	146386	173862	-	chr1	146386	173862	+	full_contig	1
-ENST00000491962.1	transcript	chr1	165889	168767	-	chr1	165889	168767	+	full_contig	1
-ENSG00000236601.1	gene	chr1	358857	365704	+	chr5	180881692	180888537	+	full_contig	1
-ENST00000450983.1	transcript	chr1	358857	365704	+	chr5	180881691	180888537	+	full_contig	1
-ENSG00000235146.2	gene	chr1	587629	594768	+	chr1	523010	530148	+	full_contig	1
-ENST00000423796.1	transcript	chr1	587629	594768	+	chr1	523009	530148	+	full_contig	1
-ENST00000450696.1	transcript	chr1	587668	594574	+	chr1	523048	529954	+	full_contig	1
-ENSG00000239664.2	gene	chr1	594453	597498	-	chr1	529834	532878	+	full_contig	1
-ENST00000440196.2	transcript	chr1	594453	595217	-	chr1	529833	530597	+	full_contig	1
-ENST00000357876.5	transcript	chr1	594459	597498	-	chr1	529839	532878	+	full_contig	1
-ENSG00000117281.14	gene	chr1	145719471	145739288	+	chr1	145695799	145715614	+	full_contig	1
-ENST00000616463.1	transcript	chr1	145719471	145739153	+	chr1	145695933	145715614	+	full_contig	1
-ENST00000369288.5	transcript	chr1	145719520	145739153	+	chr1	145695933	145715565	+	full_contig	1
-ENST00000235933.9	transcript	chr1	145728244	145739288	+	chr1	145695798	145706842	+	full_contig	1
-ENST00000401557.6	transcript	chr1	145728328	145736301	+	chr1	145698786	145706758	+	full_contig	1
-ENST00000584442.2	transcript	chr1	145728328	145738493	+	chr1	145696593	145706758	+	full_contig	1
-ENSG00000131788.14	gene	chr1	145848522	145859836	-	chr1	145575234	145586546	+	full_contig	1
-ENST00000472114.4	transcript	chr1	145848522	145851354	-	chr1	145583714	145586546	+	full_contig	1
-ENST00000475261.1	transcript	chr1	145848522	145854664	-	chr1	145580404	145586546	+	full_contig	1
-ENST00000369298.4	transcript	chr1	145848522	145859045	-	chr1	145576024	145586546	+	full_contig	1
-ENST00000393045.5	transcript	chr1	145848522	145859080	-	chr1	145575989	145586546	+	full_contig	1
-ENST00000369299.6	transcript	chr1	145854406	145859779	-	chr1	145575290	145580662	+	full_contig	1
-ENST00000484423.4	transcript	chr1	145854542	145859049	-	chr1	145576020	145580526	+	full_contig	1
-ENST00000498436.2	transcript	chr1	145854610	145859035	-	chr1	145576034	145580458	+	full_contig	1
-ENST00000393046.3	transcript	chr1	145854746	145859836	-	chr1	145575233	145580322	+	full_contig	1
-ENST00000463514.2	transcript	chr1	145856761	145859745	-	chr1	145575324	145578307	+	full_contig	1
-ENSG00000201699.1	gene	chr1	149162783	149162944	-	chr1	144534040	144534199	+	partial_contig	1
-ENST00000364829.1	transcript	chr1	149162783	149162944	-	chr1	144534039	144534199	+	partial_contig	1
-ENSG00000242771.1	gene	chr7	142372640	142372912	+	chr7	142259060	142259331	+	full_contig	1
-ENST00000489095.1	transcript	chr7	142372640	142372912	+	chr7	142259059	142259331	+	full_contig	1
-ENSG00000229311.1	gene	chr9	42579414	42586534	-		0	0	.	gene_size_change	2
-ENST00000425493.1	transcript	chr9	42579414	42586534	-		0	0	.	gene_size_change	2
-ENSG00000167613.14	gene	chr19	54351384	54370558	-		0	0	.	gene_size_change	1
-ENST00000391742.5	transcript	chr19	54351384	54364957	-		0	0	.	gene_size_change	1
-ENSG00000234381.1	gene	chr22	15635180	15644330	-	chr14	19498559	19507714	+	full_contig	1
-ENST00000435410.1	transcript	chr22	15635180	15644330	-	chr14	19498558	19507714	+	full_contig	1
-ENSG00000198062.13	gene	chr22	15690026	15721631	+		0	0	.	gene_size_change	2
-ENST00000343518.9	transcript	chr22	15690026	15721522	+		0	0	.	gene_size_change	2
-ENST00000621704.3	transcript	chr22	15690078	15721631	+		0	0	.	gene_size_change	2
-ENST00000452800.1	transcript	chr22	15690246	15721522	+		0	0	.	gene_size_change	2
-ENSG00000236666.1	gene	chr22	15699361	15703403	-	chr14	19562690	19566729	+	partial_contig	1
-ENST00000422014.1	transcript	chr22	15699361	15703403	-	chr14	19562689	19566729	+	partial_contig	1
-ENSG00000212216.1	gene	chr22	15701459	15701565	+	chr14	19564786	19564891	+	full_contig	1
-ENST00000390914.1	transcript	chr22	15701459	15701565	+	chr14	19564785	19564891	+	full_contig	1
-ENSG00000225255.5	gene	chr22	15746630	15778297	+	chr14	19611696	19643387	+	partial_contig	1
-ENST00000453395.4	transcript	chr22	15746630	15778297	+	chr14	19611695	19643387	+	partial_contig	1
-ENST00000438574.1	transcript	chr22	15765687	15778297	+	chr14	19630742	19643387	+	partial_contig	1
-ENSG00000251940.1	gene	chr22	19249873	19249966	+	chr22	19237397	19237489	+	full_contig	1
-ENST00000516131.1	transcript	chr22	19249873	19249966	+	chr22	19237396	19237489	+	full_contig	1
-ENSG00000210049.1	gene	chrM	577	647	+	chrM	578	647	+	full_contig	2
-ENST00000387314.1	transcript	chrM	577	647	+	chrM	577	647	+	full_contig	2
-ENSG00000210184.1	gene	chrM	12207	12265	+	chrM	12208	12265	+	full_contig	2
-ENST00000387449.1	transcript	chrM	12207	12265	+	chrM	12207	12265	+	full_contig	2
-ENSG00000210191.1	gene	chrM	12266	12336	+	chrM	12267	12336	+	full_contig	2
-ENST00000387456.1	transcript	chrM	12266	12336	+	chrM	12266	12336	+	full_contig	2
-ENSG00000198786.2	gene	chrM	12337	14148	+	chrM	12338	14148	+	full_contig	2
-ENST00000361567.2	transcript	chrM	12337	14148	+	chrM	12337	14148	+	full_contig	2
-ENSG00000198695.2	gene	chrM	14149	14673	-	chrM	14150	14673	+	full_contig	2
-ENST00000361681.2	transcript	chrM	14149	14673	-	chrM	14149	14673	+	full_contig	2
-ENSG00000210194.1	gene	chrM	14674	14742	-	chrM	14675	14742	+	full_contig	2
-ENST00000387459.1	transcript	chrM	14674	14742	-	chrM	14674	14742	+	full_contig	2
-ENSG00000198727.2	gene	chrM	14747	15887	+	chrM	14748	15887	+	full_contig	2
-ENST00000361789.2	transcript	chrM	14747	15887	+	chrM	14747	15887	+	full_contig	2
-ENSG00000210195.2	gene	chrM	15888	15953	+	chrM	15889	15953	+	full_contig	2
-ENST00000387460.2	transcript	chrM	15888	15953	+	chrM	15888	15953	+	full_contig	2
-ENSG00000210196.2	gene	chrM	15956	16023	-	chrM	15957	16023	+	full_contig	2
-ENST00000387461.2	transcript	chrM	15956	16023	-	chrM	15956	16023	+	full_contig	2
-ENSG00000228572.5	gene	chrX	253743	255091	+	chrX	170411	171758	+	full_contig	1
-ENST00000431238.5	transcript	chrX	253743	255091	+	chrX	170410	171758	+	full_contig	1
-ENSG00000182378.11	gene	chrX	276322	303356	+	chrX	192990	220023	+	full_contig	1
-ENST00000399012.4	transcript	chrX	276322	303353	+	chrX	192989	220020	+	full_contig	1
-ENST00000484611.5	transcript	chrX	276324	291537	+	chrX	192991	208204	+	full_contig	1
-ENST00000430923.5	transcript	chrX	276353	291629	+	chrX	193020	208296	+	full_contig	1
-ENST00000445062.4	transcript	chrX	281055	288869	+	chrX	197722	205536	+	full_contig	1
-ENST00000381657.5	transcript	chrX	281192	303356	+	chrX	197859	220023	+	full_contig	1
-ENST00000429181.4	transcript	chrX	281194	288787	+	chrX	197861	205454	+	full_contig	1
-ENST00000381663.6	transcript	chrX	281462	303353	+	chrX	198129	220020	+	full_contig	1
-ENST00000443019.4	transcript	chrX	283163	288829	+	chrX	199830	205496	+	full_contig	1
-ENST00000415337.4	transcript	chrX	283465	291639	+	chrX	200132	208306	+	full_contig	1
-ENST00000447472.4	transcript	chrX	283479	291629	+	chrX	200146	208296	+	full_contig	1
-ENST00000448477.4	transcript	chrX	283734	290757	+	chrX	200401	207424	+	full_contig	1
-ENSG00000228572.5	gene	chrY	253743	255091	+	chrY	120411	121758	+	full_contig	1
-ENST00000431238.5	transcript	chrY	253743	255091	+	chrY	120410	121758	+	full_contig	1
-ENSG00000182378.11	gene	chrY	276322	303356	+	chrY	142990	170023	+	full_contig	1
-ENST00000399012.4	transcript	chrY	276322	303353	+	chrY	142989	170020	+	full_contig	1
-ENST00000484611.5	transcript	chrY	276324	291537	+	chrY	142991	158204	+	full_contig	1
-ENST00000430923.5	transcript	chrY	276353	291629	+	chrY	143020	158296	+	full_contig	1
-ENST00000445062.4	transcript	chrY	281055	288869	+	chrY	147722	155536	+	full_contig	1
-ENST00000381657.5	transcript	chrY	281192	303356	+	chrY	147859	170023	+	full_contig	1
-ENST00000429181.4	transcript	chrY	281194	288787	+	chrY	147861	155454	+	full_contig	1
-ENST00000381663.6	transcript	chrY	281462	303353	+	chrY	148129	170020	+	full_contig	1
-ENST00000443019.4	transcript	chrY	283163	288829	+	chrY	149830	155496	+	full_contig	1
-ENST00000415337.4	transcript	chrY	283465	291639	+	chrY	150132	158306	+	full_contig	1
-ENST00000447472.4	transcript	chrY	283479	291629	+	chrY	150146	158296	+	full_contig	1
-ENST00000448477.4	transcript	chrY	283734	290757	+	chrY	150401	157424	+	full_contig	1
-ENSG00000270872.2	gene	chr1	143975087	144068350	+		0	0	.	gene_size_change	3
-ENST00000605551.2	transcript	chr1	143975087	144068350	+		0	0	.	gene_size_change	3
-ENSG00000171943.10	gene	chr1	121184810	121392822	+		0	0	.	gene_size_change	3
-ENST00000367123.6	transcript	chr1	121184810	121392822	+		0	0	.	gene_size_change	3
-ENSG00000272877.1	gene	GL877875.1	2310	3501	+		0	0	.	gene_size_change	0
-ENST00000572276.1	transcript	GL877875.1	2310	3501	+		0	0	.	gene_size_change	0
-ENSG00000265808.3	gene	chr1	120150898	120176515	-		0	0	.	gene_size_change	2
-ENST00000578049.3	transcript	chr1	120150898	120176515	-		0	0	.	gene_size_change	2
-ENST00000618538.1	transcript	chr1	120157291	120160501	-		0	0	.	gene_size_change	1
-ENSG00000204174.5	gene	chr10	46461099	46465881	-	chr10	47083535	47088320	+	partial_contig	1
-ENST00000395716.3	transcript	chr10	46461099	46463755	-	chr10	47085664	47088320	+	partial_contig	1
-ENST00000612632.2	transcript	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_contig	1
-ENST00000374312.4	transcript	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_contig	1
-ENSG00000204175.5	gene	chr10	46549044	46555530	-	chr10	46994088	47000573	+	full_contig	1
-ENST00000374317.1	transcript	chr10	46549044	46555530	-	chr10	46994087	47000573	+	full_contig	1
-ENST00000374314.5	transcript	chr10	46549049	46550744	-	chr10	46998873	47000568	+	full_contig	1
-ENSG00000279508.1	gene	chr14	19300177	19302924	-	chr14	19887860	19890605	+	partial_contig	1
-ENST00000624585.1	transcript	chr14	19300177	19302924	-	chr14	19887859	19890605	+	partial_contig	1
-ENSG00000278704.1	gene	GL000009.2	56140	58376	-		0	0	.	gene_size_change	0
-ENST00000618686.1	transcript	GL000009.2	56140	58376	-		0	0	.	gene_size_change	0
-ENSG00000275188.1	gene	GL000009.2	94751	94833	-		0	0	.	gene_size_change	0
-ENST00000621679.1	transcript	GL000009.2	94751	94833	-		0	0	.	gene_size_change	0
+id	type	biotype	srcChrom	srcStart	srcEnd	srcStrand	mappedChrom	mappedStart	mappedEnd	mappedStrand	mappingStatus	numMappings
+ENSG00000223972.5	gene	transcribed_unprocessed_pseudogene	chr1	11869	14409	+	chr1	11870	14409	+	full_contig	1
+ENST00000456328.2	transcript	processed_transcript	chr1	11869	14409	+	chr1	11869	14409	+	full_contig	1
+ENST00000450305.2	transcript	transcribed_unprocessed_pseudogene	chr1	12010	13670	+	chr1	12010	13670	+	full_contig	1
+ENSG00000227232.5	gene	unprocessed_pseudogene	chr1	14404	29570	-	chr1	14405	29570	+	full_contig	1
+ENST00000488147.1	transcript	unprocessed_pseudogene	chr1	14404	29570	-	chr1	14404	29570	+	full_contig	1
+ENSG00000278267.1	gene	miRNA	chr1	17369	17436	-	chr1	17370	17436	+	full_contig	1
+ENST00000619216.1	transcript	miRNA	chr1	17369	17436	-	chr1	17369	17436	+	full_contig	1
+ENSG00000243485.3	gene	lincRNA	chr1	29554	31109	+	chr1	29555	31109	+	full_contig	1
+ENST00000473358.1	transcript	lincRNA	chr1	29554	31097	+	chr1	29554	31097	+	full_contig	1
+ENST00000469289.1	transcript	lincRNA	chr1	30267	31109	+	chr1	30267	31109	+	full_contig	1
+ENSG00000274890.1	gene	miRNA	chr1	30366	30503	+	chr1	30367	30503	+	full_contig	1
+ENST00000607096.1	transcript	miRNA	chr1	30366	30503	+	chr1	30366	30503	+	full_contig	1
+ENSG00000241860.5	gene	processed_transcript	chr1	141474	173862	-	chr1	141475	173862	+	full_contig	1
+ENST00000484859.1	transcript	antisense	chr1	141474	149707	-	chr1	141474	149707	+	full_contig	1
+ENST00000490997.4	transcript	antisense	chr1	142808	146831	-	chr1	142808	146831	+	full_contig	1
+ENST00000466557.5	transcript	lincRNA	chr1	146386	173862	-	chr1	146386	173862	+	full_contig	1
+ENST00000491962.1	transcript	lincRNA	chr1	165889	168767	-	chr1	165889	168767	+	full_contig	1
+ENSG00000236601.1	gene	lincRNA	chr1	358857	365704	+	chr5	180881692	180888537	+	full_contig	1
+ENST00000450983.1	transcript	lincRNA	chr1	358857	365704	+	chr5	180881691	180888537	+	full_contig	1
+ENSG00000235146.2	gene	lincRNA	chr1	587629	594768	+	chr1	523010	530148	+	full_contig	1
+ENST00000423796.1	transcript	lincRNA	chr1	587629	594768	+	chr1	523009	530148	+	full_contig	1
+ENST00000450696.1	transcript	lincRNA	chr1	587668	594574	+	chr1	523048	529954	+	full_contig	1
+ENSG00000239664.2	gene	lincRNA	chr1	594453	597498	-	chr1	529834	532878	+	full_contig	1
+ENST00000440196.2	transcript	lincRNA	chr1	594453	595217	-	chr1	529833	530597	+	full_contig	1
+ENST00000357876.5	transcript	lincRNA	chr1	594459	597498	-	chr1	529839	532878	+	full_contig	1
+ENSG00000117281.14	gene	protein_coding	chr1	145719471	145739288	+	chr1	145695799	145715614	+	full_contig	1
+ENST00000616463.1	transcript	protein_coding	chr1	145719471	145739153	+	chr1	145695933	145715614	+	full_contig	1
+ENST00000369288.5	transcript	protein_coding	chr1	145719520	145739153	+	chr1	145695933	145715565	+	full_contig	1
+ENST00000235933.9	transcript	protein_coding	chr1	145728244	145739288	+	chr1	145695798	145706842	+	full_contig	1
+ENST00000401557.6	transcript	protein_coding	chr1	145728328	145736301	+	chr1	145698786	145706758	+	full_contig	1
+ENST00000584442.2	transcript	protein_coding	chr1	145728328	145738493	+	chr1	145696593	145706758	+	full_contig	1
+ENSG00000131788.14	gene	protein_coding	chr1	145848522	145859836	-	chr1	145575234	145586546	+	full_contig	1
+ENST00000472114.4	transcript	retained_intron	chr1	145848522	145851354	-	chr1	145583714	145586546	+	full_contig	1
+ENST00000475261.1	transcript	retained_intron	chr1	145848522	145854664	-	chr1	145580404	145586546	+	full_contig	1
+ENST00000369298.4	transcript	protein_coding	chr1	145848522	145859045	-	chr1	145576024	145586546	+	full_contig	1
+ENST00000393045.5	transcript	protein_coding	chr1	145848522	145859080	-	chr1	145575989	145586546	+	full_contig	1
+ENST00000369299.6	transcript	retained_intron	chr1	145854406	145859779	-	chr1	145575290	145580662	+	full_contig	1
+ENST00000484423.4	transcript	retained_intron	chr1	145854542	145859049	-	chr1	145576020	145580526	+	full_contig	1
+ENST00000498436.2	transcript	retained_intron	chr1	145854610	145859035	-	chr1	145576034	145580458	+	full_contig	1
+ENST00000393046.3	transcript	protein_coding	chr1	145854746	145859836	-	chr1	145575233	145580322	+	full_contig	1
+ENST00000463514.2	transcript	protein_coding	chr1	145856761	145859745	-	chr1	145575324	145578307	+	full_contig	1
+ENSG00000201699.1	gene	snRNA	chr1	149162783	149162944	-	chr1	144534040	144534199	+	partial_contig	1
+ENST00000364829.1	transcript	snRNA	chr1	149162783	149162944	-	chr1	144534039	144534199	+	partial_contig	1
+ENSG00000242771.1	gene	TR_V_pseudogene	chr7	142372640	142372912	+	chr7	142259060	142259331	+	full_contig	1
+ENST00000489095.1	transcript	TR_V_pseudogene	chr7	142372640	142372912	+	chr7	142259059	142259331	+	full_contig	1
+ENSG00000229311.1	gene	lincRNA	chr9	42579414	42586534	-		0	0	.	gene_size_change	2
+ENST00000425493.1	transcript	lincRNA	chr9	42579414	42586534	-		0	0	.	gene_size_change	2
+ENSG00000167613.14	gene	protein_coding	chr19	54351384	54370558	-		0	0	.	gene_size_change	1
+ENST00000391742.5	transcript	protein_coding	chr19	54351384	54364957	-		0	0	.	gene_size_change	1
+ENSG00000234381.1	gene	unprocessed_pseudogene	chr22	15635180	15644330	-	chr14	19498559	19507714	+	full_contig	1
+ENST00000435410.1	transcript	unprocessed_pseudogene	chr22	15635180	15644330	-	chr14	19498558	19507714	+	full_contig	1
+ENSG00000198062.13	gene	protein_coding	chr22	15690026	15721631	+		0	0	.	gene_size_change	2
+ENST00000343518.9	transcript	protein_coding	chr22	15690026	15721522	+		0	0	.	gene_size_change	2
+ENST00000621704.3	transcript	protein_coding	chr22	15690078	15721631	+		0	0	.	gene_size_change	2
+ENST00000452800.1	transcript	nonsense_mediated_decay	chr22	15690246	15721522	+		0	0	.	gene_size_change	2
+ENSG00000236666.1	gene	antisense	chr22	15699361	15703403	-	chr14	19562690	19566729	+	partial_contig	1
+ENST00000422014.1	transcript	antisense	chr22	15699361	15703403	-	chr14	19562689	19566729	+	partial_contig	1
+ENSG00000212216.1	gene	snRNA	chr22	15701459	15701565	+	chr14	19564786	19564891	+	full_contig	1
+ENST00000390914.1	transcript	snRNA	chr22	15701459	15701565	+	chr14	19564785	19564891	+	full_contig	1
+ENSG00000225255.5	gene	lincRNA	chr22	15746630	15778297	+	chr14	19611696	19643387	+	partial_contig	1
+ENST00000453395.4	transcript	lincRNA	chr22	15746630	15778297	+	chr14	19611695	19643387	+	partial_contig	1
+ENST00000438574.1	transcript	lincRNA	chr22	15765687	15778297	+	chr14	19630742	19643387	+	partial_contig	1
+ENSG00000251940.1	gene	snoRNA	chr22	19249873	19249966	+	chr22	19237397	19237489	+	full_contig	1
+ENST00000516131.1	transcript	snoRNA	chr22	19249873	19249966	+	chr22	19237396	19237489	+	full_contig	1
+ENSG00000210049.1	gene	Mt_tRNA	chrM	577	647	+	chrM	578	647	+	full_contig	2
+ENST00000387314.1	transcript	Mt_tRNA	chrM	577	647	+	chrM	577	647	+	full_contig	2
+ENSG00000210184.1	gene	Mt_tRNA	chrM	12207	12265	+	chrM	12208	12265	+	full_contig	2
+ENST00000387449.1	transcript	Mt_tRNA	chrM	12207	12265	+	chrM	12207	12265	+	full_contig	2
+ENSG00000210191.1	gene	Mt_tRNA	chrM	12266	12336	+	chrM	12267	12336	+	full_contig	2
+ENST00000387456.1	transcript	Mt_tRNA	chrM	12266	12336	+	chrM	12266	12336	+	full_contig	2
+ENSG00000198786.2	gene	protein_coding	chrM	12337	14148	+	chrM	12338	14148	+	full_contig	2
+ENST00000361567.2	transcript	protein_coding	chrM	12337	14148	+	chrM	12337	14148	+	full_contig	2
+ENSG00000198695.2	gene	protein_coding	chrM	14149	14673	-	chrM	14150	14673	+	full_contig	2
+ENST00000361681.2	transcript	protein_coding	chrM	14149	14673	-	chrM	14149	14673	+	full_contig	2
+ENSG00000210194.1	gene	Mt_tRNA	chrM	14674	14742	-	chrM	14675	14742	+	full_contig	2
+ENST00000387459.1	transcript	Mt_tRNA	chrM	14674	14742	-	chrM	14674	14742	+	full_contig	2
+ENSG00000198727.2	gene	protein_coding	chrM	14747	15887	+	chrM	14748	15887	+	full_contig	2
+ENST00000361789.2	transcript	protein_coding	chrM	14747	15887	+	chrM	14747	15887	+	full_contig	2
+ENSG00000210195.2	gene	Mt_tRNA	chrM	15888	15953	+	chrM	15889	15953	+	full_contig	2
+ENST00000387460.2	transcript	Mt_tRNA	chrM	15888	15953	+	chrM	15888	15953	+	full_contig	2
+ENSG00000210196.2	gene	Mt_tRNA	chrM	15956	16023	-	chrM	15957	16023	+	full_contig	2
+ENST00000387461.2	transcript	Mt_tRNA	chrM	15956	16023	-	chrM	15956	16023	+	full_contig	2
+ENSG00000228572.5	gene	unprocessed_pseudogene	chrX	253743	255091	+	chrX	170411	171758	+	full_contig	1
+ENST00000431238.5	transcript	unprocessed_pseudogene	chrX	253743	255091	+	chrX	170410	171758	+	full_contig	1
+ENSG00000182378.11	gene	protein_coding	chrX	276322	303356	+	chrX	192990	220023	+	full_contig	1
+ENST00000399012.4	transcript	protein_coding	chrX	276322	303353	+	chrX	192989	220020	+	full_contig	1
+ENST00000484611.5	transcript	processed_transcript	chrX	276324	291537	+	chrX	192991	208204	+	full_contig	1
+ENST00000430923.5	transcript	protein_coding	chrX	276353	291629	+	chrX	193020	208296	+	full_contig	1
+ENST00000445062.4	transcript	protein_coding	chrX	281055	288869	+	chrX	197722	205536	+	full_contig	1
+ENST00000381657.5	transcript	protein_coding	chrX	281192	303356	+	chrX	197859	220023	+	full_contig	1
+ENST00000429181.4	transcript	protein_coding	chrX	281194	288787	+	chrX	197861	205454	+	full_contig	1
+ENST00000381663.6	transcript	protein_coding	chrX	281462	303353	+	chrX	198129	220020	+	full_contig	1
+ENST00000443019.4	transcript	protein_coding	chrX	283163	288829	+	chrX	199830	205496	+	full_contig	1
+ENST00000415337.4	transcript	protein_coding	chrX	283465	291639	+	chrX	200132	208306	+	full_contig	1
+ENST00000447472.4	transcript	protein_coding	chrX	283479	291629	+	chrX	200146	208296	+	full_contig	1
+ENST00000448477.4	transcript	protein_coding	chrX	283734	290757	+	chrX	200401	207424	+	full_contig	1
+ENSG00000228572.5	gene	unprocessed_pseudogene	chrY	253743	255091	+	chrY	120411	121758	+	full_contig	1
+ENST00000431238.5	transcript	unprocessed_pseudogene	chrY	253743	255091	+	chrY	120410	121758	+	full_contig	1
+ENSG00000182378.11	gene	protein_coding	chrY	276322	303356	+	chrY	142990	170023	+	full_contig	1
+ENST00000399012.4	transcript	protein_coding	chrY	276322	303353	+	chrY	142989	170020	+	full_contig	1
+ENST00000484611.5	transcript	processed_transcript	chrY	276324	291537	+	chrY	142991	158204	+	full_contig	1
+ENST00000430923.5	transcript	protein_coding	chrY	276353	291629	+	chrY	143020	158296	+	full_contig	1
+ENST00000445062.4	transcript	protein_coding	chrY	281055	288869	+	chrY	147722	155536	+	full_contig	1
+ENST00000381657.5	transcript	protein_coding	chrY	281192	303356	+	chrY	147859	170023	+	full_contig	1
+ENST00000429181.4	transcript	protein_coding	chrY	281194	288787	+	chrY	147861	155454	+	full_contig	1
+ENST00000381663.6	transcript	protein_coding	chrY	281462	303353	+	chrY	148129	170020	+	full_contig	1
+ENST00000443019.4	transcript	protein_coding	chrY	283163	288829	+	chrY	149830	155496	+	full_contig	1
+ENST00000415337.4	transcript	protein_coding	chrY	283465	291639	+	chrY	150132	158306	+	full_contig	1
+ENST00000447472.4	transcript	protein_coding	chrY	283479	291629	+	chrY	150146	158296	+	full_contig	1
+ENST00000448477.4	transcript	protein_coding	chrY	283734	290757	+	chrY	150401	157424	+	full_contig	1
+ENSG00000270872.2	gene	unprocessed_pseudogene	chr1	143975087	144068350	+		0	0	.	gene_size_change	3
+ENST00000605551.2	transcript	unprocessed_pseudogene	chr1	143975087	144068350	+		0	0	.	gene_size_change	3
+ENSG00000171943.10	gene	protein_coding	chr1	121184810	121392822	+		0	0	.	gene_size_change	3
+ENST00000367123.6	transcript	protein_coding	chr1	121184810	121392822	+		0	0	.	gene_size_change	3
+ENSG00000272877.1	gene	unprocessed_pseudogene	GL877875.1	2310	3501	+		0	0	.	gene_size_change	0
+ENST00000572276.1	transcript	unprocessed_pseudogene	GL877875.1	2310	3501	+		0	0	.	gene_size_change	0
+ENSG00000265808.3	gene	protein_coding	chr1	120150898	120176515	-	chr1	145096414	145118353	+	partial_contig	2
+ENST00000578049.3	transcript	protein_coding	chr1	120150898	120176515	-	chr1	145096413	145118353	+	partial_contig	2
+ENST00000618538.1	transcript	protein_coding	chr1	120157291	120160501	-	chr1	145112402	145115628	+	partial_contig	1
+ENSG00000204174.5	gene	protein_coding	chr10	46461099	46465881	-	chr10	47083535	47088320	+	partial_contig	1
+ENST00000395716.3	transcript	protein_coding	chr10	46461099	46463755	-	chr10	47085664	47088320	+	partial_contig	1
+ENST00000612632.2	transcript	protein_coding	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_contig	1
+ENST00000374312.4	transcript	protein_coding	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_contig	1
+ENSG00000204175.5	gene	protein_coding	chr10	46549044	46555530	-	chr10	46994088	47000573	+	full_contig	1
+ENST00000374317.1	transcript	protein_coding	chr10	46549044	46555530	-	chr10	46994087	47000573	+	full_contig	1
+ENST00000374314.5	transcript	protein_coding	chr10	46549049	46550744	-	chr10	46998873	47000568	+	full_contig	1
+ENSG00000279508.1	gene	protein_coding	chr14	19300177	19302924	-	chr14	19887860	19890605	+	partial_contig	1
+ENST00000624585.1	transcript	protein_coding	chr14	19300177	19302924	-	chr14	19887859	19890605	+	partial_contig	1
+ENSG00000278704.1	gene	protein_coding	GL000009.2	56140	58376	-		0	0	.	gene_size_change	0
+ENST00000618686.1	transcript	protein_coding	GL000009.2	56140	58376	-		0	0	.	gene_size_change	0
+ENSG00000275188.1	gene	miRNA	GL000009.2	94751	94833	-		0	0	.	gene_size_change	0
+ENST00000621679.1	transcript	miRNA	GL000009.2	94751	94833	-		0	0	.	gene_size_change	0

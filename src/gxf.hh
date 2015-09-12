@@ -187,6 +187,8 @@ public:
     static const string PARENT_ATTR;
     static const string GENE_ID_ATTR;
     static const string TRANSCRIPT_ID_ATTR;
+    static const string GENE_TYPE_ID_ATTR;
+    static const string TRANSCRIPT_TYPE_ID_ATTR;
     static const string EXON_ID_ATTR;
     
     // columns parsed from file.
@@ -267,9 +269,13 @@ public:
         }
     }
 
-    /* get the id base on feature type, or empty string if it doesn't have an
+    /* get the id based on feature type, or empty string if it doesn't have an
      * id */
     const string& getTypeId() const;
+    
+    /* get the biotype based on feature type, or empty string if it doesn't have an
+     * id */
+    const string& getTypeBiotype() const;
     
     /* get the size of the feature */
     int size() const {

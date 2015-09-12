@@ -141,11 +141,11 @@ static int spanSimilarityCmp(const struct psl *mappedPsl1,
     int srcSpan = (gSrcPsl->tEnd - gSrcPsl->tStart);
     int span1Diff = abs(srcSpan - (mappedPsl1->tEnd - mappedPsl1->tStart));
     int span2Diff = abs(srcSpan - (mappedPsl2->tEnd - mappedPsl2->tStart));
-    // rank smallest span best (reverse sort)
+    // rank smallest span change best (reverse sort)
     if (span1Diff < span2Diff) {
-        return 1;
-    } else if (span1Diff > span2Diff) {
         return -1;
+    } else if (span1Diff > span2Diff) {
+        return 1;
     } else {
         return 0;
     }

@@ -151,6 +151,3 @@ chr1	HAVANA	UTR	121387853	121392822	.	+	.	gene_id "ENSG00000171943.10"; transcri
 
 # on alt, have mappings to main and alt with NCBI
 
-GL000009.2	ENSEMBL	gene	94751	94833	.	-	.	gene_id "ENSG00000275188.1"; gene_type "miRNA"; gene_status "NOVEL"; gene_name "BX004987.3"; level 3; remap_status partial_contig; remap_num_mappings 2;
-GL000009.2	ENSEMBL	transcript	94751	94833	.	-	.	gene_id "ENSG00000275188.1"; transcript_id "ENST00000621679.1"; gene_type "miRNA"; gene_status "NOVEL"; gene_name "BX004987.3"; transcript_type "miRNA"; transcript_status "NOVEL"; transcript_name "BX004987.3-201"; level 3; tag "basic"; transcript_support_level "NA"; remap_num_mappings 2; remap_status partial_contig;
-GL000009.2	ENSEMBL	exon	94829	94829	.	-	.	gene_id "ENSG00000275188.1"; transcript_id "ENST00000621679.1"; gene_type "miRNA"; gene_status "NOVEL"; gene_name "BX004987.3"; transcript_type "miRNA"; transcript_status "NOVEL"; transcript_name "BX004987.3-201"; exon_number 1; exon_id "ENSE00003754895.1"; level 3; tag "basic"; transcript_support_level "NA"; remap_status partial_fragment;

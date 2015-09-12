@@ -160,6 +160,3 @@ chr1	HAVANA	UTR	121387856	121392822	.	+	.	ID=UTR:ENST00000367123.6:18;Parent=ENS
 # on alt, have mappings to main and alt with NCBI
 ##sequence-region GL000009.2 1 201709
 
-GL000009.2	ENSEMBL	gene	94751	94833	.	-	.	ID=ENSG00000275188.1;gene_id=ENSG00000275188.1;gene_type=miRNA;gene_status=NOVEL;gene_name=BX004987.3;level=3;remap_status=partial_contig;remap_num_mappings=2
-GL000009.2	ENSEMBL	transcript	94751	94833	.	-	.	ID=ENST00000621679.1;Parent=ENSG00000275188.1;gene_id=ENSG00000275188.1;transcript_id=ENST00000621679.1;gene_type=miRNA;gene_status=NOVEL;gene_name=BX004987.3;transcript_type=miRNA;transcript_status=NOVEL;transcript_name=BX004987.3-201;level=3;transcript_support_level=NA;tag=basic;remap_num_mappings=2;remap_status=partial_contig
-GL000009.2	ENSEMBL	exon	94829	94829	.	-	.	ID=exon:ENST00000621679.1:1;Parent=ENST00000621679.1;gene_id=ENSG00000275188.1;transcript_id=ENST00000621679.1;gene_type=miRNA;gene_status=NOVEL;gene_name=BX004987.3;transcript_type=miRNA;transcript_status=NOVEL;transcript_name=BX004987.3-201;exon_number=1;exon_id=ENSE00003754895.1;level=3;transcript_support_level=NA;tag=basic;remap_status=partial_fragment
