@@ -12,6 +12,9 @@ file.
 http://www.ncbi.nlm.nih.gov/genome/tools/remap/docs/alignments
 ftp://ftp.ncbi.nlm.nih.gov/genomes/README_GFF3.txt
 
+For assembly-assembly alignments:
+- reciprocity=3 == alignment is best for both Reference and Target. Also referred to as 'First-Pass Alignments'
+- reciprocity=1 or 2 == alignment is best for one sequence, but a better alignment is reported for the other sequence. Also referred to as 'Second-Pass Alignments'
 ### Usage
 
   cd data/

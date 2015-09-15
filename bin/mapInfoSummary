@@ -12,6 +12,7 @@ def parseArgs():
     desc="""produce a summary of the success of mappings produce by gencode-backmap
 """
     parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('--breakdownBy', type=str, help="groups b   ")
     parser.add_argument('mapInfoTsv', type=str, help="mapInfo output of gencode-backmap")
     parser.add_argument('summaryOut', type=str, help="Summary output TSV")
     args = parser.parse_args()
@@ -42,28 +43,33 @@ class Counts(object):
 
     @staticmethod
     def reportHeader(outFh):
-        fileOps.prRowv(outFh, "type", "status", "count", "freq")
-    def reportRow(self, outFh, type, cat, cnt):
-        fileOps.prRowv(outFh, type, cat, cnt, fmtRate(cnt, self.total))
-    def report(self, outFh, type):
+        fileOps.prRowv(outFh, "type", "biotype", "status", "count", "freq")
+    def reportRow(self, outFh, type, biotype, cat, cnt):
+        fileOps.prRowv(outFh, type, biotype, cat, cnt, fmtRate(cnt, self.total))
+    def report(self, outFh, type, biotype):
         for stat in sorted(self.byStatusCnts.iterkeys()):
-            self.reportRow(outFh, type, stat, self.byStatusCnts[stat])
-        self.reportRow(outFh, type, "multiMap", self.multiMapCnt)
-        self.reportRow(outFh, type, "total", self.total)
+            self.reportRow(outFh, type, biotype, stat, self.byStatusCnts[stat])
+        self.reportRow(outFh, type, biotype, "multiMap", self.multiMapCnt)
+        self.reportRow(outFh, type, biotype,"total", self.total)
 
 class MapInfoSummary(object):
     def __init__(self):
-        self.countByFeatureType = defaultdict(Counts)
+        self.countByType = defaultdict(Counts)
+        self.countByTypeBiotype = defaultdict(lambda: defaultdict(Counts))
 
     def record(self, mapInfoTsv):
         for rec in getMapInfoReader(mapInfoTsv):
-            self.countByFeatureType[rec.type].count(rec)
+            self.countByType[rec.type].count(rec)
+            self.countByTypeBiotype[rec.type][rec.biotype].count(rec)
 
     def report(self, outFh):
         Counts.reportHeader(outFh)
-        for type in sorted(self.countByFeatureType.iterkeys()):
-            self.countByFeatureType[type].report(outFh, type)
-            
+        for type in sorted(self.countByType.iterkeys()):
+            self.countByType[type].report(outFh, type, "all")
+        for type in sorted(self.countByTypeBiotype.iterkeys()):
+            for biotype in sorted(self.countByTypeBiotype[type].iterkeys()):
+                self.countByTypeBiotype[type][biotype].report(outFh, type, biotype)
+
 args = parseArgs()
 summary = MapInfoSummary()
 summary.record(args.mapInfoTsv)
