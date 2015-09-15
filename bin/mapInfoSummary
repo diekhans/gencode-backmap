@@ -7,71 +7,58 @@ import argparse
 from collections import defaultdict
 from pycbio.sys import fileOps
 from pycbio.tsv import TsvReader
+from gencode import categoryCounts
+from gencode.gencodeGenes import getFunctionForBioType, BioType
 
 def parseArgs():
     desc="""produce a summary of the success of mappings produce by gencode-backmap
 """
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--breakdownBy', type=str, help="groups b   ")
+    parser.add_argument('--biotypeGroup', type=str,
+                        choices=("all", "biotype","biocat"), default="all",
+                        help="groups counts for all biotype, by biotype, or by catgeory ")
+    parser.add_argument('--multimapGroup', action="store_true", default=False,
+                       help="grou counts single vs multiple mappers")
+    parser.add_argument('what', type=str, choices=("gene", "transcript"),
+                        help="analyze by gene or transcript")
     parser.add_argument('mapInfoTsv', type=str, help="mapInfo output of gencode-backmap")
     parser.add_argument('summaryOut', type=str, help="Summary output TSV")
     args = parser.parse_args()
     return args
 
-def getMapInfoReader(mapInfoTsv):
-    return TsvReader(mapInfoTsv, typeMap={"srcStart": int, "srcEnd": int,
-                                          "mappedStart": int, "mappedEnd": int,
-                                          "numMappings": int})
-
-def fmtRate(count, total):
-    if total == 0:
-        return "0.0"
-    else:
-        return format(float(count)/total, "0.2f")
-
-class Counts(object):
-    def __init__(self):
-        self.total = 0
-        self.byStatusCnts = defaultdict(int)
-        self.multiMapCnt = 0
-
-    def count(self, rec):
-        self.total +=1
-        self.byStatusCnts[rec.mappingStatus] += 1
-        if rec.numMappings > 1:
-            self.multiMapCnt += 1
-
-    @staticmethod
-    def reportHeader(outFh):
-        fileOps.prRowv(outFh, "type", "biotype", "status", "count", "freq")
-    def reportRow(self, outFh, type, biotype, cat, cnt):
-        fileOps.prRowv(outFh, type, biotype, cat, cnt, fmtRate(cnt, self.total))
-    def report(self, outFh, type, biotype):
-        for stat in sorted(self.byStatusCnts.iterkeys()):
-            self.reportRow(outFh, type, biotype, stat, self.byStatusCnts[stat])
-        self.reportRow(outFh, type, biotype, "multiMap", self.multiMapCnt)
-        self.reportRow(outFh, type, biotype,"total", self.total)
 
 class MapInfoSummary(object):
-    def __init__(self):
-        self.countByType = defaultdict(Counts)
-        self.countByTypeBiotype = defaultdict(lambda: defaultdict(Counts))
+    def __init__(self, whatAnnotation, biotypeGroup, multimapGroup):
+        self.filterFunc = lambda row: row.type == whatAnnotation
+        keyColumnHeader = []
+        keyFuncs = [] # list of functions to call to get keys
+        if biotypeGroup == "biotype": 
+            keyColumnHeader.append("biotype")
+            keyFuncs.append(lambda row: row.biotype)
+        elif biotypeGroup == "biocat":
+            keyColumnHeader.append("biocat")
+            keyFuncs.append(lambda row: getFunctionForBioType(BioType(row.biotype)))
+        keyColumnHeader.append("mappingStatus")
+        keyFuncs.append(lambda row: row.mappingStatus)
+        if multimapGroup:
+            keyColumnHeader.append("multimap")
+            keyFuncs.append(lambda row: "yes" if (row.numMappings > 1) else "no")
+        self.getKeys = lambda row: tuple([fn(row) for fn in keyFuncs])
+        self.counts = categoryCounts.CategoryCounts(keyColumnHeader)
 
-    def record(self, mapInfoTsv):
-        for rec in getMapInfoReader(mapInfoTsv):
-            self.countByType[rec.type].count(rec)
-            self.countByTypeBiotype[rec.type][rec.biotype].count(rec)
-
-    def report(self, outFh):
-        Counts.reportHeader(outFh)
-        for type in sorted(self.countByType.iterkeys()):
-            self.countByType[type].report(outFh, type, "all")
-        for type in sorted(self.countByTypeBiotype.iterkeys()):
-            for biotype in sorted(self.countByTypeBiotype[type].iterkeys()):
-                self.countByTypeBiotype[type][biotype].report(outFh, type, biotype)
+    def count(self, mapInfoTsv):
+        # id	type	biotype	srcChrom	srcStart	srcEnd	srcStrand	mappedChrom	mappedStart	mappedEnd	mappedStrand	mappingStatus	numMappings
+        typeMap={"srcStart": int, "srcEnd": int,
+                 "mappedStart": int, "mappedEnd": int,
+                 "numMappings": int}
+        self.counts.countTsv(mapInfoTsv, typeMap=typeMap, getKeys=self.getKeys, filterFunc=self.filterFunc)
+        
+        
+    def write(self, outFh):
+        self.counts.write(outFh, inclTotals=True)
 
 args = parseArgs()
-summary = MapInfoSummary()
-summary.record(args.mapInfoTsv)
+summary = MapInfoSummary(args.what, args.biotypeGroup, args.multimapGroup)
+summary.count(args.mapInfoTsv)
 with open(args.summaryOut, "w") as outFh:
-    summary.report(outFh)
+    summary.write(outFh)

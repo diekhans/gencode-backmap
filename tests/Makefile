@@ -9,7 +9,7 @@ valgrind = valgrind --leak-check=full --num-callers=50
 
 all: test
 
-test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest mapInfoSumTest
+test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest mapInfoSumTests
 
 gff3UcscTest: mkdirs
 	${PROG} --swapMap ${targetGxfArg} data/gencode.v22.annotation.gff3 data/GRCh38-GRCh37.liftover.chain output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
@@ -44,9 +44,28 @@ gtfNcbiTest: mkdirs
 	diff -u expected/$@.map-info output/$@.map-info
 
 # liftover has more wierd cases, so use for tests
-mapInfoSumTest: mkdirs
-	../bin/mapInfoSummary expected/gff3UcscTest.map-info output/$@.map-info-summary
-	diff -u expected/$@.map-info-summary output/$@.map-info-summary
+mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTransBiottypeTest \
+	mapInfoSumTransBiocatTest mapInfoSumTransBiocatMultimapTest
+
+mapInfoSumGeneAllTest: mkdirs
+	../bin/mapInfoSummary gene expected/gff3UcscTest.map-info output/$@.sum
+	diff -u expected/$@.sum output/$@.sum
+
+mapInfoSumGeneBiotypeTest: mkdirs
+	../bin/mapInfoSummary --biotypeGroup=biotype gene expected/gff3UcscTest.map-info output/$@.sum
+	diff -u expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiottypeTest: mkdirs
+	../bin/mapInfoSummary --biotypeGroup=biotype transcript expected/gff3UcscTest.map-info output/$@.sum
+	diff -u expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiocatTest: mkdirs
+	../bin/mapInfoSummary --biotypeGroup=biocat transcript expected/gff3UcscTest.map-info output/$@.sum
+	diff -u expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiocatMultimapTest: mkdirs
+	../bin/mapInfoSummary --biotypeGroup=biocat --multimapGroup transcript expected/gff3UcscTest.map-info output/$@.sum
+	diff -u expected/$@.sum output/$@.sum
 
 valgrindTest: gff3UcscValgrind gtfUcscValgrind
 

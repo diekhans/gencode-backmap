@@ -1,12 +1,8 @@
 """
 Objects to store gencode gene annotations
 """
-import sys, re
-from pycbio.hgdata.genePred import GenePredReader, GenePredDbReader
-from pycbio.tsv import TSVReader, TabFileReader
-from pycbio.sys.symEnum import SymEnum
 from pycbio.sys import PycbioException
-from pycbio.hgdata.rangeFinder import RangeFinder
+from pycbio.sys.enumeration import Enumeration
 
 BioType = Enumeration("BioType", ("IG_C_gene", "IG_D_gene", "IG_J_gene", "IG_V_gene", "IG_LV_gene",
                                   "IG_C_pseudogene", "IG_D_pseudogene", "IG_pseudogene", "IG_J_pseudogene", "IG_V_pseudogene",
