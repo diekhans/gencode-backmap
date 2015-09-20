@@ -17,18 +17,26 @@ def parseArgs():
     parser.add_argument('--biotypeGroup', type=str,
                         choices=("all", "biotype","biocat"), default="all",
                         help="groups counts for all biotype, by biotype, or by catgeory ")
+    parser.add_argument('--sourceGroup', action="store_true", default=False,
+                       help="group counts by HAVANA vs ENSEMBL")
+    parser.add_argument("--mappingStatusGroup", action="store_true", default=False,
+                       help="group by mapping status (default in no other of the status grouping specified)")
+    parser.add_argument("--targetStatusGroup", action="store_true", default=False,
+                        help="group by target annotation status")
     parser.add_argument('--multimapGroup', action="store_true", default=False,
-                       help="grou counts single vs multiple mappers")
+                       help="group counts single vs multiple mappers")
     parser.add_argument('what', type=str, choices=("gene", "transcript"),
                         help="analyze by gene or transcript")
     parser.add_argument('mapInfoTsv', type=str, help="mapInfo output of gencode-backmap")
     parser.add_argument('summaryOut', type=str, help="Summary output TSV")
     args = parser.parse_args()
+    if not (args.sourceGroup or args.targetStatusGroup or args.multimapGroup):
+        args.mappingStatusGroup = True
     return args
 
 
 class MapInfoSummary(object):
-    def __init__(self, whatAnnotation, biotypeGroup, multimapGroup):
+    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup):
         self.filterFunc = lambda row: row.type == whatAnnotation
         keyColumnHeader = []
         keyFuncs = [] # list of functions to call to get keys
@@ -38,11 +46,16 @@ class MapInfoSummary(object):
         elif biotypeGroup == "biocat":
             keyColumnHeader.append("biocat")
             keyFuncs.append(lambda row: getFunctionForBioType(BioType(row.biotype)))
-        keyColumnHeader.append("mappingStatus")
-        keyFuncs.append(lambda row: row.mappingStatus)
+        if mappingStatusGroup:
+            keyColumnHeader.append("mappingStatus")
+            keyFuncs.append(lambda row: row.mappingStatus)
+        if targetStatusGroup:
+            keyColumnHeader.append("targetStatus")
+            keyFuncs.append(lambda row: row.targetStatus)
         if multimapGroup:
             keyColumnHeader.append("multimap")
             keyFuncs.append(lambda row: "yes" if (row.numMappings > 1) else "no")
+        # calls all functions in list to generate key
         self.getKeys = lambda row: tuple([fn(row) for fn in keyFuncs])
         self.counts = categoryCounts.CategoryCounts(keyColumnHeader)
 
@@ -53,12 +66,13 @@ class MapInfoSummary(object):
                  "numMappings": int}
         self.counts.countTsv(mapInfoTsv, typeMap=typeMap, getKeys=self.getKeys, filterFunc=self.filterFunc)
         
-        
     def write(self, outFh):
         self.counts.write(outFh, inclTotals=True)
 
 args = parseArgs()
-summary = MapInfoSummary(args.what, args.biotypeGroup, args.multimapGroup)
+summary = MapInfoSummary(args.what, args.biotypeGroup, args.sourceGroup,
+                         args.mappingStatusGroup, args.targetStatusGroup,
+                         args.multimapGroup)
 summary.count(args.mapInfoTsv)
 with open(args.summaryOut, "w") as outFh:
     summary.write(outFh)

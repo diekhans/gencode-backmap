@@ -40,7 +40,7 @@ class CategoryCounts(object):
             fileOps.prRow(fh, key + (val, fmtRate(val, self.total)))
         if inclTotals:
             fileOps.prRow(fh, ["all" for col in self.keyColumnHeader]
-                          + [self.total, self.total])
+                          + [self.total, fmtRate(self.total, self.total)])
                 
 class CategoryStatsCombine(object):
     "combine statistic from multiple CategoryCounts TSVs"
@@ -56,17 +56,17 @@ class CategoryStatsCombine(object):
             raise Exception("duplicate column label: " + label)
         self.allLabels.append(label)
             
-    def __setInKeyColNames(self, key):
+    def __newSetInit(self, row):
+        keyColNames = tuple(row._columns_[0:-2])
         if self.inKeyColNames == None:
-            self.inKeyColNames = key
-            self.totalsKey = ["all" for col in self.inKeyColNames]
-        elif key != self.inKeyColNames:
-            raise Exception("expected columns of: (" + ", ".join(self.inKeyColNames) + ") got (" + ", ".join(self.inKeyColNames) + ")")
+            self.inKeyColNames = keyColNames
+            self.totalsKey = tuple(["all" for col in self.inKeyColNames])
+        elif keyColNames != self.inKeyColNames:
+            raise Exception("expected columns of: (" + ", ".join(self.inKeyColNames) + ") got (" + ", ".join(keyColNames) + ")")
 
-    def __addRow(self, iRow, label, row):
-        key = tuple(row[0:-2])
-        if iRow == 0:
-            self.__setInKeyColNames(key)
+    def __addRow(self, label, row):
+        key = tuple(row.getRow()[0:-2])
+        self.allKeys.add(key)
         if label in self.stats[key]:
             raise Exception("duplicate row key for " + label + ": " + str(row))
         self.stats[key][label] = (row[-2], row[-1])
@@ -74,24 +74,26 @@ class CategoryStatsCombine(object):
     def add(self, label, tsvFile):
         self.__addNewLabel(label)
         iRow = 0
-        for row in TsvReader(iRow, label, tsvFile):
-            self.__addRow(iRow, label, row)
+        for row in TsvReader(tsvFile):
+            if iRow == 0:
+                self.__newSetInit(row)
+            self.__addRow(label, row)
             iRow += 1
         
     def __writeHeader(self, fh):
-        row = list(self.keyColumnHeader)
-        for label in allLabels:
+        row = list(self.inKeyColNames)
+        for label in self.allLabels:
             row.extend([label+"_count", label+"_freq"])
         fileOps.prRow(fh, row)
 
     __emptyCounts = ("0", "0.0")
     def __writeRow(self, fh, key):
         row = list(key)
-        for label in allLabels:
+        for label in self.allLabels:
             row.extend(self.stats[key].get(label, self.__emptyCounts))
         fileOps.prRow(fh, row)
 
-    def write(fh):
+    def write(self, fh):
         self.__writeHeader(fh)
         for key in sorted(self.allKeys):
             if key != self.totalsKey:
