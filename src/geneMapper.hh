@@ -59,17 +59,18 @@ class GeneMapper {
     void outputMappedSeqRegionIfNeed(FeatureNode* geneTree,
                                      ostream& mappedGxfFh);
     void outputMapped(FeatureNode* featureNode,
-                      ostream& mappedGxfFh);
+                      ostream& mappedGxfFh) const;
     void outputUnmapped(FeatureNode* featureNode,
-                        ostream& unmappedGxfFh);
+                        ostream& unmappedGxfFh) const;
     void outputFeatures(FeatureNode* geneNode,
                         ostream& mappedGxfFh,
                         ostream& unmappedGxfFh);
-    void outputInfoHeader(ostream& mappingInfoFh);
+    void outputInfoHeader(ostream& mappingInfoFh) const;
+    const string& getTargetAnnotationStatus(FeatureNode* featureNode) const;
     void outputFeatureInfo(FeatureNode* featureNode,
-                           ostream& mappingInfoFh);
+                           ostream& mappingInfoFh) const;
     void outputInfo(FeatureNode* geneNode,
-                    ostream& mappingInfoFh);
+                    ostream& mappingInfoFh) const;
     void processGene(GxfParser *gxfParser,
                      GxfFeature* geneFeature,
                      ostream& mappedGxfFh,

@@ -45,7 +45,8 @@ gtfNcbiTest: mkdirs
 
 # liftover has more wierd cases, so use for tests
 mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTransBiottypeTest \
-	mapInfoSumTransBiocatTest mapInfoSumTransBiocatMultimapTest
+	mapInfoSumTransBiocatTest mapInfoSumTransBiocatMultimapTest \
+	mapInfoSumTransBiocatTest
 
 mapInfoSumGeneAllTest: mkdirs
 	../bin/mapInfoSummary gene expected/gff3UcscTest.map-info output/$@.sum

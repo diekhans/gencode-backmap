@@ -85,7 +85,7 @@ class TranscriptMapper {
         FeatureMapper::mapBounding(transcriptNode, fSrcSeqInMapping,
                                    string(mappedPsl->tName),
                                    mappedPsl->tStart, mappedPsl->tEnd,
-                                   charToString(pslQStrand(mappedPsl)));
+                                   charToString(pslTStrand(mappedPsl)));
         transcriptNode->fNumMappings = fExonsMapping->fMappedPsls.size();
         // if any parts was unmapped, also need a copy of the original transcript
         if (not pslQueryFullyMapped(mappedPsl)) {

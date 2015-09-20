@@ -281,6 +281,17 @@ public:
     int size() const {
         return (fEnd - fStart)+1;
     }
+
+    /* does this feature overlap another */
+    bool overlaps(const GxfFeature* other) const {
+        if ((fSeqid != other->fSeqid) || (fStrand != other->fStrand)) {
+            return false;
+        } else if ((fStart > other->fEnd) || (fEnd < other->fStart)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 };
 
 /* create the appropriate feature type */

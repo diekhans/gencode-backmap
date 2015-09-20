@@ -10,12 +10,13 @@
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.20;  
 
-/*  TSV headers, terminated by NULL */
+/*  mapinfo TSV headers, terminated by NULL */
 static const char* mappingInfoHeaders[] = {
-    "id", "type", "biotype",
+    "id", "type", "biotype", "source",
     "srcChrom", "srcStart", "srcEnd", "srcStrand",
     "mappedChrom", "mappedStart", "mappedEnd", "mappedStrand",
-    "mappingStatus", "numMappings", NULL
+    "mappingStatus", "numMappings",
+    "targetStatus", NULL
 };
 
 
@@ -192,7 +193,7 @@ void GeneMapper::outputMappedSeqRegionIfNeed(FeatureNode* geneTree,
  * recursive output of a GxF mapped feature tree
  */
 void GeneMapper::outputMapped(FeatureNode* featureNode,
-                              ostream& mappedGxfFh) {
+                              ostream& mappedGxfFh) const {
     for (int i = 0; i < featureNode->fMappedFeatures.size(); i++) {
         mappedGxfFh << featureNode->fMappedFeatures[i]->toString() << endl;
     }
@@ -205,7 +206,7 @@ void GeneMapper::outputMapped(FeatureNode* featureNode,
  * recursive output of a GxF unmapped feature tree
  */
 void GeneMapper::outputUnmapped(FeatureNode* featureNode,
-                                ostream& unmappedGxfFh) {
+                                ostream& unmappedGxfFh) const {
     for (int i = 0; i < featureNode->fUnmappedFeatures.size(); i++) {
         unmappedGxfFh << featureNode->fUnmappedFeatures[i]->toString() << endl;
     }
@@ -228,7 +229,7 @@ void GeneMapper::outputFeatures(FeatureNode* geneTree,
 }
 
 /* output info TSV header */
-void GeneMapper::outputInfoHeader(ostream& mappingInfoFh) {
+void GeneMapper::outputInfoHeader(ostream& mappingInfoFh) const {
     for (int i = 0; mappingInfoHeaders[i] != NULL; i++) {
         if (i > 0) {
             mappingInfoFh << "\t";
@@ -238,13 +239,40 @@ void GeneMapper::outputInfoHeader(ostream& mappingInfoFh) {
     mappingInfoFh << endl;
 }
 
+/* If target gene annotations are available, get status of mapping
+ * relative to older version of gene. */
+const string& GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode) const {
+    static const string STATUS_NA = "na";
+    static const string STATUS_NEW = "new";
+    static const string STATUS_LOST = "lost";
+    static const string STATUS_OVERLAP = "overlap";
+    static const string STATUS_NONOVERLAP = "nonOverlap";
+    if (fTargetAnnotations == NULL) {
+        return STATUS_NA;
+    }
+    const GxfFeature* targetFeature = fTargetAnnotations->get(featureNode->fFeature->getTypeId());
+    if (targetFeature == NULL) {
+        return STATUS_NEW;
+    }
+    if (featureNode->fMappedFeatures.size() == 0) {
+        return STATUS_LOST;
+    }
+    assert(featureNode->fMappedFeatures.size() == 1);  // genes/transcripts don't split
+    if (featureNode->fMappedFeatures[0]->overlaps(targetFeature)) {
+        return STATUS_OVERLAP;
+    } else {
+        return STATUS_NONOVERLAP;
+    }
+}
+
 /* output info on one bounding feature */
 void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
-                                   ostream& mappingInfoFh) {
+                                   ostream& mappingInfoFh) const {
     assert(featureNode->fMappedFeatures.size() <= 1);  // only handles bounding features
     mappingInfoFh << featureNode->fFeature->getTypeId() << "\t"
                   << featureNode->fFeature->fType << "\t"
                   << featureNode->fFeature->getTypeBiotype() << "\t"
+                  << featureNode->fFeature->fSource << "\t"
                   << featureNode->fFeature->fSeqid << "\t"
                   << featureNode->fFeature->fStart << "\t"
                   << featureNode->fFeature->fEnd << "\t"
@@ -259,14 +287,15 @@ void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
         mappingInfoFh << "\t0\t0\t.\t";
     }
     mappingInfoFh << remapStatusToStr(featureNode->fRemapStatus) << "\t"
-                  << featureNode->fNumMappings << endl;
+                  << featureNode->fNumMappings << "\t"
+                  << getTargetAnnotationStatus(featureNode) << endl;
 }
 
 /*
  * Output information about gene mapping
  */
 void GeneMapper::outputInfo(FeatureNode* geneNode,
-                            ostream& mappingInfoFh) {
+                            ostream& mappingInfoFh) const {
     outputFeatureInfo(geneNode, mappingInfoFh);
     // transcripts
     for (int i = 0; i < geneNode->fChildren.size(); i++) {
