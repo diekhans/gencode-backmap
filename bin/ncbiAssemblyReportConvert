@@ -48,20 +48,30 @@ def getGencodeId(seq):
         return seq.genBankAccn
 
 def getId(seq, idType):
+    "get the from a sequence record, given the type of id desired"
     if idType == ID_TYPE_GENCODE:
-        return getGencodeId(seq)
+        seqId = getGencodeId(seq)
     else:
-        return getattr(seq, idType)
+        seqId = getattr(seq, idType)
+    if seqId == "na":
+        return None
+    else:
+        return seqId
 
 def createLift(asmReport, fromIdType, toIdType, outFh):
+    "create a lift file for the two id types"
     for seq in asmReport.seqs:
-        fileOps.prRowv(outFh, 0,
-                       getId(seq, fromIdType), seq.sequenceLength,
-                       getId(seq, toIdType), seq.sequenceLength)
+        fromId =  getId(seq, fromIdType)
+        toId =  getId(seq, toIdType)
+        if (fromId != None) and (toId != None):
+            fileOps.prRowv(outFh, 0, fromId, seq.sequenceLength, toId, seq.sequenceLength)
 
 def createSizes(asmReport, fromIdType, outFh):
+    "create a size file for the id type"
     for seq in asmReport.seqs:
-        fileOps.prRowv(outFh, getId(seq, fromIdType), seq.sequenceLength)
+        fromId = getId(seq, fromIdType)
+        if fromId != None:
+            fileOps.prRowv(outFh, fromId, seq.sequenceLength)
 
 args = parseArgs()
 asmReport = AssemblyReport(args.assemblyReport)
