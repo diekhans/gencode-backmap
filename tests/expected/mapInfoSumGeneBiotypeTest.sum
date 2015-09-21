@@ -17,4 +17,4 @@ snoRNA	full_contig	1	0.02
 transcribed_unprocessed_pseudogene	full_contig	1	0.02
 unprocessed_pseudogene	full_contig	4	0.09
 unprocessed_pseudogene	gene_size_change	2	0.05
-all	all	43	43
+all	all	43	1.00

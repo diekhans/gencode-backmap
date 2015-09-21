@@ -123,15 +123,12 @@ void FeatureMapper::processMappedFeature(FeatureNode* featureNode,
     PslCursor srcPslCursor(pslMapping->fSrcPsl);
     PslCursor mappedPslCursor(pslMapping->fMappedPsl);
     mapFeature(featureNode->fFeature, srcPslCursor, mappedPslCursor, featureNode);
-    featureNode->setRemapStatus(true);
 }
 
 /* process unmapped feature, either sequence not in map, or no
  * mappings */
-void FeatureMapper::processUnmappedFeature(FeatureNode* featureNode,
-                                           bool srcSeqInMapping) {
+void FeatureMapper::processUnmappedFeature(FeatureNode* featureNode) {
     featureNode->addUnmapped(featureNode->fFeature->clone());
-    featureNode->setRemapStatus(srcSeqInMapping);
 }
 
 /* Map a single feature though an alignment of that feature.  The pslMapping
@@ -139,10 +136,9 @@ void FeatureMapper::processUnmappedFeature(FeatureNode* featureNode,
  * mappings can't be done because initial mapping is deleted.  Fill in mapped
  * and unmapped arrays in featureNode. */
 bool FeatureMapper::map(FeatureNode* featureNode,
-                        const PslMapping* pslMapping,
-                        bool srcSeqInMapping) {
+                        const PslMapping* pslMapping) {
     if ((pslMapping == NULL) or not pslMapping->haveMappings()) {
-        processUnmappedFeature(featureNode, srcSeqInMapping);
+        processUnmappedFeature(featureNode);
         return false;
     } else {
         processMappedFeature(featureNode, pslMapping);
@@ -150,12 +146,25 @@ bool FeatureMapper::map(FeatureNode* featureNode,
     }
 }
 
+/* compute status from children */
+RemapStatus FeatureMapper::remapStatusFromChildren(FeatureNode* featureNode) {
+    RemapStatus remapStatus = REMAP_STATUS_NONE;
+    for (int i = 0; i < featureNode->fChildren.size(); i++) {
+        remapStatus = remapStatusChildUpdate(remapStatus,
+                                             featureNode->fChildren[i]->fRemapStatus);
+    }
+    return remapStatus;
+}
+
 /* Map as single, bounding feature, like a gene or transcript record.  it's
  * range is covered by contained ranges.  Omit new ranges if unmapped.
  * the total number of mappings.
  */
-void FeatureMapper::mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
-                                const string& targetSeqid, int targetStart, int targetEnd, const string& targetStrand) {
+void FeatureMapper::mapBounding(FeatureNode* featureNode,
+                                const string& targetSeqid,
+                                int targetStart,
+                                int targetEnd,
+                                const string& targetStrand) {
     const GxfFeature* feature = featureNode->fFeature;
     if (targetStart >= 0) {
         GxfFeature* mappedFeature =
@@ -167,7 +176,6 @@ void FeatureMapper::mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
     } else {
         featureNode->addUnmapped(featureNode->fFeature->clone());
     }
-    featureNode->setRemapStatus(srcSeqInMapping);
 }
 
 /* Determine if an ID should be split into multiple unique ids. */
@@ -269,10 +277,8 @@ void FeatureMapper::updateIds(FeatureNode* featureNode,
 /* Convert a feature to full unmapped, removing any partial unmapped features.
  * Used when transcript conflicts withing a gene are found.
  */
-void FeatureMapper::forceToUnmapped(FeatureNode* featureNode,
-                                    RemapStatus remapStatus) {
+void FeatureMapper::forceToUnmapped(FeatureNode* featureNode) {
     featureNode->fMappedFeatures.free();
     featureNode->fUnmappedFeatures.free();
     featureNode->addUnmapped(featureNode->fFeature->clone());
-    featureNode->setRemapStatus(false, remapStatus);
 }

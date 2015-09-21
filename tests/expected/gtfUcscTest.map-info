@@ -24,8 +24,8 @@ ENST00000450696.1	transcript	lincRNA	HAVANA	chr1	587668	594574	+	chr1	523048	529
 ENSG00000239664.2	gene	lincRNA	HAVANA	chr1	594453	597498	-	chr1	529834	532878	-	full_contig	1	overlap
 ENST00000440196.2	transcript	lincRNA	HAVANA	chr1	594453	595217	-	chr1	529833	530597	-	full_contig	1	overlap
 ENST00000357876.5	transcript	lincRNA	HAVANA	chr1	594459	597498	-	chr1	529839	532878	-	full_contig	1	overlap
-ENSG00000117281.14	gene	protein_coding	HAVANA	chr1	145719471	145739288	+	chr1	145695799	145715614	-	full_contig	1	overlap
-ENST00000616463.1	transcript	protein_coding	HAVANA	chr1	145719471	145739153	+	chr1	145695933	145715614	-	full_contig	1	new
+ENSG00000117281.14	gene	protein_coding	HAVANA	chr1	145719471	145739288	+	chr1	145695799	145715614	-	full_fragment	1	overlap
+ENST00000616463.1	transcript	protein_coding	HAVANA	chr1	145719471	145739153	+	chr1	145695933	145715614	-	full_fragment	1	new
 ENST00000369288.5	transcript	protein_coding	HAVANA	chr1	145719520	145739153	+	chr1	145695933	145715565	-	full_contig	1	overlap
 ENST00000235933.9	transcript	protein_coding	ENSEMBL	chr1	145728244	145739288	+	chr1	145695798	145706842	-	full_contig	1	overlap
 ENST00000401557.6	transcript	protein_coding	HAVANA	chr1	145728328	145736301	+	chr1	145698786	145706758	-	full_contig	1	overlap
@@ -40,8 +40,8 @@ ENST00000484423.4	transcript	retained_intron	HAVANA	chr1	145854542	145859049	-	c
 ENST00000498436.2	transcript	retained_intron	HAVANA	chr1	145854610	145859035	-	chr1	145576034	145580458	+	full_contig	1	overlap
 ENST00000393046.3	transcript	protein_coding	HAVANA	chr1	145854746	145859836	-	chr1	145575233	145580322	+	full_contig	1	overlap
 ENST00000463514.2	transcript	protein_coding	HAVANA	chr1	145856761	145859745	-	chr1	145575324	145578307	+	full_contig	1	overlap
-ENSG00000201699.1	gene	snRNA	ENSEMBL	chr1	149162783	149162944	-	chr1	144534040	144534199	+	partial_contig	1	overlap
-ENST00000364829.1	transcript	snRNA	ENSEMBL	chr1	149162783	149162944	-	chr1	144534039	144534199	+	partial_contig	1	overlap
+ENSG00000201699.1	gene	snRNA	ENSEMBL	chr1	149162783	149162944	-	chr1	144534040	144534199	+	partial_fragment	1	overlap
+ENST00000364829.1	transcript	snRNA	ENSEMBL	chr1	149162783	149162944	-	chr1	144534039	144534199	+	partial_fragment	1	overlap
 ENSG00000242771.1	gene	TR_V_pseudogene	HAVANA	chr7	142372640	142372912	+	chr7	142259060	142259331	-	full_contig	1	overlap
 ENST00000489095.1	transcript	TR_V_pseudogene	HAVANA	chr7	142372640	142372912	+	chr7	142259059	142259331	-	full_contig	1	overlap
 ENSG00000229311.1	gene	lincRNA	HAVANA	chr9	42579414	42586534	-		0	0	.	gene_size_change	2	lost
@@ -54,13 +54,13 @@ ENSG00000198062.13	gene	protein_coding	HAVANA	chr22	15690026	15721631	+		0	0	.	g
 ENST00000343518.9	transcript	protein_coding	HAVANA	chr22	15690026	15721522	+		0	0	.	gene_size_change	2	lost
 ENST00000621704.3	transcript	protein_coding	ENSEMBL	chr22	15690078	15721631	+		0	0	.	gene_size_change	2	new
 ENST00000452800.1	transcript	nonsense_mediated_decay	HAVANA	chr22	15690246	15721522	+		0	0	.	gene_size_change	2	lost
-ENSG00000236666.1	gene	antisense	HAVANA	chr22	15699361	15703403	-	chr14	19562690	19566729	-	partial_contig	1	nonOverlap
-ENST00000422014.1	transcript	antisense	HAVANA	chr22	15699361	15703403	-	chr14	19562689	19566729	-	partial_contig	1	nonOverlap
+ENSG00000236666.1	gene	antisense	HAVANA	chr22	15699361	15703403	-	chr14	19562690	19566729	-	partial_fragment	1	nonOverlap
+ENST00000422014.1	transcript	antisense	HAVANA	chr22	15699361	15703403	-	chr14	19562689	19566729	-	partial_fragment	1	nonOverlap
 ENSG00000212216.1	gene	snRNA	ENSEMBL	chr22	15701459	15701565	+	chr14	19564786	19564891	+	full_contig	1	nonOverlap
 ENST00000390914.1	transcript	snRNA	ENSEMBL	chr22	15701459	15701565	+	chr14	19564785	19564891	+	full_contig	1	nonOverlap
-ENSG00000225255.5	gene	lincRNA	HAVANA	chr22	15746630	15778297	+	chr14	19611696	19643387	+	partial_contig	1	nonOverlap
-ENST00000453395.4	transcript	lincRNA	HAVANA	chr22	15746630	15778297	+	chr14	19611695	19643387	+	partial_contig	1	nonOverlap
-ENST00000438574.1	transcript	lincRNA	HAVANA	chr22	15765687	15778297	+	chr14	19630742	19643387	+	partial_contig	1	nonOverlap
+ENSG00000225255.5	gene	lincRNA	HAVANA	chr22	15746630	15778297	+	chr14	19611696	19643387	+	partial_fragment	1	nonOverlap
+ENST00000453395.4	transcript	lincRNA	HAVANA	chr22	15746630	15778297	+	chr14	19611695	19643387	+	partial_fragment	1	nonOverlap
+ENST00000438574.1	transcript	lincRNA	HAVANA	chr22	15765687	15778297	+	chr14	19630742	19643387	+	partial_fragment	1	nonOverlap
 ENSG00000251940.1	gene	snoRNA	ENSEMBL	chr22	19249873	19249966	+	chr22	19237397	19237489	+	full_contig	1	overlap
 ENST00000516131.1	transcript	snoRNA	ENSEMBL	chr22	19249873	19249966	+	chr22	19237396	19237489	+	full_contig	1	overlap
 ENSG00000210049.1	gene	Mt_tRNA	ENSEMBL	chrM	577	647	+	chrM	578	647	+	full_contig	2	overlap
@@ -115,18 +115,18 @@ ENSG00000171943.10	gene	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	
 ENST00000367123.6	transcript	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	gene_size_change	3	lost
 ENSG00000272877.1	gene	unprocessed_pseudogene	HAVANA	GL877875.1	2310	3501	+		0	0	.	gene_size_change	0	lost
 ENST00000572276.1	transcript	unprocessed_pseudogene	HAVANA	GL877875.1	2310	3501	+		0	0	.	gene_size_change	0	lost
-ENSG00000265808.3	gene	protein_coding	HAVANA	chr1	120150898	120176515	-	chr1	145096414	145118353	+	partial_contig	2	nonOverlap
-ENST00000578049.3	transcript	protein_coding	HAVANA	chr1	120150898	120176515	-	chr1	145096413	145118353	+	partial_contig	2	nonOverlap
-ENST00000618538.1	transcript	protein_coding	HAVANA	chr1	120157291	120160501	-	chr1	145112402	145115628	+	partial_contig	1	new
-ENSG00000204174.5	gene	protein_coding	HAVANA	chr10	46461099	46465881	-	chr10	47083535	47088320	+	partial_contig	1	overlap
-ENST00000395716.3	transcript	protein_coding	HAVANA	chr10	46461099	46463755	-	chr10	47085664	47088320	+	partial_contig	1	overlap
-ENST00000612632.2	transcript	protein_coding	ENSEMBL	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_contig	1	new
-ENST00000374312.4	transcript	protein_coding	ENSEMBL	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_contig	1	overlap
+ENSG00000265808.3	gene	protein_coding	HAVANA	chr1	120150898	120176515	-	chr1	145096414	145118353	+	partial_fragment	2	nonOverlap
+ENST00000578049.3	transcript	protein_coding	HAVANA	chr1	120150898	120176515	-	chr1	145096413	145118353	+	partial_fragment	2	nonOverlap
+ENST00000618538.1	transcript	protein_coding	HAVANA	chr1	120157291	120160501	-	chr1	145112402	145115628	+	partial_fragment	1	new
+ENSG00000204174.5	gene	protein_coding	HAVANA	chr10	46461099	46465881	-	chr10	47083535	47088320	+	partial_fragment	1	overlap
+ENST00000395716.3	transcript	protein_coding	HAVANA	chr10	46461099	46463755	-	chr10	47085664	47088320	+	partial_fragment	1	overlap
+ENST00000612632.2	transcript	protein_coding	ENSEMBL	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_fragment	1	new
+ENST00000374312.4	transcript	protein_coding	ENSEMBL	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial_fragment	1	overlap
 ENSG00000204175.5	gene	protein_coding	HAVANA	chr10	46549044	46555530	-	chr10	46994088	47000573	+	full_contig	1	overlap
 ENST00000374317.1	transcript	protein_coding	HAVANA	chr10	46549044	46555530	-	chr10	46994087	47000573	+	full_contig	1	overlap
 ENST00000374314.5	transcript	protein_coding	ENSEMBL	chr10	46549049	46550744	-	chr10	46998873	47000568	+	full_contig	1	overlap
-ENSG00000279508.1	gene	protein_coding	ENSEMBL	chr14	19300177	19302924	-	chr14	19887860	19890605	-	partial_contig	1	new
-ENST00000624585.1	transcript	protein_coding	ENSEMBL	chr14	19300177	19302924	-	chr14	19887859	19890605	-	partial_contig	1	new
+ENSG00000279508.1	gene	protein_coding	ENSEMBL	chr14	19300177	19302924	-	chr14	19887860	19890605	-	partial_fragment	1	new
+ENST00000624585.1	transcript	protein_coding	ENSEMBL	chr14	19300177	19302924	-	chr14	19887859	19890605	-	partial_fragment	1	new
 ENSG00000278704.1	gene	protein_coding	ENSEMBL	GL000009.2	56140	58376	-		0	0	.	gene_size_change	0	new
 ENST00000618686.1	transcript	protein_coding	ENSEMBL	GL000009.2	56140	58376	-		0	0	.	gene_size_change	0	new
 ENSG00000275188.1	gene	miRNA	ENSEMBL	GL000009.2	94751	94833	-		0	0	.	gene_size_change	0	new

@@ -90,16 +90,16 @@ class FeatureNode {
      * indicates of the srcSequence qs in the genomic map */
     RemapStatus calcRemapStatus(bool srcSeqInMapping) const;
 
-    /* set the remap status, if remapStatus is REMAP_STATUS_NONE, calculate
-     * it */
-    void setRemapStatus(bool srcSeqInMapping,
-                        RemapStatus remapStatus=REMAP_STATUS_NONE) {
-        if (remapStatus == REMAP_STATUS_NONE) {
-            fRemapStatus = calcRemapStatus(srcSeqInMapping);
-        } else {
-            fRemapStatus = remapStatus;
-        }
+    /* set remap status to specified value */
+    void setRemapStatus(RemapStatus remapStatus) {
+        fRemapStatus = remapStatus;
     }
+
+    /* recursively determine the remap status */
+    void setRemapStatusFromChildren(RemapStatus baseStatus = REMAP_STATUS_NONE);
+
+    /* recursively determine the remap status */
+    void recursiveCalcRemapStatus(bool srcSeqInMapping);
 
     /* print node for debugging */
     void dumpNode(ostream& fh) const;

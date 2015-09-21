@@ -40,8 +40,7 @@ class FeatureMapper {
                            FeatureNode* featureNode);
     static void processMappedFeature(FeatureNode* featureNode,
                                      const PslMapping* pslMapping);
-    static void processUnmappedFeature(FeatureNode* featureNode,
-                                       bool srcSeqInMapping);
+    static void processUnmappedFeature(FeatureNode* featureNode);
     static bool shouldSplitIds(const GxfFeatureVector& outputFeatures);
     static void splitId(GxfFeature* outputFeature,
                         int partIdx);
@@ -57,6 +56,7 @@ class FeatureMapper {
                               GxfFeatureVector& parentParts);
     static void updateParents(FeatureNode* featureNode,
                               FeatureNode* parentNode);
+    static RemapStatus remapStatusFromChildren(FeatureNode* featureNode);
 
     public:
     /* Map a single feature though an alignment of that feature.  The
@@ -64,15 +64,17 @@ class FeatureMapper {
      * or when indirect mappings can't be done because initial mapping is
      * deleted.  Fill in mapped and unmapped arrays in featureNode. */
     static bool map(FeatureNode* featureNode,
-                    const PslMapping* pslMapping,
-                    bool srcSeqInMapping);
+                    const PslMapping* pslMapping);
 
     /* Map as single, bounding feature, like a gene or transcript record.
      * it's range is covered by contained ranges.  Omit new ranges if
      * unmapped.
      */
-    static void mapBounding(FeatureNode* featureNode, bool srcSeqInMapping,
-                            const string& targetSeqid="", int targetStart=-1, int targetEnd=-1, const string& targetStrand=".");
+    static void mapBounding(FeatureNode* featureNode,
+                            const string& targetSeqid="",
+                            int targetStart=-1,
+                            int targetEnd=-1,
+                            const string& targetStrand=".");
 
     /*
      * Recursively update node ids and parent links if this is a GFF3.  Also
@@ -82,10 +84,10 @@ class FeatureMapper {
      */
     static void updateIds(FeatureNode* featureNode,
                           FeatureNode* parentNode=NULL);
+
     /* Convert a feature to full unmapped, removing any partial unmapped features.
      * Used when transcript conflicts withing a gene are found.
      */
-    static void forceToUnmapped(FeatureNode* featureNode,
-                                RemapStatus remapStatus);
+    static void forceToUnmapped(FeatureNode* featureNode);
 };
 #endif

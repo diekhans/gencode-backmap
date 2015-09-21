@@ -145,6 +145,26 @@ RemapStatus FeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
     }
 }
 
+/* recursively determine the remap status */
+void FeatureNode::setRemapStatusFromChildren(RemapStatus baseStatus) {
+    fRemapStatus = baseStatus;
+    for (size_t i = 0; i < fChildren.size(); i++) {
+        fRemapStatus = remapStatusChildUpdate(fRemapStatus, fChildren[i]->fRemapStatus);
+    }
+    
+}
+
+/* recursively determine the remap status */
+void FeatureNode::recursiveCalcRemapStatus(bool srcSeqInMapping) {
+    // compute leaves first
+    for (size_t i = 0; i < fChildren.size(); i++) {
+        fChildren[i]->recursiveCalcRemapStatus(srcSeqInMapping);
+    }
+
+    // calculate for node and considering children
+    setRemapStatusFromChildren(calcRemapStatus(srcSeqInMapping));
+}
+
 /* print node for debugging */
 void FeatureNode::dumpNode(ostream& fh) const {
     const string status = remapStatusToStr(fRemapStatus);

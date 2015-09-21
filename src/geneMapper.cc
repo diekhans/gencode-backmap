@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include "transcriptMapper.hh"
+#include "targetAnnotations.hh"
 
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.20;  
@@ -54,7 +55,8 @@ void GeneMapper::processTranscripts(FeatureNode* geneTree,
  * mapped entries.  Used when we discover conflicts at the gene level. */
 void GeneMapper::forceToUnmapped(FeatureNode* featureNode,
                                  RemapStatus remapStatus) const {
-    FeatureMapper::forceToUnmapped(featureNode, remapStatus);
+    FeatureMapper::forceToUnmapped(featureNode);
+    featureNode->setRemapStatus(remapStatus);
     for (size_t i = 0; i < featureNode->fChildren.size(); i++) {
         forceToUnmapped(featureNode->fChildren[i], remapStatus);
     }
@@ -155,14 +157,14 @@ void GeneMapper::buildMappedGeneFeature(FeatureNode* geneTree,
             updateMappedGeneBounds(transcriptTree, seqid, strand, start, end);
         }
     }
-    FeatureMapper::mapBounding(geneTree, isSrcSeqInMapping(geneTree), seqid, start, end, strand);
+    FeatureMapper::mapBounding(geneTree, seqid, start, end, strand);
 }
 
 /* If there are any unmapped transcripts of a gene, add a gene
  * record for the bounds */
 void GeneMapper::buildUnmappedGeneFeature(FeatureNode* geneTree,
                                           bool srcSeqInMapping) const {
-    FeatureMapper::mapBounding(geneTree, isSrcSeqInMapping(geneTree));
+    FeatureMapper::mapBounding(geneTree);
 }
 
 /* Build gene features */
@@ -320,6 +322,8 @@ void GeneMapper::processGene(GxfParser *gxfParser,
         forceToUnmapped(geneTree, REMAP_STATUS_GENE_CONFLICT);
     } else if (hasExcessiveSizeChange(geneTree)) {
         forceToUnmapped(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
+    } else {
+        geneTree->setRemapStatusFromChildren();
     }
     geneTree->setRemapStatusAttr();
     geneTree->setNumMappingsAttr();

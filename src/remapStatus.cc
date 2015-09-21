@@ -1,6 +1,43 @@
 #include "remapStatus.hh"
 #include <stdexcept>
 
+/* Update a status for a parent from a child.  It starts out as
+ * REMAP_STATUS_NONE. */
+RemapStatus remapStatusChildUpdate(RemapStatus parentStatus,
+                                   RemapStatus childStatus) {
+
+    // Parent status is never changed on these
+    switch (parentStatus) {
+        case REMAP_STATUS_NO_SEQ_MAP:
+        case REMAP_STATUS_GENE_CONFLICT:
+        case REMAP_STATUS_GENE_SIZE_CHANGE:
+            return parentStatus;
+        default:
+            break;
+    }
+    
+    // switch statement to generate error if new status is added
+    switch (childStatus) {
+        case REMAP_STATUS_NONE:
+            throw logic_error("child status should not be REMAP_STATUS_NONE");
+        case REMAP_STATUS_FULL_CONTIG:
+        case REMAP_STATUS_FULL_FRAGMENT:
+        case REMAP_STATUS_PARTIAL_CONTIG:
+        case REMAP_STATUS_PARTIAL_FRAGMENT:
+        case REMAP_STATUS_DELETED:
+        case REMAP_STATUS_NO_SEQ_MAP:
+        case REMAP_STATUS_GENE_CONFLICT:
+        case REMAP_STATUS_GENE_SIZE_CHANGE:
+            // worse (highest) wins
+            if (parentStatus > childStatus) {
+                return parentStatus;
+            } else {
+                return childStatus;
+            }
+    }
+    throw logic_error("should not make it here");
+}
+
 /* convert a remap status to a string  */
 const string& remapStatusToStr(RemapStatus remapStatus) {
     switch (remapStatus) {
