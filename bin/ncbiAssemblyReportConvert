@@ -48,15 +48,11 @@ def getGencodeId(seq):
         return seq.genBankAccn
 
 def getId(seq, idType):
-    "get the from a sequence record, given the type of id desired"
+    "get the from a sequence record, given the type of id desired, or None if not defined"
     if idType == ID_TYPE_GENCODE:
-        seqId = getGencodeId(seq)
+        return getGencodeId(seq)
     else:
-        seqId = getattr(seq, idType)
-    if seqId == "na":
-        return None
-    else:
-        return seqId
+        return getattr(seq, idType)
 
 def createLift(asmReport, fromIdType, toIdType, outFh):
     "create a lift file for the two id types"

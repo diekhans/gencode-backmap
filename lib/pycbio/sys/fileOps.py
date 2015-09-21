@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous file operations"""
 
-import os, errno, sys, stat, fcntl, socket
+import os, errno, sys, stat, fcntl, socket, gzip
 
 def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""
@@ -47,30 +47,13 @@ def isCompressed(path):
     "determine if a file appears to be compressed by extension"
     return path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z")
 
-def compressCmd(path, default="cat"):
-    """return the command to compress the path, or default if not compressed, which defaults
-    to the `cat' command, so that it just gets written through"""
-    if path.endswith(".Z"):
-        raise Exception("writing compress .Z files not supported")
-    elif path.endswith(".gz"):
-        return "gzip"
-    elif path.endswith(".bz2"):
-        return "bzip2"
+def opengz(file, mode="r"):
+    """open a file, if it ends in an extension indicating compression, open
+    with a decompression pipe."""
+    if isCompressed(file):
+        return gzip.open(file, mode)
     else:
-        return default
-
-def decompressCmd(path, default="cat"):
-    """"return the command to decompress the file to stdout, or default if not compressed, which defaults
-    to the `cat' command, so that it just gets written through"""
-    if path.endswith(".Z") or path.endswith(".gz"):
-        return "zcat"
-    elif path.endswith(".bz2"):
-        return "bzcat"
-    else:
-        return default
-
-# FIXME: make these consistent and remove redundant code.  Maybe use
-# keyword for flush
+        return open(file, mode)
 
 def prLine(fh, *objs):
     "write each str(obj) followed by a newline"

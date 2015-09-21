@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+import sys, os
+myBinDir = os.path.normpath(os.path.abspath(os.path.dirname(sys.argv[0])))
+sys.path.append(myBinDir + "/../lib")
+import argparse
+from pycbio.ncbi.assembly import AssemblyReport
+from pycbio.sys import fileOps
+
+def parseArgs():
+    desc="""Convert a UCSC liftover chain file to use GENCODE sequence names.  Replaces
+    the UCSC hg19 chrM with the one used  
+"""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('ucscLiftOver', type=str, help="input liftover file, maybe compressed")
+    parser.add_argument('queryAssemblyReport', type=str, help="NCBI assembly report for the query size of lift")
+    parser.add_argument('targetAssemblyReport', type=str, help="NCBI assembly report for the target size of lift")
+    parser.add_argument('gencodeLiftOver', type=str, help="Chain with GENCODE sequence ids")
+    args = parser.parse_args()
+    return args
+
+def getGencodeId(seq):
+    """GENCODE uses UCSC name for primary chromosomes and mitochondia and GENBANK accessions
+    for others"""
+    if seq.sequenceRole == "assembled-molecule":
+        return seq.ucscStyleName
+    else:
+        return seq.genBankAccn
+
+class ChainHeader(object):
+    "header line from a chain entry.  Body is not parsed"
+    # chain 1560271 chrM 16569 + 0 16569 chrM 16571 + 0 16571 2406
+    def __init__(self, line):
+        parts = line.split(" ")
+        self.chainId = int(parts[1])
+        self.qName = parts[2]
+        self.qSize = int(parts[3])
+        self.qStrand = parts[4]
+        self.qStart = int(parts[5])
+        self.qEnd = int(parts[6])
+        self.tName = parts[7]
+        self.tSize = int(parts[8])
+        self.tStrand = parts[9]
+        self.tStart = int(parts[10])
+        self.tEnd = int(parts[11])
+        self.score = int(parts[12])
+        
+    def __str__(self):
+        return " ".join(["chain", str(self.chainId), self.qName, str(self.qSize),
+                         self.qStrand, str(self.qStart), str(self.qEnd), self.tName, str(self.tSize),
+                         self.tStrand, str(self.tStart), str(self.tEnd), str(self.score)])
+        
+
+# GRCh38 ->GRCh37 lite mitochrondra chain (1 to 1), to replace hg19 chain
+chrMGrcHChain = """chain 16568 chrM 16569 + 0 16569 chrM 16569 + 0 16569 1
+16569
+
+"""
+chrMGrch38Size = 16569
+chrMHg19Size = 16571
+    
+class UcscLiftEdit(object):
+    def __init__(self, queryAsm, targetAsm):
+        self.queryAsm = queryAsm
+        self.targetAsm = targetAsm
+
+    def __asmError(self, asm, msg):
+        raise Exception(asm.metaData["Assembly Name"] + ": " + msg)
+        
+    def __convertToGencodeSeqId(self, asm, name, length):
+        "the specified sequence and verify the size and return gencode id"
+        seq = asm.byUcscStyleName.get(name)
+        if seq == None:
+            self.__asmError(asm, "ucscStyleName not found: " + name)
+        if seq.sequenceLength != length:
+            self.__asmError(asm, "chain/assembly report length mismatch: %s %d vs %d" % (name, seq.sequenceLength, length))
+        return getGencodeId(seq)
+        
+    def __editChainHeader(self, chainHeader):
+        chainHeader.qName = self.__convertToGencodeSeqId(self.queryAsm, chainHeader.qName, chainHeader.qSize)
+        chainHeader.tName = self.__convertToGencodeSeqId(self.targetAsm, chainHeader.tName, chainHeader.tSize)
+
+    def __copyChainBody(self, inFh, outFh=None):
+        """copy chain body after current header, stopping after blank
+        line. Discard if outFh is None:"""
+        for line in fileOps.iterLines(inFh):
+            if outFh != None:
+                outFh.write(line + "\n")
+            if len(line) == 0:
+                break # blank
+
+    def __isMisfitMitochondria(self, chainHeader):
+        return (chainHeader.qName == "chrM") and ((chainHeader.qSize == chrMHg19Size) or (chainHeader.tSize == chrMHg19Size))
+            
+    def __processMisfitMitochondria(self, inFh, outFh):
+        outFh.write(chrMGrcHChain)
+        self.__copyChainBody(inFh)  # discard old
+
+    def __processNormalChain(self, chainHeader, inFh, outFh):
+        self.__editChainHeader(chainHeader)
+        outFh.write(str(chainHeader) + "\n")
+        self.__copyChainBody(inFh, outFh)
+
+    def __processNextChain(self, line, inFh, outFh):
+        chainHeader = ChainHeader(line)
+        if self.__isMisfitMitochondria(chainHeader):
+            self.__processMisfitMitochondria(inFh, outFh)
+        else:
+            self.__processNormalChain(chainHeader, inFh, outFh)
+
+    def convertChains(self, inFh, outFh):
+        for line in fileOps.iterLines(inFh):
+            if line.startswith("chain"):
+                self.__processNextChain(line, inFh, outFh)
+            else:
+                outFh.write(line+"\n")
+
+args = parseArgs()
+ucscLiftEdit = UcscLiftEdit(AssemblyReport(args.queryAssemblyReport), AssemblyReport(args.targetAssemblyReport))
+with fileOps.opengz(args.ucscLiftOver) as inFh:
+    with fileOps.opengz(args.gencodeLiftOver, "w") as outFh:
+        ucscLiftEdit.convertChains(inFh, outFh)
