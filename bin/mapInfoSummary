@@ -40,6 +40,9 @@ class MapInfoSummary(object):
         self.filterFunc = lambda row: row.type == whatAnnotation
         keyColumnHeader = []
         keyFuncs = [] # list of functions to call to get keys
+        if sourceGroup:
+            keyColumnHeader.append("source")
+            keyFuncs.append(lambda row: row.source)
         if biotypeGroup == "biotype": 
             keyColumnHeader.append("biotype")
             keyFuncs.append(lambda row: row.biotype)
