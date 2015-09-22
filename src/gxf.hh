@@ -27,14 +27,16 @@ typedef enum {
     GTF_FORMAT,
 } GxfFormat;
 
-/* get a base id, deleting the version, if it exists */
+/* Get a base id, deleting the version, if it exists.
+ * deal with the ENSTR->ENST0 PAR hack
+ */
 static inline string getBaseId(const string& id) {
     size_t idot = id.find_last_of('.');
-    if (idot == string::npos) {
-        return id;
-    } else {
-        return id.substr(0, idot);
+    string baseId = (idot == string::npos) ? id : id.substr(0, idot);
+    if (stringStartsWith(baseId, "ENSGR") or stringStartsWith(baseId, "ENSTR")) {
+        baseId[4] = '0';
     }
+    return baseId;
 }
 
 /*

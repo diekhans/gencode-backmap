@@ -4,10 +4,7 @@
 /* load a feature */
 void TargetAnnotations::loadFeature(GxfFeature* gxfFeature) {
     string baseId = getBaseId(gxfFeature->getTypeId());
-    if (fIdFeatureMap.find(baseId) != fIdFeatureMap.end()) {
-        throw invalid_argument("feature with id already exists :" + baseId);
-    }
-    fIdFeatureMap[baseId] = gxfFeature;
+    fIdFeatureMap[baseId].push_back(gxfFeature);
 }
 
 /* process a record, loading into table or discarding */
@@ -36,7 +33,7 @@ TargetAnnotations::TargetAnnotations(const string& gxfFile) {
 /* destructor */
 TargetAnnotations::~TargetAnnotations() {
     for (IdFeatureMapIter it = fIdFeatureMap.begin(); it != fIdFeatureMap.end(); it++) {
-        delete it->second;
+        it->second.free();
     }
 }
 

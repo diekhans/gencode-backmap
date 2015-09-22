@@ -36,6 +36,11 @@ inline char *toCharStr(const string& s) {
     return const_cast<char*>(s.c_str());
 }
 
+/* does a string start with a prefix? */
+inline bool stringStartsWith(const string& s, const string& prefix) {
+    return (s.size() >= prefix.size()) && std::equal(prefix.begin(), prefix.end(), s.begin());
+}
+
 /* does a string end with a suffix? */
 inline bool stringEndsWith(const string& s, const string& suffix) {
     return (s.size() >= suffix.size()) && (s.rfind(suffix) == (s.size()-suffix.size()));

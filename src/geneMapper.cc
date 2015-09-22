@@ -252,7 +252,8 @@ const string& GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode) co
     if (fTargetAnnotations == NULL) {
         return STATUS_NA;
     }
-    const GxfFeature* targetFeature = fTargetAnnotations->get(featureNode->fFeature->getTypeId());
+    const GxfFeature* targetFeature = fTargetAnnotations->get(featureNode->fFeature->getTypeId(),
+                                                              featureNode->fFeature->fSeqid);
     if (targetFeature == NULL) {
         return STATUS_NEW;
     }
