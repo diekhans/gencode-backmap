@@ -17,7 +17,7 @@ static const char* mappingInfoHeaders[] = {
     "srcChrom", "srcStart", "srcEnd", "srcStrand",
     "mappedChrom", "mappedStart", "mappedEnd", "mappedStrand",
     "mappingStatus", "numMappings",
-    "targetStatus", NULL
+    "targetStatus", "targetBiotype", NULL
 };
 
 
@@ -241,9 +241,20 @@ void GeneMapper::outputInfoHeader(ostream& mappingInfoFh) const {
     mappingInfoFh << endl;
 }
 
+/* get target annotation for a feature, if available */
+const GxfFeature* GeneMapper::getTargetAnnotation(FeatureNode* featureNode) const {
+    if (fTargetAnnotations == NULL) {
+        return NULL;
+    } else {
+        return fTargetAnnotations->get(featureNode->fFeature->getTypeId(),
+                                       featureNode->fFeature->fSeqid);
+    }
+}
+
 /* If target gene annotations are available, get status of mapping
  * relative to older version of gene. */
-const string& GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode) const {
+const string& GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode,
+                                                    const GxfFeature* targetFeature) const {
     static const string STATUS_NA = "na";
     static const string STATUS_NEW = "new";
     static const string STATUS_LOST = "lost";
@@ -252,8 +263,6 @@ const string& GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode) co
     if (fTargetAnnotations == NULL) {
         return STATUS_NA;
     }
-    const GxfFeature* targetFeature = fTargetAnnotations->get(featureNode->fFeature->getTypeId(),
-                                                              featureNode->fFeature->fSeqid);
     if (targetFeature == NULL) {
         return STATUS_NEW;
     }
@@ -268,10 +277,23 @@ const string& GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode) co
     }
 }
 
+/* If target gene annotations are available, get biotype of target feature */
+const string& GeneMapper::getTargetAnnotationBiotype(FeatureNode* featureNode,
+                                                     const GxfFeature* targetFeature) const {
+    if (targetFeature == NULL) {
+        return emptyString;
+    } else {
+        return targetFeature->getTypeBiotype();
+    }
+}
+
 /* output info on one bounding feature */
 void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
                                    ostream& mappingInfoFh) const {
     assert(featureNode->fMappedFeatures.size() <= 1);  // only handles bounding features
+    // get target if available
+    const GxfFeature* targetFeature = getTargetAnnotation(featureNode);
+    
     mappingInfoFh << featureNode->fFeature->getTypeId() << "\t"
                   << featureNode->fFeature->getTypeName() << "\t"
                   << featureNode->fFeature->fType << "\t"
@@ -292,7 +314,8 @@ void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
     }
     mappingInfoFh << remapStatusToStr(featureNode->fRemapStatus) << "\t"
                   << featureNode->fNumMappings << "\t"
-                  << getTargetAnnotationStatus(featureNode) << endl;
+                  << getTargetAnnotationStatus(featureNode, targetFeature) << "\t"
+                  << getTargetAnnotationBiotype(featureNode, targetFeature) << endl;
 }
 
 /*

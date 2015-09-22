@@ -6,6 +6,9 @@
 
 const string whitespace = " \t\n\r\f\v";
 
+/* an empty string constant */
+const string emptyString;
+
 
 /*
  * Convert a string to an int.

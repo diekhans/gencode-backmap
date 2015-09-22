@@ -52,41 +52,39 @@ string GxfFeature::baseColumnsAsString() const {
 /* get the id based on feature type, or empty string if it doesn't have an
  * id */
 const string& GxfFeature::getTypeId() const {
-    static const string emptyStr;
     if (fType == GxfFeature::GENE) {
-        return getAttrValue(GxfFeature::GENE_ID_ATTR, emptyStr);
+        return getAttrValue(GxfFeature::GENE_ID_ATTR, emptyString);
     } else if (fType == GxfFeature::TRANSCRIPT) {
-        return getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR, emptyStr);
+        return getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR, emptyString);
     } else if (fType == GxfFeature::EXON) {
-        return getAttrValue(GxfFeature::EXON_ID_ATTR, emptyStr);
+        return getAttrValue(GxfFeature::EXON_ID_ATTR, emptyString);
     } else {
-        return emptyStr;
+        return emptyString;
     }
 }
 
 /* get the name based on feature type, or empty string if it doesn't have an
  * id */
 const string& GxfFeature::getTypeName() const {
-    static const string emptyStr;
     if (fType == GxfFeature::GENE) {
-        return getAttrValue(GxfFeature::GENE_NAME_ATTR, emptyStr);
+        return getAttrValue(GxfFeature::GENE_NAME_ATTR, emptyString);
     } else if (fType == GxfFeature::TRANSCRIPT) {
-        return getAttrValue(GxfFeature::TRANSCRIPT_NAME_ATTR, emptyStr);
+        return getAttrValue(GxfFeature::TRANSCRIPT_NAME_ATTR, emptyString);
     } else {
-        return emptyStr;
+        return emptyString;
     }
 }
 
 /* get the biotype based on feature type, or empty string if it doesn't have an
  * id */
 const string& GxfFeature::getTypeBiotype() const {
-    static const string emptyStr;
+    static const string emptyString;
     if (fType == GxfFeature::GENE) {
-        return getAttrValue(GxfFeature::GENE_TYPE_ID_ATTR, emptyStr);
+        return getAttrValue(GxfFeature::GENE_TYPE_ID_ATTR, emptyString);
     } else if (fType == GxfFeature::TRANSCRIPT) {
-        return getAttrValue(GxfFeature::TRANSCRIPT_TYPE_ID_ATTR, emptyStr);
+        return getAttrValue(GxfFeature::TRANSCRIPT_TYPE_ID_ATTR, emptyString);
     } else {
-        return emptyStr;
+        return emptyString;
     }
 }
 

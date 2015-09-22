@@ -53,6 +53,9 @@ int stringToInt(const string& str,
                 bool* isOk = NULL,
                 int base = 10);
 
+/* an empty string constant */
+extern const string emptyString;
+
 /* string vector */
 typedef vector<string> StringVector;
 
