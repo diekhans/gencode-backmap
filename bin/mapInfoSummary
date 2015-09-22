@@ -25,6 +25,8 @@ def parseArgs():
                         help="group by target annotation status")
     parser.add_argument('--multimapGroup', action="store_true", default=False,
                        help="group counts single vs multiple mappers")
+    parser.add_argument('--biotypeFilter', dest="biotypeFilters", action="append",
+                        help="filter my this biotype, maybe repeated")
     parser.add_argument('what', type=str, choices=("gene", "transcript"),
                         help="analyze by gene or transcript")
     parser.add_argument('mapInfoTsv', type=str, help="mapInfo output of gencode-backmap")
@@ -32,12 +34,18 @@ def parseArgs():
     args = parser.parse_args()
     if not (args.sourceGroup or args.targetStatusGroup or args.multimapGroup):
         args.mappingStatusGroup = True
+    if args.biotypeFilters != None:
+        args.biotypeFilters = frozenset(args.biotypeFilters)
     return args
 
 
 class MapInfoSummary(object):
-    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup):
-        self.filterFunc = lambda row: row.type == whatAnnotation
+    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup,
+                 biotypeFilters):
+        if biotypeFilters != None:
+            self.filterFunc = lambda row: (row.type == whatAnnotation) and (row.biotype in biotypeFilters)
+        else:
+            self.filterFunc = lambda row: row.type == whatAnnotation
         keyColumnHeader = []
         keyFuncs = [] # list of functions to call to get keys
         if sourceGroup:
@@ -75,7 +83,7 @@ class MapInfoSummary(object):
 args = parseArgs()
 summary = MapInfoSummary(args.what, args.biotypeGroup, args.sourceGroup,
                          args.mappingStatusGroup, args.targetStatusGroup,
-                         args.multimapGroup)
+                         args.multimapGroup, args.biotypeFilters)
 summary.count(args.mapInfoTsv)
 with open(args.summaryOut, "w") as outFh:
     summary.write(outFh)
