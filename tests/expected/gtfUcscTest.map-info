@@ -95,8 +95,8 @@ ENST00000443019.4	PLCXD1-003	transcript	protein_coding	HAVANA	chrX	283163	288829
 ENST00000415337.4	PLCXD1-007	transcript	protein_coding	HAVANA	chrX	283465	291639	+	chrX	200132	208306	+	full_contig	1	overlap
 ENST00000447472.4	PLCXD1-008	transcript	protein_coding	HAVANA	chrX	283479	291629	+	chrX	200146	208296	+	full_contig	1	overlap
 ENST00000448477.4	PLCXD1-004	transcript	protein_coding	HAVANA	chrX	283734	290757	+	chrX	200401	207424	+	full_contig	1	overlap
-ENSGR0000228572.5	LL0YNC03-29C1.1	gene	unprocessed_pseudogene	HAVANA	chrY	253743	255091	+	chrY	120411	121758	+	full_contig	1	new
-ENSTR0000431238.5	LL0YNC03-29C1.1-001	transcript	unprocessed_pseudogene	HAVANA	chrY	253743	255091	+	chrY	120410	121758	+	full_contig	1	new
+ENSGR0000228572.5	LL0YNC03-29C1.1	gene	unprocessed_pseudogene	HAVANA	chrY	253743	255091	+	chrY	120411	121758	+	full_contig	1	overlap
+ENSTR0000431238.5	LL0YNC03-29C1.1-001	transcript	unprocessed_pseudogene	HAVANA	chrY	253743	255091	+	chrY	120410	121758	+	full_contig	1	overlap
 ENSGR0000182378.11	PLCXD1	gene	protein_coding	HAVANA	chrY	276322	303356	+	chrY	142990	170023	+	full_contig	1	new
 ENSTR0000399012.4	PLCXD1-001	transcript	protein_coding	HAVANA	chrY	276322	303353	+	chrY	142989	170020	+	full_contig	1	new
 ENSTR0000484611.5	PLCXD1-009	transcript	processed_transcript	HAVANA	chrY	276324	291537	+	chrY	142991	158204	+	full_contig	1	new
