@@ -13,7 +13,7 @@ const float geneExpansionThreshold = 0.20;
 
 /*  mapinfo TSV headers, terminated by NULL */
 static const char* mappingInfoHeaders[] = {
-    "id", "type", "biotype", "source",
+    "id", "name", "type", "biotype", "source",
     "srcChrom", "srcStart", "srcEnd", "srcStrand",
     "mappedChrom", "mappedStart", "mappedEnd", "mappedStrand",
     "mappingStatus", "numMappings",
@@ -272,6 +272,7 @@ void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
                                    ostream& mappingInfoFh) const {
     assert(featureNode->fMappedFeatures.size() <= 1);  // only handles bounding features
     mappingInfoFh << featureNode->fFeature->getTypeId() << "\t"
+                  << featureNode->fFeature->getTypeName() << "\t"
                   << featureNode->fFeature->fType << "\t"
                   << featureNode->fFeature->getTypeBiotype() << "\t"
                   << featureNode->fFeature->fSource << "\t"

@@ -35,7 +35,6 @@ ${testGencodeLiftOverChains}: ${testGencodeLiftOverChains}
 	@mkdir -p output
 	../bin/ucscLiftEdit ${testUcscLiftOverChains} data/GCF_000001405.28.assembly.txt data/GCF_000001405.25.assembly.txt ${testGencodeLiftOverChains}
 
-
 gff3NcbiTest: mkdirs
 	${PROG} --swapMap ${targetGxfArg} data/gencode.v22.annotation.gff3 data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null

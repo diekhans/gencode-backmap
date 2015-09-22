@@ -35,8 +35,10 @@ const string GxfFeature::STOP_CODON_REDEFINED_AS_SELENOCYSTEINE = "stop_codon_re
 const string GxfFeature::ID_ATTR = "ID";
 const string GxfFeature::PARENT_ATTR = "Parent";
 const string GxfFeature::GENE_ID_ATTR = "gene_id";
-const string GxfFeature::TRANSCRIPT_ID_ATTR = "transcript_id";
+const string GxfFeature::GENE_NAME_ATTR = "gene_name";
 const string GxfFeature::GENE_TYPE_ID_ATTR = "gene_type";
+const string GxfFeature::TRANSCRIPT_ID_ATTR = "transcript_id";
+const string GxfFeature::TRANSCRIPT_NAME_ATTR = "transcript_name";
 const string GxfFeature::TRANSCRIPT_TYPE_ID_ATTR = "transcript_type";
 const string GxfFeature::EXON_ID_ATTR = "exon_id";
     
@@ -57,6 +59,19 @@ const string& GxfFeature::getTypeId() const {
         return getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR, emptyStr);
     } else if (fType == GxfFeature::EXON) {
         return getAttrValue(GxfFeature::EXON_ID_ATTR, emptyStr);
+    } else {
+        return emptyStr;
+    }
+}
+
+/* get the name based on feature type, or empty string if it doesn't have an
+ * id */
+const string& GxfFeature::getTypeName() const {
+    static const string emptyStr;
+    if (fType == GxfFeature::GENE) {
+        return getAttrValue(GxfFeature::GENE_NAME_ATTR, emptyStr);
+    } else if (fType == GxfFeature::TRANSCRIPT) {
+        return getAttrValue(GxfFeature::TRANSCRIPT_NAME_ATTR, emptyStr);
     } else {
         return emptyStr;
     }
