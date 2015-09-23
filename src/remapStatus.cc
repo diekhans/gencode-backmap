@@ -22,8 +22,7 @@ RemapStatus remapStatusChildUpdate(RemapStatus parentStatus,
             throw logic_error("child status should not be REMAP_STATUS_NONE");
         case REMAP_STATUS_FULL_CONTIG:
         case REMAP_STATUS_FULL_FRAGMENT:
-        case REMAP_STATUS_PARTIAL_CONTIG:
-        case REMAP_STATUS_PARTIAL_FRAGMENT:
+        case REMAP_STATUS_PARTIAL:
         case REMAP_STATUS_DELETED:
         case REMAP_STATUS_NO_SEQ_MAP:
         case REMAP_STATUS_GENE_CONFLICT:
@@ -53,12 +52,8 @@ const string& remapStatusToStr(RemapStatus remapStatus) {
             static const string status("full_fragment");
             return status;
         }
-        case REMAP_STATUS_PARTIAL_CONTIG: {
-            static const string status("partial_contig");
-            return status;
-        }
-        case REMAP_STATUS_PARTIAL_FRAGMENT: {
-            static const string status("partial_fragment");
+        case REMAP_STATUS_PARTIAL: {
+            static const string status("partial");
             return status;
         }
         case REMAP_STATUS_DELETED: {

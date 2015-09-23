@@ -137,11 +137,7 @@ RemapStatus FeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
         }
     } else {
         // partially mapped
-        if (fMappedFeatures.size() == 1) {
-            return REMAP_STATUS_PARTIAL_CONTIG;
-        } else {
-            return REMAP_STATUS_PARTIAL_FRAGMENT;
-        }
+        return REMAP_STATUS_PARTIAL;
     }
 }
 
