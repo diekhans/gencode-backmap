@@ -1,0 +1,235 @@
+\documentclass[hyperref={bookmarks=false,bookmarksopen=false},xcolor={svgnames,table}]{beamer}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx, grffile}
+\usepackage{multirow, multicol}
+
+\usepackage{color, colortbl}
+\definecolor{LRed}{rgb}{1,.8,.8}
+\definecolor{MRed}{rgb}{1,.6,.6}
+\definecolor{HRed}{rgb}{1,.2,.2}
+
+%\setbeameroption{show notes}
+
+% list-like ball
+\newcommand\ballish{\textcolor{DarkRed}{\usebeamertemplate{itemize item}}~}
+
+% footnote without mark
+\newcommand\nomarkfootnote[1]{{\renewcommand{\thefootnote}{}\footnotetext{#1}}}
+
+% use symbols for footmarks
+\renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+
+% horizontal split slide
+\newcommand\hslidesplit{\noindent\hrulefill}
+
+% two column header and one for last column
+\newcommand{\twocol}[1]{\multicolumn{2}{c||}{#1}}
+\newcommand{\twolcol}[1]{\multicolumn{2}{c|}{#1}}
+
+% best cell color
+\newcommand{\best}[1]{\textcolor{DarkGreen}{\textbf{#1}}}
+
+\iftrue
+\newcommand\frameimage[1]{\framebox{#1}}
+\else
+\newcommand\frameimage[1]{#1}
+\fi
+
+% tight itemized list
+\newenvironment{tightitemize}{%
+\begin{itemize}
+  \setlength{\itemsep}{1pt}%
+  \setlength{\parskip}{0pt}%
+  \setlength{\parsep}{0pt}%
+}{\end{itemize}}
+
+% to-do
+\newcommand\todo[1]{{\large\textcolor{red}{TO DO: \em #1}}}%
+
+% email
+\newcommand\emailaddr[1]{\href{mailto:#1}{\textless\ignorespaces markd@soe.ucsc.edu\textgreater}}
+% beamer configuration
+\usetheme{Singapore}
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=0.5cm, text margin right=0.5cm}
+\setbeamertemplate{footline}[page number]
+
+\title{Mapping GENCODE from GRCh38 to GRCh37}
+\author{Mark Diekhans \emailaddr{markd@soe.ucsc.edu}}
+\date{Sept 29, 2015}
+\begin{document}
+\maketitle
+
+
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Gaols}
+  \begin{tightitemize}
+  \item provide updated annotations for projects still on GRCh37
+  \item primary chromosomes
+  \item correct biotype problems and add new annotations
+  \item GENCODE GTF and GFF3 
+  \item annotate mapping problems
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Projection mapping}
+  \begin{tightitemize}
+  \item UCSC liftover alignments
+  \item NCBI remap alignments:
+    \begin{tightitemize}
+    \item \emph{First-pass alignments} - reciprocal single best
+      \begin{tightitemize}
+      \item filtered for same assembly components
+      \end{tightitemize}
+    \item \emph{Second-pass alignments} - uni-directional best, allows for multiple alignments
+    \item \url{http://www.ncbi.nlm.nih.gov/genome/tools/remap/docs/alignments}
+    \end{tightitemize}
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Two-phase TransMap}
+  \begin{tightitemize}
+  \item
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Two-phase TransMap}
+  \begin{center}
+    \includegraphics[scale=0.40]{output/transMap2.pdf}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Target annotation criteria}
+  \begin{tightitemize}
+  \item \emph{overlap} - gene or transcript overlaps previous version of annotation on GRCh37
+  \item \emph{new} - gene or transcript was not in GRCh37 
+  \item \emph{lost} - gene or transcript exists in GRCh37, however GRCh38 version was not mapped
+  \item \emph{nonOverlap} - gene or transcript exists in GRCh37, however GRCh38 mapping is to a different location
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Mapping completeness criteria}
+  \begin{tightitemize}
+  \item \emph{full\_contig} - gene or transcript completely mapped to GRCh37 with all features intact
+  \item \emph{full\_fragment} - gene or transcript completely to GRCh37 with insertions in some features
+  \item \emph{partial} - gene or transcript partially mapped to GRCh37
+  \item \emph{deleted} - gene or transcript did not map to GRCh37
+  \item \emph{gene\_conflict} - transcripts in the gene mapped to multiple locations, gene discarded
+  \item \emph{gene\_size\_change} - transcripts caused gene's length to change by more than 20\%, gene discarded
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Gene target status}
+  \begin{center}
+    \begin{tabular}{|l||r|r||r|r||r|r|} \hline
+      &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
+      overlap &	\best{54221} &	\best{0.90} &	51921 &	0.86 &	53541 &	0.89 \\\hline
+      nonOverlap &	\best{253} &	\best{0.00} &	2127 &	0.04 &	710 &	0.01 \\\hline
+      lost &	\best{87} &	\best{0.00} &	513 &	0.01 &	310 &	0.01 \\\hline
+      new &	5922 &	0.10 &	5922 &	0.10 &	5922 &	0.10 \\\hline\hline
+      all &	60483 &	1.00 &	60483 &	1.00 &	60483 &	1.00 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Transcript target status}
+  \begin{center}
+    \begin{tabular}{|l||r|r||r|r||r|r|} \hline
+      &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
+overlap &	\best{183620} &	\best{0.93} &	176328 &	0.89 &	181444 &	0.91 \\\hline
+nonOverlap &	\best{473} &	\best{0.00} &	6287 &	0.03 &	1456 &	0.01 \\\hline
+lost &	\best{386} &	\best{0.00} &	1864 &	0.01 &	1579 &	0.01 \\\hline
+new &	13963 &	0.07 &	13963 &	0.07 &	13963 &	0.07 \\\hline\hline
+all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Transcript target status by category}
+  \begin{center}
+    \small
+    \begin{tabular}{|l||l||r|r||r|r||r|r|} \hline
+      &&	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
+coding &	overlap &	\best{87691} &	\best{0.44} &	84080 &	0.42 &	86554 &	0.44 \\\hline
+coding &	nonOverlap &	\best{114} &	\best{0.00} &	2921 &	0.01 &	574 &	0.00 \\\hline
+coding &	lost &	\best{192} &	\best{0.00} &	996 &	0.01 &	869 &	0.00 \\\hline
+coding &	new &	5585 &	0.03 &	5585 &	0.03 &	5585 &	0.03 \\\hline\hline
+nonCoding &	overlap &	\best{56571} &	\best{0.29} &	54591 &	0.28 &	55964 &	0.28 \\\hline
+nonCoding &	nonOverlap &	\best{251} &	\best{0.00} &	1882 &	0.01 &	531 &	0.00 \\\hline
+nonCoding &	lost &	\best{107} &	\best{0.00} &	456 &	0.00 &	434 &	0.00 \\\hline
+nonCoding &	new &	5814 &	0.03 &	5814 &	0.03 &	5814 &	0.03 \\\hline\hline
+problem &	overlap &	\best{25909} &	\best{0.13} &	24886 &	0.13 &	25667 &	0.13 \\\hline
+problem &	lost &	\best{68} &	\best{0.00} &	285 &	0.00 &	235 &	0.00 \\\hline
+problem &	nonOverlap &	\best{7} &	\best{0.00} &	813 &	0.00 &	82 &	0.00 \\\hline
+problem &	new &	1689 &	0.01 &	1689 &	0.01 &	1689 &	0.01 \\\hline\hline
+pseudo &	overlap &	\best{13449} &	\best{0.07} &	12771 &	0.06 &	13259 &	0.07 \\\hline
+pseudo &	nonOverlap &	\best{101} &	\best{0.00} &	671 &	0.00 &	269 &	0.00 \\\hline
+pseudo &	lost &	\best{19} &	\best{0.00} &	127 &	0.00 &	41 &	0.00 \\\hline
+pseudo &	new &	875 &	0.00 &	875 &	0.00 &	875 &	0.00 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Transcript mapping status}
+  \begin{center}
+    \begin{tabular}{|l||r|r||r|r||r|r|} \hline
+      &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
+full\_contig &	\best{195861} &	\best{0.99} &	194681 &	0.98 &	194285 &	0.98 \\\hline
+full\_fragment &	\best{271} &	\best{0.00} &	181 &	0.00 &	243 &	0.00 \\\hline
+partial &	1408 &	0.01 &	\best{494} &	\best{0.00} &	579 &	0.00 \\\hline
+deleted &	\best{67} &	\best{0.00} &	338 &	0.00 &	1077 &	0.01 \\\hline
+gene\_conflict &	\best{222} &	\best{0.00} &	541 &	0.00 &	388 &	0.00 \\\hline
+gene\_size\_change &	\best{613} &	\best{0.00} &	2207 &	0.01 &	1870 &	0.01 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\iffalse
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{}
+  \begin{tightitemize}
+  \item
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{}
+  \framesubtitle{}
+  \begin{center}
+    \includegraphics[scale=0.60]{}
+  \end{center}
+  \begin{tightitemize}
+  \item 
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{}
+  \begin{tightitemize}
+  \item
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{}
+  \framesubtitle{}
+  \begin{center}
+    \includegraphics[scale=0.60]{images/}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\fi
+\end{document}

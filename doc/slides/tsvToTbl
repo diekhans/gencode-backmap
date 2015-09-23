@@ -1,0 +1,9 @@
+#!/opt/local/bin/gawk -f
+
+BEGIN {
+    
+}
+
+{
+    print gensub("\t", " \\&\t", "g"),"\\\\\\hline";
+}
