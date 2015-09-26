@@ -37,6 +37,10 @@ void GeneMapper::processTranscript(FeatureNode* transcriptTree,
     TranscriptMapper transcriptMapper(fGenomeTransMap, transcriptTree, fTargetAnnotations,
                                       isSrcSeqInMapping(transcriptTree), transcriptPslFh);
     transcriptMapper.mapTranscriptFeatures(transcriptTree);
+    transcriptTree->fTargetStatus = getTargetAnnotationStatus(transcriptTree);
+    if (transcriptTree->fTargetStatus == TARGET_STATUS_NONOVERLAP) {
+        forceToUnmappedDueToTargetStatus(transcriptTree, transcriptTree->fTargetStatus);
+    }
 }
 
 /* process all transcripts of gene. */
@@ -53,12 +57,23 @@ void GeneMapper::processTranscripts(FeatureNode* geneTree,
 
 /* Recursively made features fulled unmapped, removing mapped and partially
  * mapped entries.  Used when we discover conflicts at the gene level. */
-void GeneMapper::forceToUnmapped(FeatureNode* featureNode,
-                                 RemapStatus remapStatus) const {
+void GeneMapper::forceToUnmappedDueToRemapStatus(FeatureNode* featureNode,
+                                                 RemapStatus remapStatus) const {
     FeatureMapper::forceToUnmapped(featureNode);
     featureNode->setRemapStatus(remapStatus);
     for (size_t i = 0; i < featureNode->fChildren.size(); i++) {
-        forceToUnmapped(featureNode->fChildren[i], remapStatus);
+        forceToUnmappedDueToRemapStatus(featureNode->fChildren[i], remapStatus);
+    }
+}
+
+/* Recursively made features fulled unmapped, removing mapped and partially
+ * mapped entries.  Used when target status indicates a bad mapping */
+void GeneMapper::forceToUnmappedDueToTargetStatus(FeatureNode* featureNode,
+                                                  TargetStatus targetStatus) const {
+    FeatureMapper::forceToUnmapped(featureNode);
+    featureNode->fTargetStatus = targetStatus;
+    for (size_t i = 0; i < featureNode->fChildren.size(); i++) {
+        forceToUnmappedDueToTargetStatus(featureNode->fChildren[i], targetStatus);
     }
 }
 
@@ -91,6 +106,16 @@ bool GeneMapper::hasMixedMappedSeqStrand(FeatureNode* geneTree) const {
     return false;
 }
 
+/* check if gene contains transcripts of a gene have a target status of nonoverlap */
+bool GeneMapper::hasTargetStatusNonOverlap(FeatureNode* geneTree) const {
+    for (int i = 0; i < geneTree->fChildren.size(); i++) {
+        if (geneTree->fChildren[i]->fTargetStatus == TARGET_STATUS_NONOVERLAP) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /* compute the length of a mapped gene */
 int GeneMapper::calcMappedGeneLength(FeatureNode* geneTree) const {
     int start = 0, end = 0;
@@ -107,7 +132,7 @@ int GeneMapper::calcMappedGeneLength(FeatureNode* geneTree) const {
             }
         }
     }
-    return (start == 0) ? 0 : (end-start)+1;
+    return (end == 0) ? 0 : (end-start)+1;
 }
 
 /* check if gene transcripts cause the gene size to expand beyond a
@@ -115,7 +140,11 @@ int GeneMapper::calcMappedGeneLength(FeatureNode* geneTree) const {
 bool GeneMapper::hasExcessiveSizeChange(FeatureNode* geneTree) const {
     int srcGeneLength = geneTree->fFeature->size();
     int mappedGeneLength = calcMappedGeneLength(geneTree);
-    return (abs(float(mappedGeneLength-srcGeneLength)) / float(srcGeneLength)) > geneExpansionThreshold;
+    if (mappedGeneLength == 0) {
+        return 0;  // not mapped
+    } else {
+        return (abs(float(mappedGeneLength-srcGeneLength)) / float(srcGeneLength)) > geneExpansionThreshold;
+    }
 }
 
 /* set the number of mappings of the gene  */
@@ -176,6 +205,12 @@ void GeneMapper::buildGeneFeature(FeatureNode* geneTree) const {
     }
     if (haveUnmappedTranscripts(geneTree)) {
         buildUnmappedGeneFeature(geneTree, srcSeqInMapping);
+    }
+    geneTree->fTargetStatus = getTargetAnnotationStatus(geneTree);
+    if ((geneTree->fTargetStatus == TARGET_STATUS_LOST)
+        && hasTargetStatusNonOverlap(geneTree)) {
+        // lost because at least one transcript doesn't overlap the target
+        geneTree->fTargetStatus = TARGET_STATUS_NONOVERLAP;
     }
 }
 
@@ -253,33 +288,28 @@ const GxfFeature* GeneMapper::getTargetAnnotation(FeatureNode* featureNode) cons
 
 /* If target gene annotations are available, get status of mapping
  * relative to older version of gene. */
-const string& GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode,
-                                                    const GxfFeature* targetFeature) const {
-    static const string STATUS_NA = "na";
-    static const string STATUS_NEW = "new";
-    static const string STATUS_LOST = "lost";
-    static const string STATUS_OVERLAP = "overlap";
-    static const string STATUS_NONOVERLAP = "nonOverlap";
+TargetStatus GeneMapper::getTargetAnnotationStatus(FeatureNode* featureNode) const {
+    const GxfFeature* targetFeature = getTargetAnnotation(featureNode);
     if (fTargetAnnotations == NULL) {
-        return STATUS_NA;
+        return TARGET_STATUS_NA;
     }
     if (targetFeature == NULL) {
-        return STATUS_NEW;
+        return TARGET_STATUS_NEW;
     }
     if (featureNode->fMappedFeatures.size() == 0) {
-        return STATUS_LOST;
+        return TARGET_STATUS_LOST;
     }
     assert(featureNode->fMappedFeatures.size() == 1);  // genes/transcripts don't split
     if (featureNode->fMappedFeatures[0]->overlaps(targetFeature)) {
-        return STATUS_OVERLAP;
+        return TARGET_STATUS_OVERLAP;
     } else {
-        return STATUS_NONOVERLAP;
+        return TARGET_STATUS_NONOVERLAP;
     }
 }
 
 /* If target gene annotations are available, get biotype of target feature */
-const string& GeneMapper::getTargetAnnotationBiotype(FeatureNode* featureNode,
-                                                     const GxfFeature* targetFeature) const {
+const string& GeneMapper::getTargetAnnotationBiotype(FeatureNode* featureNode) const {
+    const GxfFeature* targetFeature = getTargetAnnotation(featureNode);
     if (targetFeature == NULL) {
         return emptyString;
     } else {
@@ -291,9 +321,6 @@ const string& GeneMapper::getTargetAnnotationBiotype(FeatureNode* featureNode,
 void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
                                    ostream& mappingInfoFh) const {
     assert(featureNode->fMappedFeatures.size() <= 1);  // only handles bounding features
-    // get target if available
-    const GxfFeature* targetFeature = getTargetAnnotation(featureNode);
-    
     mappingInfoFh << featureNode->fFeature->getTypeId() << "\t"
                   << featureNode->fFeature->getTypeName() << "\t"
                   << featureNode->fFeature->fType << "\t"
@@ -314,8 +341,8 @@ void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
     }
     mappingInfoFh << remapStatusToStr(featureNode->fRemapStatus) << "\t"
                   << featureNode->fNumMappings << "\t"
-                  << getTargetAnnotationStatus(featureNode, targetFeature) << "\t"
-                  << getTargetAnnotationBiotype(featureNode, targetFeature) << endl;
+                  << targetStatusToStr(featureNode->fTargetStatus) << "\t"
+                  << getTargetAnnotationBiotype(featureNode) << endl;
 }
 
 /*
@@ -344,14 +371,15 @@ void GeneMapper::processGene(GxfParser *gxfParser,
     buildGeneFeature(geneTree);
     // handle gene level conflicted */
     if (hasMixedMappedSeqStrand(geneTree)) {
-        forceToUnmapped(geneTree, REMAP_STATUS_GENE_CONFLICT);
+        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_CONFLICT);
     } else if (hasExcessiveSizeChange(geneTree)) {
-        forceToUnmapped(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
+        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
     } else {
         geneTree->setRemapStatusFromChildren();
     }
     geneTree->setRemapStatusAttr();
     geneTree->setNumMappingsAttr();
+    geneTree->setTargetStatusAttr();
     outputFeatures(geneTree, mappedGxfFh, unmappedGxfFh);
     outputInfo(geneTree, mappingInfoFh);
     delete geneTree;

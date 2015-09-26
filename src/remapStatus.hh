@@ -27,7 +27,19 @@ RemapStatus remapStatusChildUpdate(RemapStatus parentStatus,
 
 /* Convert a remap status to a string  */
 const string& remapStatusToStr(RemapStatus remapStatus);
-   
+
+
+/* target status */
+typedef enum {
+    TARGET_STATUS_NA,         // no target data
+    TARGET_STATUS_NEW,        // new gene/transcript
+    TARGET_STATUS_LOST,       // gene/transcript not mapped
+    TARGET_STATUS_OVERLAP,    // gene/transcript overlaps
+    TARGET_STATUS_NONOVERLAP  // gene/transcript doesn't overlaps
+} TargetStatus;
+
+/* convert a target status to a string  */
+const string& targetStatusToStr(TargetStatus targetStatus);
 
 #endif
 

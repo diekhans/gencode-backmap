@@ -12,35 +12,64 @@ def fmtRate(count, total):
 class CategoryCounts(object):
     """collect counts by a category expressed as a tuple.
     """
-    def __init__(self, keyColumnHeader):
-        self.keyColumnHeader = tuple(keyColumnHeader)
-        self.counts = defaultdict(int)
-        self.total = 0
 
-    def count(self, key):
-        self.counts[key] += 1
-        self.total += 1
+    defaultColumnKey = "count"
 
-    def __keyFromRow(self, keyCols, row):
-        return tuple([row[k] for k in keyCols])
-        
-    def countTsv(self, tsvFile, keyCols=None, getKeys=None, typeMap=None, filterFunc=None):
+    def __init__(self, rowKeyHeader):
+        self.rowKeyHeader = tuple(rowKeyHeader)
+        # Each count is a row, keyed by the matrix column key.  When
+        # this is not specified, there is a single column
+        self.counts = defaultdict(lambda : defaultdict(int))
+        self.rowTotals = defaultdict(int)
+        self.columnTotals = defaultdict(int)
+        self.allRowKeys = set()
+        self.allColumnKeys = set()
+
+    def count(self, rowKey, columnKey):
+        self.counts[rowKey][columnKey] += 1
+        self.rowTotals[rowKey] += 1
+        self.columnTotals[columnKey] += 1
+        self.allRowKeys.add(rowKey)
+        self.allColumnKeys.add(columnKey)
+
+    def countTsv(self, tsvFile, getRowKeys, typeMap=None, filterFunc=None, getColumnKey=None):
         "allows computed keys"
-        assert ((keyCols == None) and (getKeys != None)) or ((keyCols != None) and (getKeys == None))
-        if keyCols != None:
-            getKeys = lambda row: self.__keyFromRow(keyCols, row)
         for row in TsvReader(tsvFile, typeMap=typeMap):
             if (filterFunc == None) or filterFunc(row):
-                self.count(getKeys(row))
+                self.count(getRowKeys(row),
+                           (self.defaultColumnKey if getColumnKey == None else getColumnKey(row)))
 
-    def write(self, fh, inclTotals=False):
-        fileOps.prRow(fh, self.keyColumnHeader + ("count", "freq"))
+    def writeCountsFreqs(self, fh, inclTotals=False):
+        total = self.columnTotals[self.defaultColumnKey]
+        fileOps.prRow(fh, self.rowKeyHeader + ("count", "freq"))
         for key in sorted(self.counts.iterkeys()):
-            val = self.counts[key]
-            fileOps.prRow(fh, key + (val, fmtRate(val, self.total)))
+            val = self.counts[key][self.defaultColumnKey]
+            fileOps.prRow(fh, key + (val, fmtRate(val, total)))
         if inclTotals:
-            fileOps.prRow(fh, ["all" for col in self.keyColumnHeader]
-                          + [self.total, fmtRate(self.total, self.total)])
+            fileOps.prRow(fh, ["all" for col in self.rowKeyHeader] + [total, fmtRate(total, total)])
+                
+    def __writeMatrixRow(self, fh, rowKey, rowData, columnKeys, rowFrequencies, columnFrequencies, inclTotals):
+        if rowFrequencies:
+            rowTotal = self.rowTotals[rowKey]
+            data = [fmtRate(rowData[ck], rowTotal) for ck in columnKeys]
+            if inclTotals:
+                data.append(fmtRate(sum([rowData[ck] for ck in columnKeys]), rowTotal))
+        elif columnFrequencies:
+            data = [fmtRate(rowData[ck], self.columnTotals[ck]) for ck in columnKeys]
+        else:
+            data = [rowData[ck] for ck in columnKeys]
+            if inclTotals:
+                data.append(sum(data))
+        fileOps.prRow(fh, list(rowKey) + data)
+
+    def writeMatrix(self, fh, rowFrequencies=False, columnFrequencies=False, inclTotals=False):
+        columnKeys = tuple(sorted(self.allColumnKeys))
+        fileOps.prRow(fh, self.rowKeyHeader + columnKeys + (("total",) if inclTotals else ()))
+        for rowKey in sorted(self.counts.iterkeys()):
+            self.__writeMatrixRow(fh, rowKey, self.counts[rowKey], columnKeys, rowFrequencies, columnFrequencies, inclTotals)
+        if inclTotals and not rowFrequencies:
+            rowKey = ["all" for col in self.rowKeyHeader]
+            self.__writeMatrixRow(fh, rowKey, self.columnTotals, columnKeys, rowFrequencies, columnFrequencies, inclTotals)
                 
 class CategoryStatsCombine(object):
     "combine statistic from multiple CategoryCounts TSVs"

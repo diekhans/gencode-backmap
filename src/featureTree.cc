@@ -17,6 +17,10 @@ const string REMAP_ORIGINAL_LOCATION_ATTR = "remap_original_location";
 /* Attribute name for count of mappings, set on transcripts or genes */
 const string REMAP_NUM_MAPPINGS_ATTR = "remap_num_mappings";
 
+/* Attribute name for target of mapping */
+const string REMAP_TARGET_STATUS_ATTR = "remap_target_status";
+
+
 /* set the remap number of mappings attribute on this node  */
 void FeatureNode::setNumMappingsAttr() {
     AttrVal numMappingsAttr(REMAP_NUM_MAPPINGS_ATTR, toString(fNumMappings));
@@ -27,7 +31,8 @@ void FeatureNode::setNumMappingsAttr() {
         fUnmappedFeatures[i]->getAttrs().add(numMappingsAttr);
     }
 }
-    /* recursively set the remap status attribute */
+
+/* recursively set the remap status attribute */
 void FeatureNode::setRemapStatusAttr() {
     AttrVal remapStatusAttr(REMAP_STATUS_ATTR, remapStatusToStr(fRemapStatus));
     for (int i = 0; i < fMappedFeatures.size(); i++) {
@@ -38,6 +43,20 @@ void FeatureNode::setRemapStatusAttr() {
     }
     for (int i = 0; i < fChildren.size(); i++) {
         fChildren[i]->setRemapStatusAttr();
+    }
+}
+
+/* recursively set the target status attribute */
+void FeatureNode::setTargetStatusAttr() {
+    AttrVal targetStatusAttr(REMAP_TARGET_STATUS_ATTR, targetStatusToStr(fTargetStatus));
+    for (int i = 0; i < fMappedFeatures.size(); i++) {
+        fMappedFeatures[i]->getAttrs().add(targetStatusAttr);
+    }
+    for (int i = 0; i < fUnmappedFeatures.size(); i++) {
+        fUnmappedFeatures[i]->getAttrs().add(targetStatusAttr);
+    }
+    for (int i = 0; i < fChildren.size(); i++) {
+        fChildren[i]->setTargetStatusAttr();
     }
 }
 

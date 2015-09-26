@@ -8,6 +8,14 @@
 #include "gxf.hh"
 #include <map>
 #include <stdexcept>
+struct genomeRangeTree;
+
+/* stored in range tree to link target location to
+ * tree. */
+struct TargetLocationLink {
+    struct TargetLocationLink *next;
+    GxfFeature* feature;
+};
 
 /*
  * Locations in target genome of old transcripts, by base id
@@ -22,6 +30,9 @@ class TargetAnnotations {
     // map by base id of genes and transcripts
     IdFeatureMap fIdFeatureMap;
 
+    // map of location used to find mapping to other locis
+    struct genomeRangeTree* fLocationMap;
+    
     void loadFeature(GxfFeature* gxfFeature);
     void processRecord(GxfRecord* gxfRecord);
 
@@ -35,23 +46,12 @@ class TargetAnnotations {
     /* get a target gene or transcript with same base or NULL.
      * special handling for PARs/ */
     GxfFeature* get(const string& id,
-                    const string& seqIdForParCheck) const {
-        string baseId = getBaseId(id);
-        IdFeatureMapConstIter it = fIdFeatureMap.find(baseId);
-        if (it == fIdFeatureMap.end()) {
-            return NULL;
-        } else if (it->second.size() == 2) {
-            if (it->second[0]->fSeqid == seqIdForParCheck) {
-                return it->second[0];
-            } else if (it->second[1]->fSeqid == seqIdForParCheck) {
-                return it->second[1];
-            } else {
-                throw logic_error("PAR target feature hack confused: " + baseId);
-            }
-        } else {
-            return it->second[0];
-        }
-    }
+                    const string& seqIdForParCheck) const;
+
+    /* find overlapping features */
+    GxfFeatureVector findOverlappingFeatures(const string& seqid,
+                                             int start,
+                                             int end);
 };
 
 #endif

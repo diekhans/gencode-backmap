@@ -20,6 +20,9 @@ extern const string REMAP_ORIGINAL_LOCATION_ATTR;
 /* Attribute name for count of mappings, set on transcripts or genes */
 extern const string REMAP_NUM_MAPPINGS_ATTR;
 
+/* Attribute name for target of mapping */
+extern const string REMAP_TARGET_STATUS_ATTR;
+
 /**
  * Tree container for a GxfFeature object and children
  */
@@ -29,6 +32,7 @@ class FeatureNode {
     FeatureNode* fParent;
     vector<FeatureNode*> fChildren;
     RemapStatus fRemapStatus;
+    TargetStatus fTargetStatus;
     int fNumMappings;    // Number of location feature was mapped too.  Not set for all node types.
     GxfFeatureVector fMappedFeatures;
     GxfFeatureVector fUnmappedFeatures;
@@ -39,6 +43,7 @@ class FeatureNode {
         fFeature(feature),
         fParent(NULL),
         fRemapStatus(REMAP_STATUS_NONE),
+        fTargetStatus(TARGET_STATUS_NA),
         fNumMappings(0) {
     }
 
@@ -100,6 +105,9 @@ class FeatureNode {
 
     /* recursively determine the remap status */
     void recursiveCalcRemapStatus(bool srcSeqInMapping);
+
+    /* recursively set the target status attribute */
+    void setTargetStatusAttr();;
 
     /* print node for debugging */
     void dumpNode(ostream& fh) const;

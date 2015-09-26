@@ -1,0 +1,5 @@
+biocat	deleted	full_contig	full_fragment	gene_size_change	no_seq_map	partial	total
+pseudo	0.12	0.75	0.00	0.00	0.12	0.00	1.00
+coding	0.02	0.72	0.02	0.13	0.02	0.09	1.00
+nonCoding	0.03	0.80	0.00	0.00	0.03	0.13	1.00
+problem	0.00	1.00	0.00	0.00	0.00	0.00	1.00

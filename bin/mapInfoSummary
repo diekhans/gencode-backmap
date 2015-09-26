@@ -10,6 +10,8 @@ from pycbio.tsv import TsvReader
 from gencode import categoryCounts
 from gencode.gencodeGenes import getFunctionForBioType, BioType
 
+# FIXME: this has gotten very convoluted with all the options
+
 def parseArgs():
     desc="""produce a summary of the success of mappings produce by gencode-backmap
 """
@@ -25,65 +27,93 @@ def parseArgs():
                         help="group by target annotation status")
     parser.add_argument('--multimapGroup', action="store_true", default=False,
                        help="group counts single vs multiple mappers")
+    parser.add_argument('--genomicSizeGroup', action="store_true", default=False,
+                       help="group binning of gene or transcript genomic length")
     parser.add_argument('--biotypeFilter', dest="biotypeFilters", action="append",
                         help="filter my this biotype, maybe repeated")
+    parser.add_argument('--matrixColumnKey', dest="matrixColumnKey",
+                        help="output a matrix with this column name as key, or one of special names: genomicSize")
+    parser.add_argument('--rowFrequencies', action="store_true", default=False,
+                       help="output matrix as row frequencies")
+    parser.add_argument('--columnFrequencies', action="store_true", default=False,
+                       help="output matrix as column frequencies")
     parser.add_argument('what', type=str, choices=("gene", "transcript"),
                         help="analyze by gene or transcript")
     parser.add_argument('mapInfoTsv', type=str, help="mapInfo output of gencode-backmap")
     parser.add_argument('summaryOut', type=str, help="Summary output TSV")
     args = parser.parse_args()
-    if not (args.sourceGroup or args.targetStatusGroup or args.multimapGroup):
-        args.mappingStatusGroup = True
     if args.biotypeFilters != None:
         args.biotypeFilters = frozenset(args.biotypeFilters)
     return args
 
+def orderOfMagniudeBin(row):
+    size = (row.srcEnd-row.srcStart)+1
+    magBin = 1
+    while size > magBin:
+        magBin *= 10
+    return magBin
 
 class MapInfoSummary(object):
-    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup,
-                 biotypeFilters):
+    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup, genomicSizeGroup,
+                 biotypeFilters, columnKeyColumn):
         if biotypeFilters != None:
             self.filterFunc = lambda row: (row.type == whatAnnotation) and (row.biotype in biotypeFilters)
         else:
             self.filterFunc = lambda row: row.type == whatAnnotation
-        keyColumnHeader = []
-        keyFuncs = [] # list of functions to call to get keys
+        rowKeyHeader = []
+        rowKeyFuncs = [] # list of functions to call to get keys
         if sourceGroup:
-            keyColumnHeader.append("source")
-            keyFuncs.append(lambda row: row.source)
+            rowKeyHeader.append("source")
+            rowKeyFuncs.append(lambda row: row.source)
         if biotypeGroup == "biotype": 
-            keyColumnHeader.append("biotype")
-            keyFuncs.append(lambda row: row.biotype)
+            rowKeyHeader.append("biotype")
+            rowKeyFuncs.append(lambda row: row.biotype)
         elif biotypeGroup == "biocat":
-            keyColumnHeader.append("biocat")
-            keyFuncs.append(lambda row: getFunctionForBioType(BioType(row.biotype)))
+            rowKeyHeader.append("biocat")
+            rowKeyFuncs.append(lambda row: getFunctionForBioType(BioType(row.biotype)))
+        if genomicSizeGroup:
+            rowKeyHeader.append("genomicSize")
+            rowKeyFuncs.append(lambda row: orderOfMagniudeBin(row))
         if mappingStatusGroup:
-            keyColumnHeader.append("mappingStatus")
-            keyFuncs.append(lambda row: row.mappingStatus)
+            rowKeyHeader.append("mappingStatus")
+            rowKeyFuncs.append(lambda row: row.mappingStatus)
         if targetStatusGroup:
-            keyColumnHeader.append("targetStatus")
-            keyFuncs.append(lambda row: row.targetStatus)
+            rowKeyHeader.append("targetStatus")
+            rowKeyFuncs.append(lambda row: row.targetStatus)
         if multimapGroup:
-            keyColumnHeader.append("multimap")
-            keyFuncs.append(lambda row: "yes" if (row.numMappings > 1) else "no")
+            rowKeyHeader.append("multimap")
+            rowKeyFuncs.append(lambda row: "yes" if (row.numMappings > 1) else "no")
         # calls all functions in list to generate key
-        self.getKeys = lambda row: tuple([fn(row) for fn in keyFuncs])
-        self.counts = categoryCounts.CategoryCounts(keyColumnHeader)
+        self.getRowKeys = lambda row: tuple([fn(row) for fn in rowKeyFuncs])
+        self.getColumnKey = None
+        if columnKeyColumn != None:
+            if columnKeyColumn == "genomicSize":
+                self.getColumnKey = lambda row: orderOfMagniudeBin(row)
+            else:
+                self.getColumnKey = lambda row: row[columnKeyColumn]
+        self.counts = categoryCounts.CategoryCounts(rowKeyHeader)
 
     def count(self, mapInfoTsv):
         # id	type	biotype	srcChrom	srcStart	srcEnd	srcStrand	mappedChrom	mappedStart	mappedEnd	mappedStrand	mappingStatus	numMappings
         typeMap={"srcStart": int, "srcEnd": int,
                  "mappedStart": int, "mappedEnd": int,
                  "numMappings": int}
-        self.counts.countTsv(mapInfoTsv, typeMap=typeMap, getKeys=self.getKeys, filterFunc=self.filterFunc)
+        self.counts.countTsv(mapInfoTsv, typeMap=typeMap, getRowKeys=self.getRowKeys, getColumnKey=self.getColumnKey, filterFunc=self.filterFunc)
         
-    def write(self, outFh):
-        self.counts.write(outFh, inclTotals=True)
+    def writeCountsFreqs(self, outFh):
+        self.counts.writeCountsFreqs(outFh, inclTotals=True)
+
+    def writeCountsMatrix(self, outFh, rowFrequencies, columnFrequencies):
+        self.counts.writeMatrix(outFh, rowFrequencies=rowFrequencies, columnFrequencies=columnFrequencies, inclTotals=True)
 
 args = parseArgs()
 summary = MapInfoSummary(args.what, args.biotypeGroup, args.sourceGroup,
                          args.mappingStatusGroup, args.targetStatusGroup,
-                         args.multimapGroup, args.biotypeFilters)
+                         args.multimapGroup, args.genomicSizeGroup,
+                         args.biotypeFilters, args.matrixColumnKey)
 summary.count(args.mapInfoTsv)
 with open(args.summaryOut, "w") as outFh:
-    summary.write(outFh)
+    if args.matrixColumnKey != None:
+        summary.writeCountsMatrix(outFh, args.rowFrequencies, args.columnFrequencies)
+    else:
+        summary.writeCountsFreqs(outFh)

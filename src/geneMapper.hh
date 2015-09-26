@@ -39,11 +39,14 @@ class GeneMapper {
                            ostream* transcriptPslFh) const;
     void processTranscripts(FeatureNode* geneTree,
                             ostream* transcriptPslFh) const;
-    void forceToUnmapped(FeatureNode* featureNode,
-                         RemapStatus remapStatus) const;
+    void forceToUnmappedDueToRemapStatus(FeatureNode* featureNode,
+                                         RemapStatus remapStatus) const;
+    void forceToUnmappedDueToTargetStatus(FeatureNode* featureNode,
+                                          TargetStatus targetStatus) const;
     bool haveMappedTranscripts(FeatureNode* geneTree) const;
     bool haveUnmappedTranscripts(FeatureNode* geneTree) const;
     bool hasMixedMappedSeqStrand(FeatureNode* geneTree) const;
+    bool hasTargetStatusNonOverlap(FeatureNode* geneTree) const;
     int calcMappedGeneLength(FeatureNode* geneTree) const;
     bool hasExcessiveSizeChange(FeatureNode* geneTree) const;
 
@@ -67,10 +70,8 @@ class GeneMapper {
                         ostream& unmappedGxfFh);
     void outputInfoHeader(ostream& mappingInfoFh) const;
     const GxfFeature* getTargetAnnotation(FeatureNode* featureNode) const;
-    const string& getTargetAnnotationStatus(FeatureNode* featureNode,
-                                            const GxfFeature* targetFeature) const;
-    const string& getTargetAnnotationBiotype(FeatureNode* featureNode,
-                                             const GxfFeature* targetFeature) const;
+    TargetStatus getTargetAnnotationStatus(FeatureNode* featureNode) const;
+    const string& getTargetAnnotationBiotype(FeatureNode* featureNode) const;
     void outputFeatureInfo(FeatureNode* featureNode,
                            ostream& mappingInfoFh) const;
     void outputInfo(FeatureNode* geneNode,
