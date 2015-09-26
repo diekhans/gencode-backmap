@@ -1,6 +1,6 @@
 targetStatus	liftover_count	liftover_freq	ncbi1_count	ncbi1_freq	ncbi2_count	ncbi2_freq
-lost	386	0.00	1864	0.01	1579	0.01
+lost	3	0.00	701	0.00	0	0.0
 new	13963	0.07	13963	0.07	13963	0.07
-nonOverlap	473	0.00	6287	0.03	1456	0.01
-overlap	183620	0.93	176328	0.89	181444	0.91
+nonOverlap	568	0.00	6507	0.03	1732	0.01
+overlap	183908	0.93	177271	0.89	182747	0.92
 all	198442	1.00	198442	1.00	198442	1.00

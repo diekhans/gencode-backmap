@@ -1,8 +1,8 @@
 mappingStatus	liftover_count	liftover_freq	ncbi1_count	ncbi1_freq	ncbi2_count	ncbi2_freq
-deleted	67	0.00	338	0.00	1077	0.01
-full_contig	195861	0.99	194681	0.98	194285	0.98
-full_fragment	271	0.00	181	0.00	243	0.00
-gene_conflict	222	0.00	541	0.00	388	0.00
-gene_size_change	613	0.00	2207	0.01	1870	0.01
-partial	1408	0.01	494	0.00	579	0.00
+deleted	223	0.00	1860	0.01	1602	0.01
+full_contig	195960	0.99	194447	0.98	194606	0.98
+full_fragment	272	0.00	181	0.00	246	0.00
+gene_conflict	168	0.00	105	0.00	236	0.00
+gene_size_change	378	0.00	1351	0.01	1153	0.01
+partial	1441	0.01	498	0.00	599	0.00
 all	198442	1.00	198442	1.00	198442	1.00
