@@ -1,11 +1,14 @@
-\documentclass[hyperref={bookmarks=false,bookmarksopen=false},xcolor={svgnames,table}]{beamer}
+\documentclass[hyperref={bookmarks=false,
+                         bookmarksopen=false,
+                         colorlinks=true,
+                         linkcolor=blue,
+                         urlcolor=blue},
+               xcolor={svgnames,table}]{beamer}
 \usepackage{amsmath}
-\usepackage{hyperref}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx, grffile}
 \usepackage{multirow, multicol}
-
-\usepackage{color, colortbl}
+\usepackage{xcolor, colortbl}
 \definecolor{LRed}{rgb}{1,.8,.8}
 \definecolor{MRed}{rgb}{1,.6,.6}
 \definecolor{HRed}{rgb}{1,.2,.2}
@@ -45,6 +48,14 @@
   \setlength{\parsep}{0pt}%
 }{\end{itemize}}
 
+% tight enumerated list
+\newenvironment{tightenumerate}{%
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}%
+  \setlength{\parskip}{0pt}%
+  \setlength{\parsep}{0pt}%
+}{\end{enumerate}}
+
 % to-do
 \newcommand\todo[1]{{\large\textcolor{red}{TO DO: \em #1}}}%
 
@@ -59,18 +70,20 @@
 \title{Mapping GENCODE from GRCh38 to GRCh37}
 \author{Mark Diekhans \emailaddr{markd@soe.ucsc.edu}}
 \date{Sept 29, 2015}
+\titlegraphic{\vspace{2cm}\includegraphics[scale=0.60]{images/UC-Santa-Cruz-Genomics-Inst_022415.png}}
 \begin{document}
-\maketitle
-
-
 % ------------ ------------ ------------ ------------ ------------ ------------
 \begin{frame}
-  \frametitle{Gaols}
+\titlepage
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Goals}
   \begin{tightitemize}
   \item provide updated annotations for projects still on GRCh37
   \item primary chromosomes
   \item correct biotype problems and add new annotations
-  \item GENCODE GTF and GFF3 
+  \item provide GENCODE GTF and GFF3 
   \item annotate mapping problems
   \end{tightitemize}
 \end{frame}
@@ -78,12 +91,12 @@
 \begin{frame}
   \frametitle{Projection mapping}
   \begin{tightitemize}
-  \item UCSC liftover alignments
+  \item UCSC liftover alignments - BLAT fast-map reciprocal best
   \item NCBI remap alignments:
     \begin{tightitemize}
-    \item \emph{First-pass alignments} - reciprocal single best
+    \item \emph{First-pass alignments} - BLAST reciprocal single best
       \begin{tightitemize}
-      \item filtered for same assembly components
+      \item post alignment filtering for same assembly components
       \end{tightitemize}
     \item \emph{Second-pass alignments} - uni-directional best, allows for multiple alignments
     \item \url{http://www.ncbi.nlm.nih.gov/genome/tools/remap/docs/alignments}
@@ -94,7 +107,19 @@
 \begin{frame}
   \frametitle{Two-phase TransMap}
   \begin{tightitemize}
-  \item
+  \item for each transcript of a gene:
+    \begin{tightitemize}
+    \item create TransMap alignments of all exons
+    \item pick best the alignment:
+      \begin{tightenumerate}
+      \item overlaps the GRCh37 version of transcript, if it exists
+      \item overlaps the GRCh37 version of gene, if it exists
+      \item most similar alignment length
+      \end{tightenumerate}
+    \item TransMap features to GRCh37 through the transcript alignment
+    \end{tightitemize}
+  \item Validate that transcript of the gene have mapped to the same locus
+    and the length of the gene has not changed more than 50\%.
   \end{tightitemize}
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
@@ -106,24 +131,47 @@
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
 \begin{frame}
+  \frametitle{Nuts \& Bolts}
+  \begin{tightitemize}
+  \item \textbf{gencode-backmap [options] inGxf mappingAligns \textbackslash \\
+      ~~~~~mappedGxf unmappedGxf mappingInfoTsv}
+  \item \url{https://github.com/diekhans/gencode-backmap}
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
   \frametitle{Target annotation criteria}
   \begin{tightitemize}
   \item \emph{overlap} - gene or transcript overlaps previous version of annotation on GRCh37
   \item \emph{new} - gene or transcript was not in GRCh37 
   \item \emph{lost} - gene or transcript exists in GRCh37, however GRCh38 version was not mapped
   \item \emph{nonOverlap} - gene or transcript exists in GRCh37, however GRCh38 mapping is to a different location
+    \begin{tightitemize}
+    \item \textcolor{DarkRed}{Mapping will be discarded}
+    \item This is often mappings to a gene family members or pseudogenes.
+    \end{tightitemize}
   \end{tightitemize}
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
 \begin{frame}
   \frametitle{Mapping completeness criteria}
   \begin{tightitemize}
-  \item \emph{full\_contig} - gene or transcript completely mapped to GRCh37 with all features intact
+  \item \emph{full\_contig} - gene or transcript completely mapped to GRCh37 with all features intact.
   \item \emph{full\_fragment} - gene or transcript completely to GRCh37 with insertions in some features
+    \begin{tightitemize}
+    \item These are usually small insertions.
+    \end{tightitemize}
   \item \emph{partial} - gene or transcript partially mapped to GRCh37
   \item \emph{deleted} - gene or transcript did not map to GRCh37
-  \item \emph{gene\_conflict} - transcripts in the gene mapped to multiple locations, gene discarded
-  \item \emph{gene\_size\_change} - transcripts caused gene's length to change by more than 20\%, gene discarded
+  \item \emph{gene\_conflict} - transcripts in the gene mapped to multiple locations
+    \begin{tightitemize}
+    \item \textcolor{DarkRed}{Gene mapping discarded}.
+    \end{tightitemize}
+  \item \emph{gene\_size\_change} - transcripts caused gene's length to change by more than 50\%
+    \begin{tightitemize}
+    \item \textcolor{DarkRed}{Gene mapping discarded}
+    \item This is to detect mapping to processed pseudogenes and mapping across tandem gene duplications.
+    \end{tightitemize}
   \end{tightitemize}
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
@@ -132,10 +180,10 @@
   \begin{center}
     \begin{tabular}{|l||r|r||r|r||r|r|} \hline
       &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
-      overlap &	\best{54221} &	\best{0.90} &	51921 &	0.86 &	53541 &	0.89 \\\hline
-      nonOverlap &	\best{253} &	\best{0.00} &	2127 &	0.04 &	710 &	0.01 \\\hline
-      lost &	\best{87} &	\best{0.00} &	513 &	0.01 &	310 &	0.01 \\\hline
-      new &	5922 &	0.10 &	5922 &	0.10 &	5922 &	0.10 \\\hline\hline
+      overlap &	\best{54269} &	\best{0.90} &	52083 &	0.86 &	53778 &	0.89 \\\hline
+      new &	\best{5922} &	\best{0.10} &	\best{5922} &	\best{0.10} &	\best{5922} &	\best{0.10} \\\hline
+      nonOverlap &	\best{290} &	\best{0.00} &	2163 &	0.04 &	783 &	0.01 \\\hline
+      lost &	2 &	0.00 &	315 &	0.01 &	\best{0} &	\best{0.0} \\\hline\hline
       all &	60483 &	1.00 &	60483 &	1.00 &	60483 &	1.00 \\\hline
     \end{tabular}
   \end{center}
@@ -146,11 +194,11 @@
   \begin{center}
     \begin{tabular}{|l||r|r||r|r||r|r|} \hline
       &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
-overlap &	\best{183620} &	\best{0.93} &	176328 &	0.89 &	181444 &	0.91 \\\hline
-nonOverlap &	\best{473} &	\best{0.00} &	6287 &	0.03 &	1456 &	0.01 \\\hline
-lost &	\best{386} &	\best{0.00} &	1864 &	0.01 &	1579 &	0.01 \\\hline
-new &	13963 &	0.07 &	13963 &	0.07 &	13963 &	0.07 \\\hline\hline
-all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
+      overlap &	\best{183908} &	\best{0.93} &	177271 &	0.89 &	182747 &	0.92 \\\hline
+      new &	\best{13963} &	\best{0.07} &	\best{13963} &	\best{0.07} &	\best{13963} &	\best{0.07} \\\hline
+      nonOverlap &	\best{568} &	\best{0.00} &	6507 &	0.03 &	1732 &	0.01 \\\hline
+      lost &	3 &	0.00 &	701 &	0.00 &	\best{0} &	\best{0.0} \\\hline\hline
+      all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
     \end{tabular}
   \end{center}
 \end{frame}
@@ -158,25 +206,26 @@ all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
 \begin{frame}
   \frametitle{Transcript target status by category}
   \begin{center}
-    \small
+    \footnotesize
     \begin{tabular}{|l||l||r|r||r|r||r|r|} \hline
       &&	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
-coding &	overlap &	\best{87691} &	\best{0.44} &	84080 &	0.42 &	86554 &	0.44 \\\hline
-coding &	nonOverlap &	\best{114} &	\best{0.00} &	2921 &	0.01 &	574 &	0.00 \\\hline
-coding &	lost &	\best{192} &	\best{0.00} &	996 &	0.01 &	869 &	0.00 \\\hline
-coding &	new &	5585 &	0.03 &	5585 &	0.03 &	5585 &	0.03 \\\hline\hline
-nonCoding &	overlap &	\best{56571} &	\best{0.29} &	54591 &	0.28 &	55964 &	0.28 \\\hline
-nonCoding &	nonOverlap &	\best{251} &	\best{0.00} &	1882 &	0.01 &	531 &	0.00 \\\hline
-nonCoding &	lost &	\best{107} &	\best{0.00} &	456 &	0.00 &	434 &	0.00 \\\hline
-nonCoding &	new &	5814 &	0.03 &	5814 &	0.03 &	5814 &	0.03 \\\hline\hline
-problem &	overlap &	\best{25909} &	\best{0.13} &	24886 &	0.13 &	25667 &	0.13 \\\hline
-problem &	lost &	\best{68} &	\best{0.00} &	285 &	0.00 &	235 &	0.00 \\\hline
-problem &	nonOverlap &	\best{7} &	\best{0.00} &	813 &	0.00 &	82 &	0.00 \\\hline
-problem &	new &	1689 &	0.01 &	1689 &	0.01 &	1689 &	0.01 \\\hline\hline
-pseudo &	overlap &	\best{13449} &	\best{0.07} &	12771 &	0.06 &	13259 &	0.07 \\\hline
-pseudo &	nonOverlap &	\best{101} &	\best{0.00} &	671 &	0.00 &	269 &	0.00 \\\hline
-pseudo &	lost &	\best{19} &	\best{0.00} &	127 &	0.00 &	41 &	0.00 \\\hline
-pseudo &	new &	875 &	0.00 &	875 &	0.00 &	875 &	0.00 \\\hline
+coding &	overlap &	\best{87841} &	\best{0.44} &	84610 &	0.43 &	87290 &	0.44 \\\hline
+coding &	new &	\best{5585} &	\best{0.03} &	\best{5585} &	\best{0.03} &	\best{5585} &	\best{0.03} \\\hline
+coding &	nonOverlap &	\best{156} &	\best{0.00} &	3017 &	0.02 &	707 &	0.00 \\\hline
+coding &	lost &	\best{0} &	\best{0.0} &	370 &	0.00 &	\best{0} &	\best{0.0} \\\hline
+nonCoding &	overlap &	\best{56650} &	\best{0.29} &	54845 &	0.28 &	56323 &	0.28 \\\hline
+nonCoding &	new &	\best{5814} &	\best{0.03} &	\best{5814} &	\best{0.03} &	\best{5814} &	\best{0.03} \\\hline
+nonCoding &	nonOverlap &	\best{278} &	\best{0.00} &	1938 &	0.01 &	606 &	0.00 \\\hline
+nonCoding &	lost &	1 &	0.00 &	146 &	0.00 &	\best{0} &	\best{0.0} \\\hline
+pseudo &	overlap &	\best{13456} &	\best{0.07} &	12782 &	0.06 &	13284 &	0.07 \\\hline
+pseudo &	new &	\best{875} &	\best{0.00} &	\best{875} &	\best{0.00} &	\best{875} &	\best{0.00} \\\hline
+pseudo &	nonOverlap &	\best{111} &	\best{0.00} &	676 &	0.00 &	285 &	0.00 \\\hline
+pseudo &	lost &	2 &	0.00 &	111 &	0.00 &	\best{0} &	\best{0.0} \\\hline
+problem &	overlap &	\best{25961} &	\best{0.13} &	25034 &	0.13 &	25850 &	0.13 \\\hline
+problem &	new &	\best{1689} &	\best{0.01} &	\best{1689} &	\best{0.01} &	\best{1689} &	\best{0.01} \\\hline
+problem &	nonOverlap &	\best{23} &	\best{0.00} &	876 &	0.00 &	134 &	0.00 \\\hline
+problem &	lost &	\best{0} &	\best{0.0} &	74 &	0.00 &	\best{0} &	\best{0.0} \\\hline\hline
+all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
     \end{tabular}
   \end{center}
 \end{frame}
@@ -186,12 +235,165 @@ pseudo &	new &	875 &	0.00 &	875 &	0.00 &	875 &	0.00 \\\hline
   \begin{center}
     \begin{tabular}{|l||r|r||r|r||r|r|} \hline
       &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
-full\_contig &	\best{195861} &	\best{0.99} &	194681 &	0.98 &	194285 &	0.98 \\\hline
-full\_fragment &	\best{271} &	\best{0.00} &	181 &	0.00 &	243 &	0.00 \\\hline
-partial &	1408 &	0.01 &	\best{494} &	\best{0.00} &	579 &	0.00 \\\hline
-deleted &	\best{67} &	\best{0.00} &	338 &	0.00 &	1077 &	0.01 \\\hline
-gene\_conflict &	\best{222} &	\best{0.00} &	541 &	0.00 &	388 &	0.00 \\\hline
-gene\_size\_change &	\best{613} &	\best{0.00} &	2207 &	0.01 &	1870 &	0.01 \\\hline
+      full\_contig &	\best{195960} &	0.99 &	194447 &	0.98 &	194606 &	0.98 \\\hline
+      full\_fragment &	\best{272} &	0.00 &	181 &	0.00 &	246 &	0.00 \\\hline
+      partial &	1441 &	0.01 &	498 &	0.00 &	599 &	0.00 \\\hline
+      deleted &	\best{223} &	0.00 &	1860 &	0.01 &	1602 &	0.01 \\\hline
+      gene\_conflict &	168 &	0.00 &	\best{105} &	\best{0.00} &	236 &	0.00 \\\hline
+      gene\_size\_change &	\best{378} &	0.00 &	1351 &	0.01 &	1153 &	0.01 \\\hline\hline
+      all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Problems}
+  \begin{tightitemize}
+  \item non-overlap transcript are often aligned to paralogs with no
+    orthologous genomic alignments
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Recommend approach}
+  \begin{tightitemize}
+  \item use UCSC lift-over alignments with TransMap
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Browsers}
+  \begin{tightitemize}
+  \item UCSC \url{http://hgwdev.cse.ucsc.edu/~markd/gencode/gencode-backmap/ucsc/any/}
+  \item NCBI1 \url{http://hgwdev.cse.ucsc.edu/~markd/gencode/gencode-backmap/ncbi1/any/}
+  \item NCBI2 \url{http://hgwdev.cse.ucsc.edu/~markd/gencode/gencode-backmap/ncbi2/any/}
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Gene mapping status by biotype (UCSC chains)}
+  \begin{center}
+    \tiny
+    \begin{tabular}{|l|r|r|r|r|r|r|r|r|} \hline
+      biotype &	full &	fullFrag &	partial &	deleted &	conflict &	sizechg &	total \\\hline\hline
+      3prime\_over\_ncrna &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_C\_gene &	0.71 &	0.00 &	0.29 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_C\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_D\_gene &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_J\_gene &	0.94 &	0.00 &	0.06 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_J\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_V\_gene &	0.90 &	0.00 &	0.09 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
+      IG\_V\_pseudo &	0.95 &	0.00 &	0.05 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      Mt\_rRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      Mt\_tRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TEC &	0.99 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_C\_gene &	0.60 &	0.00 &	0.20 &	0.20 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_D\_gene &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_J\_gene &	0.97 &	0.01 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_J\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_V\_gene &	0.80 &	0.00 &	0.07 &	0.00 &	0.00 &	0.13 &	1.00 \\\hline
+      TR\_V\_pseudo &	0.97 &	0.00 &	0.03 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      antisense &	0.99 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      lincRNA &	0.98 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      macro\_lncRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      miRNA &	0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      misc\_RNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      non\_coding &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      polymorphic\_pseudo &	0.95 &	0.00 &	0.05 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      proc\_pseudo &	0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      proc\_transcript &	0.96 &	0.01 &	0.02 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Gene mapping status by biotype (UCSC chains)}
+  \begin{center}
+    \tiny
+    \begin{tabular}{|l|r|r|r|r|r|r|r|r|} \hline
+      biotype &	full &	fullFrag &	partial &	deleted &	conflict &	sizechg &	total \\\hline\hline
+      protein\_coding &	0.97 &	0.00 &	0.02 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      pseudo &	0.97 &	0.00 &	0.00 &	0.00 &	0.00 &	0.03 &	1.00 \\\hline
+      rRNA &	0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
+      ribozyme &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      sRNA &	0.95 &	0.00 &	0.00 &	0.00 &	0.00 &	0.05 &	1.00 \\\hline
+      scaRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      sense\_intronic &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      sense\_over &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      snRNA &	0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      snoRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      transc\_proc\_pseudo &	0.97 &	0.01 &	0.02 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      transc\_unitary\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      transc\_unproc\_pseudo &	0.92 &	0.00 &	0.06 &	0.00 &	0.00 &	0.02 &	1.00 \\\hline
+      transl\_proc\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      transl\_unproc\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      unitary\_pseudo &	0.98 &	0.00 &	0.02 &	0.01 &	0.00 &	0.00 &	1.00 \\\hline
+      unproc\_pseudo &	0.97 &	0.00 &	0.02 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
+      vaultRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Gene target status by biotype}
+  \begin{center}
+    \tiny
+    \begin{tabular}{|l||r|r|r|r|r|} \hline
+      biotype &	new &	over &	nonOver &	lost &	total \\\hline\hline
+      3prime\_over\_ncrna &	0.07 &	0.93 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_C\_gene &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_C\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_D\_gene &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_J\_gene &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_J\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      IG\_V\_gene &	0.09 &	0.89 &	0.01 &	0.01 &	1.00 \\\hline
+      IG\_V\_pseudo &	0.04 &	0.94 &	0.02 &	0.00 &	1.00 \\\hline
+      Mt\_rRNA &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      Mt\_tRNA &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TEC &	1.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_C\_gene &	0.20 &	0.80 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_D\_gene &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_J\_gene &	0.03 &	0.97 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_J\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_V\_gene &	0.11 &	0.87 &	0.00 &	0.02 &	1.00 \\\hline
+      TR\_V\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      antisense &	0.05 &	0.94 &	0.00 &	0.00 &	1.00 \\\hline
+      lincRNA &	0.08 &	0.91 &	0.00 &	0.00 &	1.00 \\\hline
+      macro\_lncRNA &	1.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      miRNA &	0.33 &	0.65 &	0.02 &	0.00 &	1.00 \\\hline
+      misc\_RNA &	0.26 &	0.73 &	0.01 &	0.00 &	1.00 \\\hline
+      non\_coding &	0.67 &	0.33 &	0.00 &	0.00 &	1.00 \\\hline
+      polymorphic\_pseudo &	0.41 &	0.59 &	0.00 &	0.00 &	1.00 \\\hline
+      proc\_pseudo &	0.04 &	0.96 &	0.00 &	0.00 &	1.00 \\\hline
+      proc\_transcript &	0.08 &	0.92 &	0.00 &	0.00 &	1.00 \\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Gene target status by biotype}
+  \begin{center}
+    \tiny
+    \begin{tabular}{|l||r|r|r|r|r|} \hline
+      biotype &	new &	over &	nonOver &	lost &	total \\\hline\hline
+      protein\_coding &	0.03 &	0.97 &	0.00 &	0.00 &	1.00 \\\hline
+      pseudo &	0.94 &	0.06 &	0.00 &	0.00 &	1.00 \\\hline
+      rRNA &	0.05 &	0.94 &	0.01 &	0.00 &	1.00 \\\hline
+      ribozyme &	0.38 &	0.62 &	0.00 &	0.00 &	1.00 \\\hline
+      sRNA &	1.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      scaRNA &	0.16 &	0.84 &	0.00 &	0.00 &	1.00 \\\hline
+      sense\_intronic &	0.21 &	0.78 &	0.00 &	0.00 &	1.00 \\\hline
+      sense\_over &	0.06 &	0.94 &	0.00 &	0.00 &	1.00 \\\hline
+      snRNA &	0.04 &	0.95 &	0.01 &	0.00 &	1.00 \\\hline
+      snoRNA &	0.09 &	0.91 &	0.00 &	0.00 &	1.00 \\\hline
+      transc\_proc\_pseudo &	0.04 &	0.95 &	0.00 &	0.00 &	1.00 \\\hline
+      transc\_unitary\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      transc\_unproc\_pseudo &	0.08 &	0.90 &	0.01 &	0.01 &	1.00 \\\hline
+      transl\_proc\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      transl\_unproc\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
+      unitary\_pseudo &	0.01 &	0.98 &	0.01 &	0.00 &	1.00 \\\hline
+      unproc\_pseudo &	0.16 &	0.83 &	0.01 &	0.00 &	1.00 \\\hline
+      vaultRNA &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
     \end{tabular}
   \end{center}
 \end{frame}
