@@ -9,7 +9,7 @@
 #include "targetAnnotations.hh"
 
 /* fraction of gene expansion that causes a rejection */
-const float geneExpansionThreshold = 0.20;  
+const float geneExpansionThreshold = 0.50;
 
 /*  mapinfo TSV headers, terminated by NULL */
 static const char* mappingInfoHeaders[] = {
