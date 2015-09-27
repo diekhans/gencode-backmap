@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
         "    target locus, pass through the original target location.\n"
 #endif
         "Arguments:\n"
-        "  inGxf - Input GENCODE GFF3 or GTF file. The format is recognize identified\n"
-        "          a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
+        "  inGxf - Input GENCODE GFF3 or GTF file. The format is identified\n"
+        "          by a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
         "          additional .gz extensionn\n"
         "  mappingAligns - Alignments between the two genomes.  The \n"
         "  mappedGxf - GxF file of mapped features on target genome\n"
