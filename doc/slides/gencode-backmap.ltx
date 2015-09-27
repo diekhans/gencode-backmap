@@ -135,6 +135,30 @@
   \begin{tightitemize}
   \item \textbf{gencode-backmap [options] inGxf mappingAligns \textbackslash \\
       ~~~~~mappedGxf unmappedGxf mappingInfoTsv}
+    \begin{tightitemize}
+    \item Arguments:
+      \begin{tightitemize}
+        \tiny
+      \item\textbf{inGxf} - Input GENCODE GFF3 or GTF file. The format is identified
+        by a .gff3 or .gtf extension, it maybe compressed with gzip with an
+        additional .gz extensionn
+      \item\textbf{mappingAligns} - Alignments between the two genomes.  The
+      \item\textbf{mappedGxf} - GxF file of mapped features on target genome
+      \item\textbf{unmappedGxf} - GxF file of unmapped features on source genome
+      \item\textbf{mappingInfoTsv} - TSV file with information about each gene and transcript mapping
+      \end{tightitemize}
+    \item Options:
+      \begin{tightitemize}
+        \tiny
+      \item\textbf{--help} - print this message and exit
+      \item\textbf{--swapMap} - swap the query and target sides of the mapping alignments
+      \item\textbf{--targetGxf=gxfFile} - GFF3 or GTF of gene annotations on target genome.
+        If specified, require mappings to location of previous version of
+        gene or transcript.
+      \item\textbf{--transcriptPsls=pslFile} - write all mapped transcript-level PSL to this file, including
+        multiple mappers.
+      \end{tightitemize}
+    \end{tightitemize}
   \item \url{https://github.com/diekhans/gencode-backmap}
   \end{tightitemize}
 \end{frame}
@@ -237,7 +261,7 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
       &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
       full\_contig &	\best{195960} &	0.99 &	194447 &	0.98 &	194606 &	0.98 \\\hline
       full\_fragment &	\best{272} &	0.00 &	181 &	0.00 &	246 &	0.00 \\\hline
-      partial &	1441 &	0.01 &	498 &	0.00 &	599 &	0.00 \\\hline
+      partial &	\best{1441} &	0.01 &	498 &	0.00 &	599 &	0.00 \\\hline
       deleted &	\best{223} &	0.00 &	1860 &	0.01 &	1602 &	0.01 \\\hline
       gene\_conflict &	168 &	0.00 &	\best{105} &	\best{0.00} &	236 &	0.00 \\\hline
       gene\_size\_change &	\best{378} &	0.00 &	1351 &	0.01 &	1153 &	0.01 \\\hline\hline
@@ -247,17 +271,28 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
 \begin{frame}
-  \frametitle{Problems}
+  \frametitle{Attributes added to GFF3 and GTF}
   \begin{tightitemize}
-  \item non-overlap transcript are often aligned to paralogs with no
-    orthologous genomic alignments
+  \item \textbf{remap\_status}  -  remapping status
+  \item \textbf{remap\_target\_status} - remapping target gene status
+  \item \textbf{remap\_original\_id} - for GFF3, original ID before remap, which maybe different if
+    feature is split
+  \item \textbf{remap\_original\_location} = original localization in GRCh38
+  \item \textbf{remap\_num\_mapping} - count of mappings, set on transcripts or genes, which feature is multi-mapped
   \end{tightitemize}
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
 \begin{frame}
-  \frametitle{Recommend approach}
+  \frametitle{Dicsussion}
   \begin{tightitemize}
-  \item use UCSC lift-over alignments with TransMap
+  \item non-overlap transcript mapping are often aligned to paralogs with no
+    orthologous genomic alignments
+    \begin{tightitemize}
+    \item UCSC does a better job of mapping to target locus in GENCODE V19 than NCBI
+    \end{tightitemize}
+  \item use UCSC liftover alignments
+  \item possible to preserve V19 genes when GRCh38 version dropped due to not mapping
+    to target
   \end{tightitemize}
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
@@ -396,6 +431,55 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
       vaultRNA &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
     \end{tabular}
   \end{center}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Genes not overlapping target}
+  \begin{tightitemize}
+  \tiny
+  \item protein\_coding\\		AGAP10	CBWD5	CBWD7	CNTNAP3B	CT45A5	CT47A5	FAM231C	FAM25G	FAM72B	FCGR1B	FO082796.1	FOXD4L4	GOLGA6L9	HIST2H2AA4	HIST2H2BE	MAGEA3	MAGEA6	MAGEA9B	NBPF8	NOMO2	OR11H1	OR4F15	PCDHA4	PCDHA6	PCDHA7	PCDHB10	PPIAL4D	PPIAL4G	PRAMEF11	PRAMEF25	PRAMEF26	PRAMEF5	PRAMEF9	PTPN20A	RASA4	RP11-231C14.4	SPATA31A6	SRGAP2C	XAGE1A	XAGE1B	ZNF43
+  \item IG\_V\_gene\\		IGHV4-31	IGKV1-33	IGKV1-8	IGKV3D-7
+  \item unitary\_pseudogene\\		RP11-219C24.6
+  \item lincRNA\\		AC159540.3	CH17-118O6.2	CTD-2145A24.5	CTD-3222D19.12	LA16c-4G1.3	LA16c-83F12.6	PGM5-AS1	RP11-219C24.10	RP11-395P13.4	RP11-397O4.1	RP11-475I24.8	RP11-496I2.2	RP11-61J19.5	RP11-763B22.4	RP11-89F3.2	RP13-221M14.2	RP4-565E6.1	RP4-669L17.10	RP4-669L17.2	RP5-857K21.15
+  \item rRNA\\		RNA5SP162	RNA5SP311	RNA5SP312	RNA5SP57
+  \item misc\_RNA\\		Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	Metazoa\_SRP	RN7SKP41	RN7SL121P	RN7SL190P	RN7SL371P	RN7SL455P	RN7SL531P	RN7SL557P	RN7SL605P	RN7SL676P	RN7SL690P	RN7SL693P	RN7SL73P	RN7SL811P	RNY3P15	Y\_RNA	Y\_RNA
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Genes not overlapping target (cont)}
+  \tiny
+  \begin{tightitemize}
+  \item antisense\\		AC007386.4	BRWD1-AS2	LA16c-23H5.4	POTEH-AS1	RP1-14D6.7	RP11-144G6.4	RP11-196G18.23	RP11-380M21.4	RP11-439A17.9
+  \item processed\_transcript\\		DUXAP8	RP11-144G6.12	RP13-238F13.3
+  \item sense\_intronic\\		LL22NC03-N14H11.1	LL22NC03-N64E9.1
+  \item miRNA\\		AC007009.2	AC008166.1	AC008449.1	AC008598.1	AC009127.1	AC009305.2	AC009784.1	AC010086.2	AC010888.1	AC011748.1	AC016712.3	AC016739.3	AC016993.1	AC017076.1	AC019196.1	AC020703.1	AC020931.1	AC023380.1	AC024651.1	AC067717.1	AC076972.1	AC078816.1	AC078927.1	AC092116.1	AC092765.1	AC092896.1	AC093419.1	AC096507.1	AC100800.1	AC104000.1	AC105245.1	AC105399.1	AC107018.1	AC107613.1	AC109357.1	AC115099.1	AC116165.1	AC120104.1	AC124074.1	AC128715.1	AC239798.1	AC241377.1	AC245033.1	AL023876.1	AL035461.1	AL049691.1	AL049791.1	AL109800.1	AL117374.1	AL121932.1	AL132709.2	AL136234.1	AL138721.2	AL138919.1	AL157882.1	AL158035.1	AL161935.1	AL353141.1	AL354923.1	AL355361.1	AL356476.1	AL356585.1	AL357060.1	AL360091.1	AL390071.1	AL390240.1	AL390718.1	AL445199.1	AL445523.1	AL450063.1	AL589736.1	AL589988.1	AL591034.1	AL591610.1	AL592466.1	AL596329.1	AP000870.1	MIR1302-1	MIR4433B	MIR7853	hsa-mir-4538
+  \item snoRNA\\		SNORA74	SNORD112
+  \item snRNA\\		RNU1-13P	RNU6-1007P	RNU6-1171P	RNU6-373P	RNU6-523P	RNU6-677P	RNU6-816P	RNU6-840P	RNU7-163P	RNU7-174P	RNU7-20P	RNU7-29P	RNU7-37P	RNU7-57P	RNVU1-2	U1
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Genes not overlapping target (cont)}
+  \tiny
+  \begin{tightitemize}
+  \item unprocessed\_pseudogene\\		ABHD17AP1	AC152010.1	BMS1P13	BX255923.2	CTC-575C13.4	CTGLF8P	FAM35DP	FRMPD2L2	HERC2P7	HIST2H3DP1	LA16c-13E4.3	LA16c-2F2.5	LA16c-4G1.4	LA16c-60G3.6	MED15P7	MTND1P12	NBEAP3	NF1P6	PDE4DIP1	POM121B	RP11-154P18.2	RP11-175I6.1	RP11-378J18.10	RP11-403I13.9	RP11-450I1.4	RP11-475I24.1	RP4-669L17.8	WI2-1896O14.1	YME1L1P1	ZNF72P
+  \item transcribed\_processed\_pseudogene\\		DUXAP8	UBE2Q2P6
+  \item processed\_pseudogene\\		ABC7-43041300I9.1	ACTR3BP6	ARHGAP42P3	BNIP3P2	CICP7	DRD5P2	DUSP8P3	DUSP8P4	GRAMD4P2	LA16c-3G11.7	LA16c-60G3.7	LA16c-60G3.8	LA16c-60H5.7	NEK2P2	RBM17P3	REXO1L12P	RHEBP2	RP11-144G6.13	RP11-244H18.4	RP11-24B13.2	RP11-289I10.3	RP11-295P22.4	RP11-344N17.12	RP11-366N18.2	RP11-460E7.8	RP11-460E7.9	RP11-763B22.3	RP11-928F19.3	RP4-669L17.1	SNX18P4	WBP1LP7
+  \item IG\_V\_pseudogene\\		IGKV1OR-3	IGKV1OR2-11	IGKV1OR2-9
+  \item transcribed\_unprocessed\_pseudogene\\		AC008132.13	AP000525.10	BMS1P1	BMS1P17	BMS1P2	CH17-472G23.2	CTD-2173L22.4	GOLGA2P10	GOLGA8EP	RP13-221M14.3	RP4-669L17.4
+  \end{tightitemize}
+\end{frame}
+% ------------ ------------ ------------ ------------ ------------ ------------
+\begin{frame}
+  \frametitle{Gene with target that are lost}
+  \tiny
+  \begin{tightitemize}
+  \item	miRNA\\
+    AC244258.1
+  \item processed\_pseudogene\\
+    WBP1LP1	
+  \end{tightitemize}
 \end{frame}
 % ------------ ------------ ------------ ------------ ------------ ------------
 \iffalse
