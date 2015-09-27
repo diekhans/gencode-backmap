@@ -14,6 +14,7 @@
 static void gencodeBackmap(const string& inGxfFile,
                            const string& mappingAligns,
                            bool swapMap,
+                           bool substituteMissingTargets,
                            const string& mappedGxfFile,
                            const string& unmappedGxfFile,
                            const string& mappingInfoTsv,
@@ -26,7 +27,7 @@ static void gencodeBackmap(const string& inGxfFile,
     FIOStream unmappedGxfFh(unmappedGxfFile, ios::out);
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
-    GeneMapper geneMapper(genomeTransMap, targetAnnotations);
+    GeneMapper geneMapper(genomeTransMap, targetAnnotations, substituteMissingTargets);
     geneMapper.mapGxf(&gxfParser, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete genomeTransMap;
     delete targetAnnotations;
@@ -35,7 +36,7 @@ static void gencodeBackmap(const string& inGxfFile,
 
 /* Entry point.  Parse arguments. */
 int main(int argc, char *argv[]) {
-    const string usage = "%s [options] inGxf mappingAligns mappedGxf unmappedGxf mappingInfoTsv\n\n"
+    const string usage = "%s [options] target inGxf mappingAligns mappedGxf unmappedGxf mappingInfoTsv\n\n"
         "Map GENCODE annotations between assemblies projecting through genomic\n"
         "alignments. This operates on GENCODE GFF3 and GTF files and makes assumptions\n"
         "about their organization.\n\n"
@@ -43,10 +44,14 @@ int main(int argc, char *argv[]) {
         "  --help - print this message and exit\n"
         "  --swapMap - swap the query and target sides of the mapping alignments\n"
         "  --targetGxf=gxfFile - GFF3 or GTF of gene annotations on target genome.\n"
-        "    If specified, prefer multi-mappings to location of previous version of\n"
+        "    If specified, require mappings to location of previous version of\n"
         "    gene or transcript.\n"
         "  --transcriptPsls=pslFile - write all mapped transcript-level PSL to this file, including\n"
         "    multiple mappers.\n"
+#ifdef enableSubstituteMissingTargets
+        "  --substituteMissingTargets - if target GxF is specified and no GENE maps to the\n"
+        "    target locus, pass through the original target location.\n"
+#endif
         "Arguments:\n"
         "  inGxf - Input GENCODE GFF3 or GTF file. The format is recognize identified\n"
         "          a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
@@ -61,15 +66,25 @@ int main(int argc, char *argv[]) {
         {"swapMap", 0, NULL, 's'},
         {"targetGxf", 1, NULL, 't'},
         {"transcriptPsls", 1, NULL, 'p'},
+#ifdef enableSubstituteMissingTargets
+        {"substituteMissingTargets", 1, NULL, 'm'},
+#endif
         {NULL, 0, NULL, 0}
     };
+#ifdef enableSubstituteMissingTargets
+    const char* short_options = "hst:p:m:";
+#else
+    const char* short_options = "hst:p:";
+#endif
+    
     bool swapMap = false;
     bool help = false;
     string targetGxf;
     string transcriptPsls;
+    bool substituteMissingTargets = false;
     opterr = 0;  // we print error message
     while (true) {
-        int optc = getopt_long(argc, argv, "hst:p:", long_options, NULL);
+        int optc = getopt_long(argc, argv, short_options, long_options, NULL);
         if (optc == -1) {
             break;
         } else if (optc == 'h') {
@@ -81,6 +96,8 @@ int main(int argc, char *argv[]) {
             targetGxf = string(optarg);
         } else if (optc == 'p') {
             transcriptPsls = string(optarg);
+        } else if (optc == 'm') {
+            substituteMissingTargets = true;
         } else {
             errAbort(toCharStr("invalid option %s"), argv[optind-1]);
         }
@@ -101,7 +118,7 @@ int main(int argc, char *argv[]) {
     string mappingInfoTsv = argv[optind+4];
 
     try {
-        gencodeBackmap(inGxfFile, mappingAligns, swapMap, mappedGxfFile, unmappedGxfFile, mappingInfoTsv, targetGxf, transcriptPsls);
+        gencodeBackmap(inGxfFile, mappingAligns, swapMap, substituteMissingTargets, mappedGxfFile, unmappedGxfFile, mappingInfoTsv, targetGxf, transcriptPsls);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;
         return 1;

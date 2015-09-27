@@ -20,6 +20,9 @@ const string REMAP_NUM_MAPPINGS_ATTR = "remap_num_mappings";
 /* Attribute name for target of mapping */
 const string REMAP_TARGET_STATUS_ATTR = "remap_target_status";
 
+/* Attribute indicating target gene was substituted due to   */
+const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR = "remap_substituted_missing_target";
+
 
 /* set the remap number of mappings attribute on this node  */
 void FeatureNode::setNumMappingsAttr() {
