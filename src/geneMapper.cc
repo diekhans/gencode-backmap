@@ -173,6 +173,11 @@ void GeneMapper::updateMappedGeneBounds(FeatureNode* transcriptTree,
     }
 }
 
+#if 0 // FIXME
+/* recursively copy target gene since */
+void GeneMapper::substituteMissingTargetVersion(FeatureNode);
+#endif
+
 /* If there are any mapped transcripts of a gene, add a gene
  * record for the bounds */
 void GeneMapper::buildMappedGeneFeature(FeatureNode* geneTree,
@@ -211,6 +216,12 @@ void GeneMapper::buildGeneFeature(FeatureNode* geneTree) const {
         && hasTargetStatusNonOverlap(geneTree)) {
         // lost because at least one transcript doesn't overlap the target
         geneTree->fTargetStatus = TARGET_STATUS_NONOVERLAP;
+    }
+    if (fSubstituteMissingTarget and
+        ((geneTree->fTargetStatus == TARGET_STATUS_NONOVERLAP)
+         or (geneTree->fTargetStatus == TARGET_STATUS_LOST))) {
+        // FIXME: not implemented
+        // substituteMissingTargetVersion(geneTree);
     }
 }
 

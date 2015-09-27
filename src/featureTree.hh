@@ -23,6 +23,9 @@ extern const string REMAP_NUM_MAPPINGS_ATTR;
 /* Attribute name for target of mapping */
 extern const string REMAP_TARGET_STATUS_ATTR;
 
+/* Attribute indicating target gene was substituted due to   */
+extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
+
 /**
  * Tree container for a GxfFeature object and children
  */
@@ -124,6 +127,8 @@ class FeatureNode {
     /* depth-first output */
     void write(ostream& fh) const;
 };
+
+
 
 /**
  * Group genes records together in a tree.

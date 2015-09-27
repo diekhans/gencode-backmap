@@ -8,21 +8,14 @@
 #include "gxf.hh"
 #include <map>
 #include <stdexcept>
-struct genomeRangeTree;
-
-/* stored in range tree to link target location to
- * tree. */
-struct TargetLocationLink {
-    struct TargetLocationLink *next;
-    GxfFeature* feature;
-};
-
 /*
  * Locations in target genome of old transcripts, by base id
  */
 class TargetAnnotations {
     private:
-    // Keep up to two for PAR
+    
+    
+    // map of gene or transcripts to features. Keep up to two for PAR
     typedef map<const string, GxfFeatureVector> IdFeatureMap;
     typedef IdFeatureMap::iterator IdFeatureMapIter;
     typedef IdFeatureMap::const_iterator IdFeatureMapConstIter;
@@ -30,9 +23,6 @@ class TargetAnnotations {
     // map by base id of genes and transcripts
     IdFeatureMap fIdFeatureMap;
 
-    // map of location used to find mapping to other locis
-    struct genomeRangeTree* fLocationMap;
-    
     void loadFeature(GxfFeature* gxfFeature);
     void processRecord(GxfRecord* gxfRecord);
 
@@ -47,11 +37,6 @@ class TargetAnnotations {
      * special handling for PARs/ */
     GxfFeature* get(const string& id,
                     const string& seqIdForParCheck) const;
-
-    /* find overlapping features */
-    GxfFeatureVector findOverlappingFeatures(const string& seqid,
-                                             int start,
-                                             int end);
 };
 
 #endif

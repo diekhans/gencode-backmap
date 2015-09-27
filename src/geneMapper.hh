@@ -17,6 +17,7 @@ class GeneMapper {
     private:
     const TransMap* fGenomeTransMap;  // genomic mapping
     const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
+    bool fSubstituteMissingTarget;  // pass through targets when gene new gene doesn't map
 
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
     typedef pair<string, bool> SeqIdMapPair;
@@ -91,9 +92,11 @@ class GeneMapper {
     public:
     /* Constructor */
     GeneMapper(const TransMap* genomeTransMap,
-               const TargetAnnotations* targetAnnotations):
+               const TargetAnnotations* targetAnnotations,
+               bool substituteMissingTarget):
         fGenomeTransMap(genomeTransMap),
-        fTargetAnnotations(targetAnnotations) {
+        fTargetAnnotations(targetAnnotations),
+        fSubstituteMissingTarget(substituteMissingTarget) {
     }
 
     /* Map a GFF3/GTF */

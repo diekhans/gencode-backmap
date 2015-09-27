@@ -2,19 +2,13 @@
 Mapping of GENCODE gene annotation set files to older assembies
 
 This provides tools to map the genome corrdinates in various GENCODE download
-files to the previous release of the reference genome.  It uses UCSC liftOver
-alignments and the base-by-base transmap algorithm to produce mappings.
+files to the previous release of the reference genome.
+alignments and the base-by-base TransMap algorithm to produce mappings.
 Reports are made on genes that don't map exactly or are dropped.
 
 The maps all GENCODE GTF and GFF3 files. It does not map the PolyA_feature
 file.
 
-http://www.ncbi.nlm.nih.gov/genome/tools/remap/docs/alignments
-ftp://ftp.ncbi.nlm.nih.gov/genomes/README_GFF3.txt
-
-For assembly-assembly alignments:
-- reciprocity=3 == alignment is best for both Reference and Target. Also referred to as 'First-Pass Alignments'
-- reciprocity=1 or 2 == alignment is best for one sequence, but a better alignment is reported for the other sequence. Also referred to as 'Second-Pass Alignments'
 ### Usage
 
   cd data/
@@ -30,8 +24,10 @@ For assembly-assembly alignments:
 
  query, main GFF3 sequence columns, is GRCh37, target, in attributes, is GRCh38
  gff3ToPsl data/GRCh37.p13.sizes data/GRCh38.p2.sizes data/GRCh38.p2-GRCh37.p13.gff.gz data/GRCh38.p2-GRCh37.p13.refseq.psl
-
   liftUp -nohead -type=.psl /dev/stdout data/GRCh38.p2.refseq-gencode.lift error data/GRCh38.p2-GRCh37.p13.refseq.psl | liftUp -nohead -type=.psl -pslQ data/GRCh38.p2-GRCh37.p13.gencode.psl data/GRCh37.p13.refseq-gencode.lift error /dev/stdin
+
+### Output
+- tags
 
 ### Installation
 
@@ -42,3 +38,12 @@ For assembly-assembly alignments:
  gff3ToGenePred
  gtfToGenePred
  gff3ToPsl 
+
+
+### Alignments
+http://www.ncbi.nlm.nih.gov/genome/tools/remap/docs/alignments
+ftp://ftp.ncbi.nlm.nih.gov/genomes/README_GFF3.txt
+
+For assembly-assembly alignments:
+- reciprocity=3 == alignment is best for both Reference and Target. Also referred to as 'First-Pass Alignments'
+- reciprocity=1 or 2 == alignment is best for one sequence, but a better alignment is reported for the other sequence. Also referred to as 'Second-Pass Alignments'
