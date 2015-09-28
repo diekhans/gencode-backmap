@@ -42,7 +42,7 @@ static inline unsigned pslQStartStrand(struct psl *psl, int blkIdx, char strand)
     if (psl->strand[0] == normStrand(strand)) {
         return psl->qStarts[blkIdx];
     } else {
-        return psl->qSize - psl->qStarts[blkIdx];
+        return psl->qSize - pslQEnd(psl, blkIdx);
     }
 }
 
@@ -52,7 +52,7 @@ static inline unsigned pslQEndStrand(struct psl *psl, int blkIdx, char strand) {
     if (psl->strand[0] == normStrand(strand)) {
         return pslQEnd(psl, blkIdx);
     } else {
-        return psl->qSize - pslQEnd(psl, blkIdx);
+        return psl->qSize - pslQStart(psl, blkIdx);
     }
 }
 
@@ -62,7 +62,7 @@ static inline unsigned pslTStartStrand(struct psl *psl, int blkIdx, char strand)
     if (normStrand(psl->strand[1]) == normStrand(strand)) {
         return psl->tStarts[blkIdx];
     } else {
-        return psl->tSize - psl->tStarts[blkIdx];
+        return psl->tSize - pslTEnd(psl, blkIdx);
     }
 }
 
@@ -72,7 +72,7 @@ static inline unsigned pslTEndStrand(struct psl *psl, int blkIdx, char strand) {
     if (normStrand(psl->strand[1]) == normStrand(strand)) {
         return pslTEnd(psl, blkIdx);
     } else {
-        return psl->tSize - pslTEnd(psl, blkIdx);
+        return psl->tSize - pslTStart(psl, blkIdx);
     }
 }
 
