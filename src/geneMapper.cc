@@ -292,8 +292,8 @@ const GxfFeature* GeneMapper::getTargetAnnotation(FeatureNode* featureNode) cons
     if (fTargetAnnotations == NULL) {
         return NULL;
     } else {
-        return fTargetAnnotations->get(featureNode->fFeature->getTypeId(),
-                                       featureNode->fFeature->fSeqid);
+        return fTargetAnnotations->getFeature(featureNode->fFeature->getTypeId(),
+                                              featureNode->fFeature->fSeqid);
     }
 }
 

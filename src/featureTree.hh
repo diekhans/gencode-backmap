@@ -128,6 +128,8 @@ class FeatureNode {
     void write(ostream& fh) const;
 };
 
+/* Vector of FeatureNode objects */
+typedef vector<FeatureNode*> FeatureNodeVector;
 
 
 /**

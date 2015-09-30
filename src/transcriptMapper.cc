@@ -113,10 +113,10 @@ TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
     // if available, find target transcripts to use in selecting multiple mappings.  Special handling
     // for PAR requires sequence id.
     if (targetAnnotations != NULL) {
-        fTargetGene = targetAnnotations->get(transcriptTree->fFeature->getAttrValue(GxfFeature::GENE_ID_ATTR),
-                                             transcriptTree->fFeature->fSeqid);
-        fTargetTranscript = targetAnnotations->get(transcriptTree->fFeature->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
-                                                   transcriptTree->fFeature->fSeqid);
+        fTargetGene = targetAnnotations->getFeature(transcriptTree->fFeature->getAttrValue(GxfFeature::GENE_ID_ATTR),
+                                                    transcriptTree->fFeature->fSeqid);
+        fTargetTranscript = targetAnnotations->getFeature(transcriptTree->fFeature->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
+                                                          transcriptTree->fFeature->fSeqid);
     }
 
     // map all exons together, this will be used to project the other exons

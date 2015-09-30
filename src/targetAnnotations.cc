@@ -1,21 +1,39 @@
 #include "targetAnnotations.hh"
 #include <stdexcept>
+#include <iostream>
 
-/* load a feature */
-void TargetAnnotations::loadFeature(GxfFeature* gxfFeature) {
-    string baseId = getBaseId(gxfFeature->getTypeId());
-    fIdFeatureMap[baseId].push_back(gxfFeature);
+/* link a gene or transcript feature into the maps */
+void TargetAnnotations::loadFeature(FeatureNode* featureNode) {
+    GxfFeature* feature = featureNode->fFeature;
+    string baseId = getBaseId(feature->getTypeId());
+    fIdFeatureMap[baseId].push_back(featureNode);
+    
+    struct TargetLocationLink* locationLink =  static_cast<struct TargetLocationLink*>(needMem(sizeof(struct TargetLocationLink)));  // zeros memory
+    locationLink->featureNode = featureNode;
+    genomeRangeTreeAddValList(fLocationMap, toCharStr(feature->fSeqid),
+                              feature->fStart, feature->fEnd, locationLink);
+}
+
+/* link a gene or transcript feature into the maps */
+void TargetAnnotations::loadGene(FeatureNode* geneTree) {
+    fGenes.push_back(geneTree);
+    loadFeature(geneTree);
+    for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
+        FeatureNode* transcriptTree = geneTree->fChildren[i];
+        if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
+            throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
+        }
+        loadFeature(transcriptTree);
+    }
 }
 
 /* process a record, loading into table or discarding */
-void TargetAnnotations::processRecord(GxfRecord* gxfRecord) {
+void TargetAnnotations::processRecord(GxfParser *gxfParser,
+                                      GxfRecord* gxfRecord) {
     if (instanceOf(gxfRecord, GxfFeature)) {
-        GxfFeature* gxfFeature = dynamic_cast<GxfFeature*>(gxfRecord);
-        if ((gxfFeature->fType == GxfFeature::GENE) or (gxfFeature->fType == GxfFeature::TRANSCRIPT)) {
-            loadFeature(gxfFeature);
-        } else {
-            delete gxfRecord;
-        }
+        GxfFeature* geneFeature = dynamic_cast<GxfFeature*>(gxfRecord);
+        FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
+        loadGene(geneTree);
     } else {
         delete gxfRecord;
     }
@@ -23,39 +41,70 @@ void TargetAnnotations::processRecord(GxfRecord* gxfRecord) {
 
 /* get a target gene or transcript with same base or NULL.
  * special handling for PARs/ */
-GxfFeature* TargetAnnotations::get(const string& id,
-                                   const string& seqIdForParCheck) const {
+GxfFeature* TargetAnnotations::getFeature(const string& id,
+                                          const string& seqIdForParCheck) const {
     string baseId = getBaseId(id);
     IdFeatureMapConstIter it = fIdFeatureMap.find(baseId);
     if (it == fIdFeatureMap.end()) {
         return NULL;
     } else if (it->second.size() == 2) {
-        if (it->second[0]->fSeqid == seqIdForParCheck) {
-            return it->second[0];
-        } else if (it->second[1]->fSeqid == seqIdForParCheck) {
-            return it->second[1];
+        if (it->second[0]->fFeature->fSeqid == seqIdForParCheck) {
+            return it->second[0]->fFeature;
+        } else if (it->second[1]->fFeature->fSeqid == seqIdForParCheck) {
+            return it->second[1]->fFeature;
         } else {
             throw logic_error("PAR target feature hack confused: " + baseId);
         }
     } else {
-        return it->second[0];
+        return it->second[0]->fFeature;
     }
 }
 
+/* find overlapping features */
+FeatureNodeVector TargetAnnotations::findOverlappingFeatures(const string& seqid,
+                                                             int start,
+                                                             int end) {
+    FeatureNodeVector overlapping;
+    struct range *over, *overs = genomeRangeTreeAllOverlapping(fLocationMap, toCharStr(seqid), start, end);
+    for (over = overs; over != NULL; over = over->next) {
+        for (struct TargetLocationLink* tll = static_cast<struct TargetLocationLink*>(over->val); tll != NULL; tll = tll->next) {
+            overlapping.push_back(tll->featureNode);
+        }
+    }
+    return overlapping;
+}
+
 /* constructor, load gene and transcript objects from a GxF */
-TargetAnnotations::TargetAnnotations(const string& gxfFile) {
+TargetAnnotations::TargetAnnotations(const string& gxfFile):
+    fLocationMap(genomeRangeTreeNew()) {
     GxfParser gxfParser(gxfFile);
     GxfRecord* gxfRecord;
     while ((gxfRecord = gxfParser.next()) != NULL) {
-        processRecord(gxfRecord);
+        processRecord(&gxfParser, gxfRecord);
     }
+}
+
+/* free the location map tree and data */
+void TargetAnnotations::freeLocationMap() {
+    struct hashCookie chromCookie = hashFirst(fLocationMap->jkhash);
+    struct hashEl *chromEl;
+    while ((chromEl = hashNext(&chromCookie)) != NULL) {
+        struct range *ranges = genomeRangeTreeList(fLocationMap, chromEl->name);
+        for (struct range *r = ranges; r != NULL; r = r->next) {
+            struct TargetLocationLink *tll, *tlls = static_cast<struct TargetLocationLink*>(r->val);
+            while ((tll = static_cast<struct TargetLocationLink*>(slPopHead(&tlls))) != NULL) {
+                free(tll);
+            }
+        }
+    }
+    genomeRangeTreeFree(&fLocationMap);
 }
 
 /* destructor */
 TargetAnnotations::~TargetAnnotations() {
-    for (IdFeatureMapIter it = fIdFeatureMap.begin(); it != fIdFeatureMap.end(); it++) {
-        it->second.free();
+    freeLocationMap();
+    for (int i = 0; i <fGenes.size(); i++) {
+        delete fGenes[i];
     }
-
 }
 

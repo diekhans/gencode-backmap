@@ -36,6 +36,7 @@ static inline char normStrand(char strand) {
     return (strand == '\0') ? '+' : strand;
 }
 
+#if 0 // not used, may not work right
 /* return query start for the given block, mapped to specified strand,
  * which can be `\0' for `+' */
 static inline unsigned pslQStartStrand(struct psl *psl, int blkIdx, char strand) {
@@ -75,6 +76,7 @@ static inline unsigned pslTEndStrand(struct psl *psl, int blkIdx, char strand) {
         return psl->tSize - pslTStart(psl, blkIdx);
     }
 }
+#endif
 
 /* is the query fully mapped */
 static inline bool pslQueryFullyMapped(struct psl* psl) {
