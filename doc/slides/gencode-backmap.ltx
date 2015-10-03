@@ -69,7 +69,8 @@
 
 \title{Mapping GENCODE from GRCh38 to GRCh37}
 \author{Mark Diekhans \emailaddr{markd@soe.ucsc.edu}}
-\date{Sept 29, 2015}
+\date{Sept 29, 2015\\
+revised Oct 3, 2015}
 \titlegraphic{\vspace{2cm}\includegraphics[scale=0.60]{images/UC-Santa-Cruz-Genomics-Inst_022415.png}}
 \begin{document}
 % ------------ ------------ ------------ ------------ ------------ ------------
@@ -261,8 +262,8 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
       &	\twocol{UCSC}  &	\twocol{NCBI1}  & \twolcol{NCBI2} \\\hline\hline
       full\_contig &	\best{195960} &	0.99 &	194447 &	0.98 &	194606 &	0.98 \\\hline
       full\_fragment &	\best{272} &	0.00 &	181 &	0.00 &	246 &	0.00 \\\hline
-      partial &	\best{1441} &	0.01 &	498 &	0.00 &	599 &	0.00 \\\hline
-      deleted &	\best{223} &	0.00 &	1860 &	0.01 &	1602 &	0.01 \\\hline
+      partial &	1606 &	0.01 &	1136 &	0.00 &	\best{2182} &	0.00 \\\hline
+      deleted &	58 &	0.00 &	1222 &	0.01 &	\best{19} &	0.00 \\\hline
       gene\_conflict &	168 &	0.00 &	\best{105} &	\best{0.00} &	236 &	0.00 \\\hline
       gene\_size\_change &	\best{378} &	0.00 &	1351 &	0.01 &	1153 &	0.01 \\\hline\hline
       all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
@@ -310,23 +311,23 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
   \begin{center}
     \tiny
     \begin{tabular}{|l|r|r|r|r|r|r|r|r|} \hline
-      biotype &	full &	fullFrag &	partial &	deleted &	conflict &	sizechg &	total \\\hline\hline
+      biotype &	  	full &	fullFrag &	partial &	deleted &	conflict &	sizechg &	total \\\hline\hline
       3prime\_over\_ncrna &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       IG\_C\_gene &	0.71 &	0.00 &	0.29 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       IG\_C\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       IG\_D\_gene &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       IG\_J\_gene &	0.94 &	0.00 &	0.06 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       IG\_J\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      IG\_V\_gene &	0.90 &	0.00 &	0.09 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
+      IG\_V\_gene &	0.89 &	0.00 &	0.10 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
       IG\_V\_pseudo &	0.95 &	0.00 &	0.05 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       Mt\_rRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       Mt\_tRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      TEC &	0.99 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      TR\_C\_gene &	0.60 &	0.00 &	0.20 &	0.20 &	0.00 &	0.00 &	1.00 \\\hline
+      TEC &		0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      TR\_C\_gene &	0.60 &	0.00 &	0.40 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       TR\_D\_gene &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       TR\_J\_gene &	0.97 &	0.01 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       TR\_J\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      TR\_V\_gene &	0.80 &	0.00 &	0.07 &	0.00 &	0.00 &	0.13 &	1.00 \\\hline
+      TR\_V\_gene &	0.80 &	0.00 &	0.07 &	0.10 &	0.00 &	0.03 &	1.00 \\\hline
       TR\_V\_pseudo &	0.97 &	0.00 &	0.03 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       antisense &	0.99 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       lincRNA &	0.98 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
@@ -348,22 +349,22 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
     \begin{tabular}{|l|r|r|r|r|r|r|r|r|} \hline
       biotype &	full &	fullFrag &	partial &	deleted &	conflict &	sizechg &	total \\\hline\hline
       protein\_coding &	0.97 &	0.00 &	0.02 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      pseudo &	0.97 &	0.00 &	0.00 &	0.00 &	0.00 &	0.03 &	1.00 \\\hline
-      rRNA &	0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
+      pseudo &		0.97 &	0.00 &	0.00 &	0.00 &	0.00 &	0.03 &	1.00 \\\hline
+      rRNA &		0.99 &	0.00 &	0.01 &	0.01 &	0.00 &	0.00 &	1.00 \\\hline
       ribozyme &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      sRNA &	0.95 &	0.00 &	0.00 &	0.00 &	0.00 &	0.05 &	1.00 \\\hline
-      scaRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      sRNA &		0.95 &	0.00 &	0.00 &	0.05 &	0.00 &	0.00 &	1.00 \\\hline
+      scaRNA &		1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       sense\_intronic &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       sense\_over &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      snRNA &	0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      snoRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      snRNA &		0.99 &	0.00 &	0.01 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      snoRNA &		1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       transc\_proc\_pseudo &	0.97 &	0.01 &	0.02 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       transc\_unitary\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      transc\_unproc\_pseudo &	0.92 &	0.00 &	0.06 &	0.00 &	0.00 &	0.02 &	1.00 \\\hline
+      transc\_unproc\_pseudo &	0.92 &	0.00 &	0.06 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
       transl\_proc\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       transl\_unproc\_pseudo &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
-      unitary\_pseudo &	0.98 &	0.00 &	0.02 &	0.01 &	0.00 &	0.00 &	1.00 \\\hline
-      unproc\_pseudo &	0.97 &	0.00 &	0.02 &	0.00 &	0.00 &	0.01 &	1.00 \\\hline
+      unitary\_pseudo &	0.98 &	0.00 &	0.02 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
+      unproc\_pseudo &	0.97 &	0.00 &	0.03 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
       vaultRNA &	1.00 &	0.00 &	0.00 &	0.00 &	0.00 &	0.00 &	1.00 \\\hline
     \end{tabular}
   \end{center}
@@ -381,7 +382,7 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
       IG\_D\_gene &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
       IG\_J\_gene &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
       IG\_J\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
-      IG\_V\_gene &	0.09 &	0.89 &	0.01 &	0.01 &	1.00 \\\hline
+      IG\_V\_gene &	0.09 &	0.88 &	0.03 &	0.00 &	1.00 \\\hline
       IG\_V\_pseudo &	0.04 &	0.94 &	0.02 &	0.00 &	1.00 \\\hline
       Mt\_rRNA &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
       Mt\_tRNA &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
@@ -390,7 +391,7 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
       TR\_D\_gene &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
       TR\_J\_gene &	0.03 &	0.97 &	0.00 &	0.00 &	1.00 \\\hline
       TR\_J\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
-      TR\_V\_gene &	0.11 &	0.87 &	0.00 &	0.02 &	1.00 \\\hline
+      TR\_V\_gene &	0.11 &	0.89 &	0.00 &	0.00 &	1.00 \\\hline
       TR\_V\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
       antisense &	0.05 &	0.94 &	0.00 &	0.00 &	1.00 \\\hline
       lincRNA &	0.08 &	0.91 &	0.00 &	0.00 &	1.00 \\\hline
@@ -400,7 +401,7 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
       non\_coding &	0.67 &	0.33 &	0.00 &	0.00 &	1.00 \\\hline
       polymorphic\_pseudo &	0.41 &	0.59 &	0.00 &	0.00 &	1.00 \\\hline
       proc\_pseudo &	0.04 &	0.96 &	0.00 &	0.00 &	1.00 \\\hline
-      proc\_transcript &	0.08 &	0.92 &	0.00 &	0.00 &	1.00 \\\hline
+      proc\_transcript &	0.08 &	0.92 &	0.01 &	0.00 &	1.00 \\\hline
     \end{tabular}
   \end{center}
 \end{frame}
@@ -423,7 +424,7 @@ all &	all &	198442 &	1.00 &	198442 &	1.00 &	198442 &	1.00 \\\hline
       snoRNA &	0.09 &	0.91 &	0.00 &	0.00 &	1.00 \\\hline
       transc\_proc\_pseudo &	0.04 &	0.95 &	0.00 &	0.00 &	1.00 \\\hline
       transc\_unitary\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
-      transc\_unproc\_pseudo &	0.08 &	0.90 &	0.01 &	0.01 &	1.00 \\\hline
+      transc\_unproc\_pseudo &	0.08 &	0.91 &	0.02 &	0.00 &	1.00 \\\hline
       transl\_proc\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
       transl\_unproc\_pseudo &	0.00 &	1.00 &	0.00 &	0.00 &	1.00 \\\hline
       unitary\_pseudo &	0.01 &	0.98 &	0.01 &	0.00 &	1.00 \\\hline

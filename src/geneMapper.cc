@@ -386,7 +386,7 @@ void GeneMapper::processGene(GxfParser *gxfParser,
     } else if (hasExcessiveSizeChange(geneTree)) {
         forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
     } else {
-        geneTree->setRemapStatusFromChildren();
+        geneTree->setBoundingFeatureRemapStatus();
     }
     geneTree->setRemapStatusAttr();
     geneTree->setNumMappingsAttr();

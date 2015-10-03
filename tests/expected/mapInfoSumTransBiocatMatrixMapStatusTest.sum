@@ -1,6 +1,6 @@
-biocat	deleted	full_contig	full_fragment	gene_size_change	no_seq_map	partial	total
-pseudo	1	6	0	0	1	0	8
-coding	1	33	1	5	1	5	46
-nonCoding	1	24	0	0	1	4	30
-problem	0	5	0	0	0	0	5
-all	3	68	1	5	3	9	89
+biocat	full_contig	full_fragment	gene_size_change	no_seq_map	partial	total
+pseudo	6	0	0	1	1	8
+coding	33	1	5	1	7	47
+nonCoding	24	0	0	1	5	30
+problem	5	0	0	0	0	5
+all	68	1	5	3	13	90

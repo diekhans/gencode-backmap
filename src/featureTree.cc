@@ -140,7 +140,7 @@ FeatureNode* GeneTree::findGtfParent(FeatureNode* geneTreeLeaf,
     return parent;
 }
 
-/* compute the remap status of the feature. srcSeqInMapping
+/* compute the remap status of feature. srcSeqInMapping
  * indicates of the srcSequence qs in the genomic map */
 RemapStatus FeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
     if (not srcSeqInMapping) {
@@ -163,25 +163,58 @@ RemapStatus FeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
     }
 }
 
-/* recursively determine the remap status */
-void FeatureNode::setRemapStatusFromChildren(RemapStatus baseStatus) {
-    fRemapStatus = baseStatus;
+/* recursively determine the remap status.  This does not work for genes,
+ * only within a transcript were all features where mapped together */
+void FeatureNode::recursiveSetRemapStatus(bool srcSeqInMapping) {
     for (size_t i = 0; i < fChildren.size(); i++) {
-        fRemapStatus = remapStatusChildUpdate(fRemapStatus, fChildren[i]->fRemapStatus);
+        fChildren[i]->recursiveSetRemapStatus(srcSeqInMapping);
     }
-    
+    fRemapStatus = calcRemapStatus(srcSeqInMapping);
 }
 
-/* recursively determine the remap status */
-void FeatureNode::recursiveCalcRemapStatus(bool srcSeqInMapping) {
-    // compute leaves first
+/* do any child belond to the specified status */
+bool FeatureNode::anyChildWithRemapStatus(unsigned remapStatusSet) const {
     for (size_t i = 0; i < fChildren.size(); i++) {
-        fChildren[i]->recursiveCalcRemapStatus(srcSeqInMapping);
+        if ((fChildren[i]->fRemapStatus & remapStatusSet) != 0) {
+            return true;
+        }
     }
-
-    // calculate for node and considering children
-    setRemapStatusFromChildren(calcRemapStatus(srcSeqInMapping));
+    return false;
 }
+
+/* do all child have belong to the specified status set */
+bool FeatureNode::allChildWithRemapStatus(unsigned remapStatusSet) const {
+    for (size_t i = 0; i < fChildren.size(); i++) {
+        if ((fChildren[i]->fRemapStatus & remapStatusSet) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/* determine gene or transcript remap status from children.  This doesn't
+ * handle GENE_CONFLICT or_GENE_SIZE_CHANGE, which are forced.
+ */
+RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
+    assert((fFeature->fType == GxfFeature::GENE) || (fFeature->fType == GxfFeature::TRANSCRIPT));
+    if (anyChildWithRemapStatus(REMAP_STATUS_NO_SEQ_MAP)) {
+        return REMAP_STATUS_NO_SEQ_MAP;
+    }
+    if (allChildWithRemapStatus(REMAP_STATUS_FULL_CONTIG)) {
+        return REMAP_STATUS_FULL_CONTIG;
+    }
+    if (allChildWithRemapStatus(REMAP_STATUS_DELETED)) {
+        return REMAP_STATUS_DELETED;
+    }
+    if (allChildWithRemapStatus(REMAP_STATUS_FULL_CONTIG|REMAP_STATUS_FULL_FRAGMENT)) {
+        return REMAP_STATUS_FULL_FRAGMENT;
+    }
+    if (allChildWithRemapStatus(REMAP_STATUS_FULL_CONTIG|REMAP_STATUS_FULL_FRAGMENT|REMAP_STATUS_PARTIAL|REMAP_STATUS_DELETED)) {
+        return REMAP_STATUS_PARTIAL;
+    }
+    throw logic_error("gene RemapStatus logic error");
+}
+
 
 /* print node for debugging */
 void FeatureNode::dumpNode(ostream& fh) const {

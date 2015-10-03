@@ -7,6 +7,13 @@ Test data
      gff3ToGenePred data/gencode.v22.annotation.gff3 test.gp
      overlapSelect -inFmt=chain test.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz test.chain
 
+     edit and replace chrM with this:
+          # added by hand to use GRCh37 lite
+          chain 16568 chrM 16569 + 0 16569 chrM 16569 + 0 16569 1
+          16569
+
+
+
 - data/gencode.v22.annotation.gff3
   Test subset of annotations in GFF3 format
 - data/gencode.v22.annotation.gtf

@@ -146,16 +146,6 @@ bool FeatureMapper::map(FeatureNode* featureNode,
     }
 }
 
-/* compute status from children */
-RemapStatus FeatureMapper::remapStatusFromChildren(FeatureNode* featureNode) {
-    RemapStatus remapStatus = REMAP_STATUS_NONE;
-    for (int i = 0; i < featureNode->fChildren.size(); i++) {
-        remapStatus = remapStatusChildUpdate(remapStatus,
-                                             featureNode->fChildren[i]->fRemapStatus);
-    }
-    return remapStatus;
-}
-
 /* Map as single, bounding feature, like a gene or transcript record.  it's
  * range is covered by contained ranges.  Omit new ranges if unmapped.
  * the total number of mappings.

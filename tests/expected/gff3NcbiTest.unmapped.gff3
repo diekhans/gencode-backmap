@@ -489,8 +489,8 @@ chrY	HAVANA	UTR	283734	284187	.	+	.	ID=UTR:ENSTR0000448477.4:1;Parent=ENSTR00004
 # end of exon ENSE00003648001.1 not mapped
 
 # maps 68 times with UCSC liftover chains
-chr1	HAVANA	gene	121184810	121392822	.	+	.	ID=ENSG00000171943.10;gene_id=ENSG00000171943.10;gene_type=protein_coding;gene_status=KNOWN;gene_name=SRGAP2C;level=2;havana_gene=OTTHUMG00000041445.3;remap_status=deleted;remap_num_mappings=3;remap_target_status=nonOverlap
-chr1	HAVANA	transcript	121184810	121392822	.	+	.	ID=ENST00000367123.6;Parent=ENSG00000171943.10;gene_id=ENSG00000171943.10;transcript_id=ENST00000367123.6;gene_type=protein_coding;gene_status=KNOWN;gene_name=SRGAP2C;transcript_type=protein_coding;transcript_status=KNOWN;transcript_name=SRGAP2C-001;level=2;protein_id=ENSP00000478290.1;transcript_support_level=5;tag=basic,appris_principal_1;havana_gene=OTTHUMG00000041445.3;havana_transcript=OTTHUMT00000099264.3;remap_status=deleted;remap_target_status=nonOverlap
+chr1	HAVANA	gene	121184810	121392822	.	+	.	ID=ENSG00000171943.10;gene_id=ENSG00000171943.10;gene_type=protein_coding;gene_status=KNOWN;gene_name=SRGAP2C;level=2;havana_gene=OTTHUMG00000041445.3;remap_status=partial;remap_num_mappings=3;remap_target_status=nonOverlap
+chr1	HAVANA	transcript	121184810	121392822	.	+	.	ID=ENST00000367123.6;Parent=ENSG00000171943.10;gene_id=ENSG00000171943.10;transcript_id=ENST00000367123.6;gene_type=protein_coding;gene_status=KNOWN;gene_name=SRGAP2C;transcript_type=protein_coding;transcript_status=KNOWN;transcript_name=SRGAP2C-001;level=2;protein_id=ENSP00000478290.1;transcript_support_level=5;tag=basic,appris_principal_1;havana_gene=OTTHUMG00000041445.3;havana_transcript=OTTHUMT00000099264.3;remap_status=partial;remap_target_status=nonOverlap
 chr1	HAVANA	exon	121184810	121185124	.	+	.	ID=exon:ENST00000367123.6:1;Parent=ENST00000367123.6;gene_id=ENSG00000171943.10;transcript_id=ENST00000367123.6;gene_type=protein_coding;gene_status=KNOWN;gene_name=SRGAP2C;transcript_type=protein_coding;transcript_status=KNOWN;transcript_name=SRGAP2C-001;exon_number=1;exon_id=ENSE00001669237.2;level=2;protein_id=ENSP00000478290.1;transcript_support_level=5;havana_gene=OTTHUMG00000041445.3;havana_transcript=OTTHUMT00000099264.3;tag=basic,appris_principal_1;remap_status=full_contig;remap_target_status=nonOverlap
 chr1	HAVANA	exon	121186905	121187513	.	+	.	ID=exon:ENST00000367123.6:2;Parent=ENST00000367123.6;gene_id=ENSG00000171943.10;transcript_id=ENST00000367123.6;gene_type=protein_coding;gene_status=KNOWN;gene_name=SRGAP2C;transcript_type=protein_coding;transcript_status=KNOWN;transcript_name=SRGAP2C-001;exon_number=2;exon_id=ENSE00001748861.1;level=2;protein_id=ENSP00000478290.1;transcript_support_level=5;havana_gene=OTTHUMG00000041445.3;havana_transcript=OTTHUMT00000099264.3;tag=basic,appris_principal_1;remap_status=full_contig;remap_target_status=nonOverlap
 chr1	HAVANA	CDS	121187447	121187513	.	+	0	ID=CDS:ENST00000367123.6:2;Parent=ENST00000367123.6;gene_id=ENSG00000171943.10;transcript_id=ENST00000367123.6;gene_type=protein_coding;gene_status=KNOWN;gene_name=SRGAP2C;transcript_type=protein_coding;transcript_status=KNOWN;transcript_name=SRGAP2C-001;exon_number=2;exon_id=ENSE00001748861.1;level=2;protein_id=ENSP00000478290.1;transcript_support_level=5;havana_gene=OTTHUMG00000041445.3;havana_transcript=OTTHUMT00000099264.3;tag=basic,appris_principal_1;remap_status=full_contig;remap_target_status=nonOverlap
@@ -567,4 +567,7 @@ chr10	ENSEMBL	UTR	46550737	46550744	.	-	.	ID=UTR:ENST00000374314.5:1;Parent=ENST
 
 # on alt, have mappings to main and alt with NCBI
 ##sequence-region GL000009.2 1 201709
+
+
+# was mapped but had deleted status; not in V19
 

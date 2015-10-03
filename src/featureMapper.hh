@@ -56,7 +56,6 @@ class FeatureMapper {
                               GxfFeatureVector& parentParts);
     static void updateParents(FeatureNode* featureNode,
                               FeatureNode* parentNode);
-    static RemapStatus remapStatusFromChildren(FeatureNode* featureNode);
 
     public:
     /* Map a single feature though an alignment of that feature.  The

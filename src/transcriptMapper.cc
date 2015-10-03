@@ -147,7 +147,8 @@ void TranscriptMapper::mapTranscriptFeatures(FeatureNode* transcriptTree) {
     } else {
         processUnmappedFeatures(transcriptTree);
     }
-    transcriptTree->recursiveCalcRemapStatus(fSrcSeqInMapping);
+    transcriptTree->recursiveSetRemapStatus(fSrcSeqInMapping);
+    transcriptTree->setBoundingFeatureRemapStatus();
     FeatureMapper::updateIds(transcriptTree);
     transcriptTree->setNumMappingsAttr();
 }

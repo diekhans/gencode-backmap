@@ -41,6 +41,9 @@ class FeatureNode {
     GxfFeatureVector fUnmappedFeatures;
     GxfFeatureVector fAllOutputFeatures;   // use for debugging, as it tracks order added.
 
+    bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
+    bool allChildWithRemapStatus(unsigned remapStatusSet) const;
+
     public:
     FeatureNode(GxfFeature* feature):
         fFeature(feature),
@@ -103,12 +106,20 @@ class FeatureNode {
         fRemapStatus = remapStatus;
     }
 
-    /* recursively determine the remap status */
-    void setRemapStatusFromChildren(RemapStatus baseStatus = REMAP_STATUS_NONE);
+    /* recursively set the remap status.  This does not work for genes,
+    * only within a transcript were all features where mapped together */
+    void recursiveSetRemapStatus(bool srcSeqInMapping);
 
-    /* recursively determine the remap status */
-    void recursiveCalcRemapStatus(bool srcSeqInMapping);
+    /* determine gene or transcript remap status from children.  This doesn't
+     * handle GENE_CONFLICT or_GENE_SIZE_CHANGE, which are forced.
+     */
+    RemapStatus calcBoundingFeatureRemapStatus() const;
 
+    /* remap status on a bounding */
+    void setBoundingFeatureRemapStatus() {
+        fRemapStatus = calcBoundingFeatureRemapStatus();
+    }
+    
     /* recursively set the target status attribute */
     void setTargetStatusAttr();;
 

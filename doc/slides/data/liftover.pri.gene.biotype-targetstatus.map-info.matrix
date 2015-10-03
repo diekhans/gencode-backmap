@@ -5,7 +5,7 @@ IG_C_pseudogene	0.00	0.00	0.00	1.00	1.00
 IG_D_gene	0.00	0.00	0.00	1.00	1.00
 IG_J_gene	0.00	0.00	0.00	1.00	1.00
 IG_J_pseudogene	0.00	0.00	0.00	1.00	1.00
-IG_V_gene	0.01	0.09	0.01	0.89	1.00
+IG_V_gene	0.00	0.09	0.03	0.88	1.00
 IG_V_pseudogene	0.00	0.04	0.02	0.94	1.00
 Mt_rRNA	0.00	0.00	0.00	1.00	1.00
 Mt_tRNA	0.00	0.00	0.00	1.00	1.00
@@ -14,7 +14,7 @@ TR_C_gene	0.00	0.20	0.00	0.80	1.00
 TR_D_gene	0.00	0.00	0.00	1.00	1.00
 TR_J_gene	0.00	0.03	0.00	0.97	1.00
 TR_J_pseudogene	0.00	0.00	0.00	1.00	1.00
-TR_V_gene	0.02	0.11	0.00	0.87	1.00
+TR_V_gene	0.00	0.11	0.00	0.89	1.00
 TR_V_pseudogene	0.00	0.00	0.00	1.00	1.00
 antisense	0.00	0.05	0.00	0.94	1.00
 lincRNA	0.00	0.08	0.00	0.91	1.00
@@ -24,7 +24,7 @@ misc_RNA	0.00	0.26	0.01	0.73	1.00
 non_coding	0.00	0.67	0.00	0.33	1.00
 polymorphic_pseudogene	0.00	0.41	0.00	0.59	1.00
 processed_pseudogene	0.00	0.04	0.00	0.96	1.00
-processed_transcript	0.00	0.08	0.00	0.92	1.00
+processed_transcript	0.00	0.08	0.01	0.92	1.00
 protein_coding	0.00	0.03	0.00	0.97	1.00
 pseudogene	0.00	0.94	0.00	0.06	1.00
 rRNA	0.00	0.05	0.01	0.94	1.00
@@ -37,7 +37,7 @@ snRNA	0.00	0.04	0.01	0.95	1.00
 snoRNA	0.00	0.09	0.00	0.91	1.00
 transcribed_processed_pseudogene	0.00	0.04	0.00	0.95	1.00
 transcribed_unitary_pseudogene	0.00	0.00	0.00	1.00	1.00
-transcribed_unprocessed_pseudogene	0.01	0.08	0.01	0.90	1.00
+transcribed_unprocessed_pseudogene	0.00	0.08	0.02	0.91	1.00
 translated_processed_pseudogene	0.00	0.00	0.00	1.00	1.00
 translated_unprocessed_pseudogene	0.00	0.00	0.00	1.00	1.00
 unitary_pseudogene	0.00	0.01	0.01	0.98	1.00
