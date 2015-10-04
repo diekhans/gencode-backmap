@@ -225,8 +225,8 @@ void FeatureMapper::updateParent(GxfFeature* child,
     GxfFeature* parent = findContaining(child, parentParts);  // validates even if not used
     const AttrVal* parentAttr = child->getAttrs().find(GxfFeature::PARENT_ATTR);
     if (parentAttr != NULL) {
-        child->getAttrs().update(AttrVal(parentAttr->fName, parent->getAttrValue(GxfFeature::ID_ATTR),
-                                         parentAttr->fQuoted));
+        child->getAttrs().update(AttrVal(parentAttr->getName(), parent->getAttrValue(GxfFeature::ID_ATTR),
+                                         parentAttr->isQuoted()));
     }
 }
 

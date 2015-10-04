@@ -63,6 +63,21 @@ StringVector stringSplit(const string& str,
 }
 
 /*
+ * Join a string into a vector into a string
+ */
+string stringJoin(const StringVector& strvec,
+                  char separator) {
+    string str;
+    for (int i = 0; i < strvec.size(); i++) {
+        if (i > 0) {
+            str.push_back(separator);
+        }
+        str += strvec[i];
+    }
+    return str;
+}
+
+/*
  * Convert an integer to a string.
  */
 string toString(int num) {

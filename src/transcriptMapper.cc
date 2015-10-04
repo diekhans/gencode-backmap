@@ -24,7 +24,7 @@ GxfFeatureVector TranscriptMapper::getExons(const FeatureNode* transcriptTree) {
 /* build transcript exons PSL to query and mapping to target genome.
  * Return NULL if no mappings for whatever reason.*/
 PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcriptTree) const {
-    const string& qName(transcriptTree->fFeature->getAttr(GxfFeature::TRANSCRIPT_ID_ATTR)->fVal);
+    const string& qName(transcriptTree->fFeature->getAttr(GxfFeature::TRANSCRIPT_ID_ATTR)->getVal());
     GxfFeatureVector exons = getExons(transcriptTree);
     // get alignment of exons to srcGenome and to targetGenome
     PslMapping* exonsMapping = FeatureTransMap(fGenomeTransMap).mapFeatures(qName, exons);
@@ -70,7 +70,7 @@ void TranscriptMapper::mapTranscriptFeature(FeatureNode* transcriptNode) {
 /* recursive map features below transcript */
 void TranscriptMapper::mapFeatures(FeatureNode* featureNode) {
     const AttrVal* idAttr = featureNode->fFeature->findAttr(GxfFeature::ID_ATTR);
-    const string& nodeId = (idAttr != NULL) ? idAttr->fVal : "someFeature";
+    const string& nodeId = (idAttr != NULL) ? idAttr->getVal() : "someFeature";
     PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fFeature);
     FeatureMapper::map(featureNode, pslMapping);
     for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {

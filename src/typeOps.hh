@@ -65,6 +65,12 @@ typedef vector<string> StringVector;
 StringVector stringSplit(const string& str,
                          char separator);
 
+/*
+ * Join a string into a vector into a string
+ */
+string stringJoin(const StringVector& strvec,
+                  char separator);
+
 /* is a string empty (only whitespace) */
 inline bool stringEmpty(const string& s) {
     return s.find_first_not_of(whitespace) == string::npos;

@@ -88,7 +88,6 @@ const string& GxfFeature::getTypeBiotype() const {
     }
 }
 
-
 /*
  * GFF3 Feature
  */
@@ -98,16 +97,23 @@ class Gff3Feature: public GxfFeature {
     virtual GxfFormat getFormat() const {
         return GFF3_FORMAT;
     }
-    
+
+    /* is this a multi-valued attribute? */
     /* parse ID=ENSG00000223972.5 */
-    static AttrVal* parseAttr(const string& attrStr) {
+    static void parseAttr(const string& attrStr,
+                          AttrVals& attrVals) {
         size_t i = attrStr.find('=');
         if (i == string::npos) {
             throw invalid_argument("Invalid GFF3 attribute \"" + attrStr + "\"");
         }
         string name = attrStr.substr(0,i);
         string value = attrStr.substr(i+1);
-        return new AttrVal(name, stripQuotes(value), isQuoted(value));
+        StringVector values = stringSplit(stripQuotes(value), ',');
+        AttrVal* attrVal = new AttrVal(name, values[0], isQuoted(value));
+        attrVals.push_back(attrVal);
+        for (int i = 1; i < values.size(); i++) {
+            attrVal->addVal(values[i]);
+        }
     }
     
     /* parse: ID=ENSG00000223972.5;gene_id=ENSG00000223972.5 */
@@ -116,18 +122,27 @@ class Gff3Feature: public GxfFeature {
         StringVector parts = stringSplit(attrsStr,';');
         // `;' is a separator
         for (size_t i = 0; i < parts.size(); i++) {
-            attrVals.push_back(parseAttr(stringTrim(parts[i])));
+            parseAttr(stringTrim(parts[i]), attrVals);
         }
         return attrVals;
     }
+
     /* format an attribute */
     string formatAttr(const AttrVal* attrVal) const {
         // n.b. this is not general, doesn't handle embedded quotes
-        string strAttr = attrVal->fName + "=";
-        if (attrVal->fQuoted) {
-            strAttr += "\"" + attrVal->fVal + "\"";
-        } else {
-            strAttr += attrVal->fVal;
+        string strAttr = attrVal->getName() + "=";
+        if (attrVal->isQuoted()) {
+            strAttr += "\"";
+        }
+        for (int i = 0; i < attrVal->getVals().size(); i++) {
+            if (i > 0) {
+                strAttr += ",";
+            }
+            strAttr += attrVal->getVals()[i];
+
+        }
+        if (attrVal->isQuoted()) {
+            strAttr += "\"";
         }
         return strAttr;
     }
@@ -137,7 +152,7 @@ class Gff3Feature: public GxfFeature {
         string strAttrs;
         for (size_t i = 0; i < fAttrs.size(); i++) {
             if (i > 0) {
-                strAttrs += ";";
+                strAttrs += ";"; // separator
             }
             strAttrs += formatAttr(fAttrs[i]);
         }
@@ -174,14 +189,20 @@ class GtfFeature: public GxfFeature {
     }
     
     /* parse ID=ENSG00000223972.5 */
-    static AttrVal* parseAttr(const string& attrStr) {
+    static void parseAttr(const string& attrStr,
+                          AttrVals& attrVals) {
         size_t i = attrStr.find(' ');
         if (i == string::npos) {
             throw invalid_argument("Invalid GTF attribute \"" + attrStr + "\"");
         }
         string name = attrStr.substr(0,i);
         string value = attrStr.substr(i+1);
-        return new AttrVal(name, stripQuotes(value), isQuoted(value));
+        int idx = attrVals.findIdx(name);
+        if (idx >= 0) {
+            attrVals[idx]->addVal(stripQuotes(value));
+        } else {
+            attrVals.push_back(new AttrVal(name, stripQuotes(value), isQuoted(value)));
+        }
     }
 
     /* parse: gene_id "ENSG00000223972.5"; gene_type "transcribed_unprocessed_pseudogene";  */
@@ -190,19 +211,35 @@ class GtfFeature: public GxfFeature {
         StringVector parts = stringSplit(attrsStr,';');
         // last will be empty, since `;' is a terminator
         for (size_t i = 0; i < parts.size()-1; i++) {
-            attrVals.push_back(parseAttr(stringTrim(parts[i])));
+            parseAttr(stringTrim(parts[i]),  attrVals);
         }
         return attrVals;
     }
 
     /* format an attribute */
-    string formatAttr(const AttrVal* attrVal) const {
+    string formatAttr(const string& name,
+                      const string& val,
+                      bool isQuoted) const {
         // n.b. this is not general, doesn't handle embedded quotes
-        string strAttr = attrVal->fName + " ";
-        if (attrVal->fQuoted) {
-            strAttr += "\"" + attrVal->fVal + "\"";
-        } else {
-            strAttr += attrVal->fVal;
+        string strAttr = name + " ";
+        if (isQuoted) {
+            strAttr += "\"";
+        }
+        strAttr += val;
+        if (isQuoted) {
+            strAttr += "\"";
+        }
+        return strAttr;
+    }
+
+    /* format an attribute and values */
+    string formatAttr(const AttrVal* attrVal) const {
+        string strAttr;
+        for (int i = 0; i < attrVal->getVals().size(); i++) {
+            if (i > 0) {
+                strAttr += " ";  // same formatting as GENCODE
+            }
+            strAttr += formatAttr(attrVal->getName(), attrVal->getVals()[i], attrVal->isQuoted()) +  ";";
         }
         return strAttr;
     }
@@ -210,11 +247,11 @@ class GtfFeature: public GxfFeature {
     /* format attribute */
     string formatAttrs() const {
         string strAttrs;
-        for (size_t i = 0; i < fAttrs.size(); i++) {
+        for (int i = 0; i < fAttrs.size(); i++) {
             if (i > 0) {
                 strAttrs += " ";  // same formatting as GENCODE
             }
-            strAttrs += formatAttr(fAttrs[i]) + ";";
+            strAttrs += formatAttr(fAttrs[i]);
         }
         return strAttrs;
     }

@@ -72,31 +72,71 @@ class GxfLine: public string, public GxfRecord {
     }
 };
 
-/* attribute/value pair */
+/* attribute/value pair.  Maybe multi-valued */
 class AttrVal {
-    public:
+    private:
     const string fName;
-    const string fVal;
+    StringVector fVals;
     const bool fQuoted;
 
-    AttrVal(const string& name, const string& val, bool quoted=false):
-        fName(name), fVal(val), fQuoted(quoted) {
-        if (stringEmpty(fName)) {
+    static void checkName(const string& name) {
+        if (stringEmpty(name)) {
             throw invalid_argument("empty attribute name");
         }
-        if (stringEmpty(fVal)) {
+    }
+    static void checkVal(const string& val) {
+        if (stringEmpty(val)) {
             throw invalid_argument("empty attribute value");
         }
     }
 
+    public:
+    AttrVal(const string& name, const string& val, bool quoted=false):
+        fName(name), fQuoted(quoted) {
+        checkName(name);
+        checkVal(val);
+        fVals.push_back(val);
+    }
+
+    AttrVal(const string& name, const StringVector& vals, bool quoted=false):
+        fName(name), fVals(vals), fQuoted(quoted) {
+        checkName(name);
+        for (int i = 0; i < vals.size(); i++) {
+            checkVal(vals[i]);
+        }
+    }
+
+    /* add a value */
+    void addVal(const string& val) {
+        checkVal(val);
+        fVals.push_back(val);
+    }
+    
     /* copy constructor */
     AttrVal(const AttrVal& src):
-        fName(src.fName), fVal(src.fVal), fQuoted(src.fQuoted) {
+        fName(src.fName), fVals(src.fVals), fQuoted(src.fQuoted) {
+    }
+
+    const string& getName() const {
+        return fName;
+    }
+    const string& getVal() const {
+        return fVals[0];
+    }
+    const StringVector& getVals() const {
+        return fVals;
+    }
+    bool isQuoted() const {
+        return fQuoted;
     }
 };
 
-/* list of attributes, derived class of specific types are create for GFF3 and GTF */
-class AttrVals: public vector<const AttrVal*> {
+/* vector of attribute/value pointers */
+typedef vector<AttrVal*> AttrValVector;
+
+/* list of attributes,  Multi-valued attributes (tag) are stored as multiple 
+ * entries. */
+class AttrVals: public AttrValVector {
     // n.b.  this keeps pointers rather than values due to reallocation if vector changes
     public:
     /* empty constructor */
@@ -122,10 +162,10 @@ class AttrVals: public vector<const AttrVal*> {
         return findIdx(name) >= 0;
     }
     
-    /* find the index of an attribute or -1 if not found */
+    /* find the index of the first attribute with name or -1 if not found */
     int findIdx(const string& name) const {
         for (int i = 0; i < size(); i++) {
-            if ((*this)[i]->fName == name) {
+            if ((*this)[i]->getName() == name) {
                 return i;
             }
         }
@@ -143,6 +183,7 @@ class AttrVals: public vector<const AttrVal*> {
         }
     }
     
+    
     /* get a attribute, error it doesn't exist */
     const AttrVal* get(const string& name) const {
         const AttrVal* attrVal = find(name);
@@ -159,7 +200,7 @@ class AttrVals: public vector<const AttrVal*> {
 
     /* add or replace an attribute */
     void update(const AttrVal& attrVal) {
-        int idx = findIdx(attrVal.fName);
+        int idx = findIdx(attrVal.getName());
         if (idx < 0) {
             add(attrVal);
         } else {
@@ -259,7 +300,7 @@ public:
 
     /* get a attribute value, error it doesn't exist */
     const string& getAttrValue(const string& name) const {
-        return getAttr(name)->fVal;
+        return getAttr(name)->getVal();
     }
 
     /* get a attribute value, default it doesn't exist */
@@ -269,7 +310,7 @@ public:
         if (attrVal == NULL) {
             return defaultVal;
         } else {
-            return attrVal->fVal;
+            return attrVal->getVal();
         }
     }
 
