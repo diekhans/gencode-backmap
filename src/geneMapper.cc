@@ -17,7 +17,7 @@ static const char* mappingInfoHeaders[] = {
     "srcChrom", "srcStart", "srcEnd", "srcStrand",
     "mappedChrom", "mappedStart", "mappedEnd", "mappedStrand",
     "mappingStatus", "numMappings",
-    "targetStatus", "targetBiotype", NULL
+    "targetStatus", "targetBiotype", "targetSubst", NULL
 };
 
 
@@ -173,10 +173,29 @@ void GeneMapper::updateMappedGeneBounds(FeatureNode* transcriptTree,
     }
 }
 
-#if 0 // FIXME
-/* recursively copy target gene since */
-void GeneMapper::substituteMissingTargetVersion(FeatureNode);
-#endif
+/* should we substitute target version of gene?  */
+bool GeneMapper::shouldSubstituteMissingTarget(FeatureNode* geneTree) const {
+    // requested , and a mis-mapped gene or the right biotype
+    if (not ((fSubstituteMissingTargetVersion.size() > 0)
+             and ((geneTree->fTargetStatus == TARGET_STATUS_NONOVERLAP)
+                  or (geneTree->fTargetStatus == TARGET_STATUS_LOST)))) {
+        return false;
+    }
+    const string& biotype = geneTree->fFeature->getTypeBiotype();
+    return (biotype == "protein_coding")
+        or (biotype == "polymorphic_pseudogene")
+        or (biotype == "antisense")
+        or (biotype == "lincRNA");
+}
+
+/* copy target gene to substitute for this mapping and set attributes  */
+void GeneMapper::substituteMissingTarget(FeatureNode* geneTree) const {
+    assert(not haveMappedTranscripts(geneTree));
+    geneTree->fSubstitutedMissingTarget = geneTree->clone(geneTree->fFeature->getFormat());
+    // Set flag in both trees
+    geneTree->fSubstitutedMissingTarget->setSubstitutedMissingTargetAttrOnFeature(fSubstituteMissingTargetVersion);
+    geneTree->setSubstitutedMissingTargetAttrOnUnmapped(fSubstituteMissingTargetVersion);
+}
 
 /* If there are any mapped transcripts of a gene, add a gene
  * record for the bounds */
@@ -217,19 +236,17 @@ void GeneMapper::buildGeneFeature(FeatureNode* geneTree) const {
         // lost because at least one transcript doesn't overlap the target
         geneTree->fTargetStatus = TARGET_STATUS_NONOVERLAP;
     }
-    if (fSubstituteMissingTarget and
-        ((geneTree->fTargetStatus == TARGET_STATUS_NONOVERLAP)
-         or (geneTree->fTargetStatus == TARGET_STATUS_LOST))) {
-        // FIXME: not implemented
-        // substituteMissingTargetVersion(geneTree);
-    }
 }
 
 /* output GFF3 mapped ##sequence-region if not already written */
 void GeneMapper::outputMappedSeqRegionIfNeed(FeatureNode* geneTree,
                                              ostream& mappedGxfFh) {
+    assert((geneTree->fSubstitutedMissingTarget != NULL) || (geneTree->fMappedFeatures.size() > 0));
     if (geneTree->fFeature->getFormat() == GFF3_FORMAT) {
-        const string& mappedSeqId = geneTree->fMappedFeatures[0]->fSeqid;
+        // count be due to substituted gene
+        const string& mappedSeqId = (geneTree->fSubstitutedMissingTarget != NULL)
+            ? geneTree->fSubstitutedMissingTarget->fFeature->fSeqid
+            : geneTree->fMappedFeatures[0]->fSeqid;
         if (not checkRecordSeqRegionWritten(mappedSeqId)) {
             mappedGxfFh << "##sequence-region " << mappedSeqId << " 1 "
                         << fGenomeTransMap->getTargetSeqSize(mappedSeqId) << endl;
@@ -263,6 +280,17 @@ void GeneMapper::outputUnmapped(FeatureNode* featureNode,
     }
 }
 
+/*
+ * recursive output of a GxF substituted feature tree
+ */
+void GeneMapper::outputSubstituted(FeatureNode* featureNode,
+                                   ostream& mappedGxfFh) const {
+    mappedGxfFh << featureNode->fFeature->toString() << endl;
+    for (int i = 0; i < featureNode->fChildren.size(); i++) {
+        outputSubstituted(featureNode->fChildren[i], mappedGxfFh);
+    }
+}
+
 /* output genes */
 void GeneMapper::outputFeatures(FeatureNode* geneTree,
                                 ostream& mappedGxfFh,
@@ -273,6 +301,10 @@ void GeneMapper::outputFeatures(FeatureNode* geneTree,
     }
     if (haveUnmappedTranscripts(geneTree)) {
         outputUnmapped(geneTree, unmappedGxfFh);
+    }
+    if (geneTree->fSubstitutedMissingTarget != NULL) {
+        outputMappedSeqRegionIfNeed(geneTree, mappedGxfFh);
+        outputSubstituted(geneTree->fSubstitutedMissingTarget, mappedGxfFh);
     }
 }
 
@@ -330,6 +362,7 @@ const string& GeneMapper::getTargetAnnotationBiotype(FeatureNode* featureNode) c
 
 /* output info on one bounding feature */
 void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
+                                   bool substituteMissingTarget,
                                    ostream& mappingInfoFh) const {
     assert(featureNode->fMappedFeatures.size() <= 1);  // only handles bounding features
     mappingInfoFh << featureNode->fFeature->getTypeId() << "\t"
@@ -353,7 +386,9 @@ void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
     mappingInfoFh << remapStatusToStr(featureNode->fRemapStatus) << "\t"
                   << featureNode->fNumMappings << "\t"
                   << targetStatusToStr(featureNode->fTargetStatus) << "\t"
-                  << getTargetAnnotationBiotype(featureNode) << endl;
+                  << getTargetAnnotationBiotype(featureNode) << "\t"
+                  << (substituteMissingTarget ? fSubstituteMissingTargetVersion : emptyString)
+                  << endl;
 }
 
 /*
@@ -361,10 +396,11 @@ void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
  */
 void GeneMapper::outputInfo(FeatureNode* geneNode,
                             ostream& mappingInfoFh) const {
-    outputFeatureInfo(geneNode, mappingInfoFh);
+    bool substituteMissingTarget = geneNode->fSubstitutedMissingTarget != NULL;
+    outputFeatureInfo(geneNode, substituteMissingTarget, mappingInfoFh);
     // transcripts
     for (int i = 0; i < geneNode->fChildren.size(); i++) {
-        outputFeatureInfo(geneNode->fChildren[i], mappingInfoFh);
+        outputFeatureInfo(geneNode->fChildren[i], substituteMissingTarget, mappingInfoFh);
     }
 }
 
@@ -391,6 +427,10 @@ void GeneMapper::processGene(GxfParser *gxfParser,
     geneTree->setRemapStatusAttr();
     geneTree->setNumMappingsAttr();
     geneTree->setTargetStatusAttr();
+    // must be done after forcing status above
+    if (shouldSubstituteMissingTarget(geneTree)) {
+        substituteMissingTarget(geneTree);
+    }
     outputFeatures(geneTree, mappedGxfFh, unmappedGxfFh);
     outputInfo(geneTree, mappingInfoFh);
     delete geneTree;

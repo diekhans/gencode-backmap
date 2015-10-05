@@ -39,24 +39,37 @@ void TargetAnnotations::processRecord(GxfParser *gxfParser,
     }
 }
 
-/* get a target gene or transcript with same base or NULL.
- * special handling for PARs/ */
-GxfFeature* TargetAnnotations::getFeature(const string& id,
-                                          const string& seqIdForParCheck) const {
+
+/* get a target gene or transcript node with same base or NULL.
+ * special handling for PARs. Getting node is used if you need whole tree. */
+FeatureNode* TargetAnnotations::getFeatureNode(const string& id,
+                                           const string& seqIdForParCheck) const {
     string baseId = getBaseId(id);
     IdFeatureMapConstIter it = fIdFeatureMap.find(baseId);
     if (it == fIdFeatureMap.end()) {
         return NULL;
     } else if (it->second.size() == 2) {
         if (it->second[0]->fFeature->fSeqid == seqIdForParCheck) {
-            return it->second[0]->fFeature;
+            return it->second[0];
         } else if (it->second[1]->fFeature->fSeqid == seqIdForParCheck) {
-            return it->second[1]->fFeature;
+            return it->second[1];
         } else {
             throw logic_error("PAR target feature hack confused: " + baseId);
         }
     } else {
-        return it->second[0]->fFeature;
+        return it->second[0];
+    }
+}
+
+/* get a target gene or transcript with same base or NULL.
+ * special handling for PARs/ */
+GxfFeature* TargetAnnotations::getFeature(const string& id,
+                                          const string& seqIdForParCheck) const {
+    FeatureNode* featureNode = getFeatureNode(id, seqIdForParCheck);
+    if (featureNode == NULL) {
+        return NULL;
+    } else {
+        return featureNode->fFeature;
     }
 }
 

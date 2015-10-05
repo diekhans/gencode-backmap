@@ -270,5 +270,7 @@ void FeatureMapper::updateIds(FeatureNode* featureNode,
 void FeatureMapper::forceToUnmapped(FeatureNode* featureNode) {
     featureNode->fMappedFeatures.free();
     featureNode->fUnmappedFeatures.free();
+    featureNode->fAllOutputFeatures.clear();
     featureNode->addUnmapped(featureNode->fFeature->clone());
 }
+

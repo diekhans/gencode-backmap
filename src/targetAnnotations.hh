@@ -51,8 +51,13 @@ class TargetAnnotations {
     /* destructor */
     ~TargetAnnotations();
 
+    /* get a target gene or transcript node with same base or NULL.
+     * special handling for PARs. Getting node is used if you need whole tree. */
+    FeatureNode* getFeatureNode(const string& id,
+                                const string& seqIdForParCheck) const;
+
     /* get a target gene or transcript with same base or NULL.
-     * special handling for PARs/ */
+     * special handling for PARs. */
     GxfFeature* getFeature(const string& id,
                            const string& seqIdForParCheck) const;
 

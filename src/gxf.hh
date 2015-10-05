@@ -353,6 +353,10 @@ GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
                               int start, int end, const string& score, const string& strand,
                               const string& phase, const AttrVals& attrs);
 
+/* clone a feature, perhaps changing format  */
+GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                              const GxfFeature* srcFeature);
+
 /* vector of feature objects, doesn't own features */
 class GxfFeatureVector: public vector<GxfFeature*> {
     public:

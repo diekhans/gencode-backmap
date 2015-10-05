@@ -63,6 +63,26 @@ void FeatureNode::setTargetStatusAttr() {
     }
 }
 
+/* recursively set the target status attribute on fFeature node. */
+void FeatureNode::setSubstitutedMissingTargetAttrOnFeature(const string& targetVersion) {
+    AttrVal targetSubstitutedAttr(REMAP_SUBSTITUTED_MISSING_TARGET_ATTR, targetVersion);
+    fFeature->getAttrs().add(targetSubstitutedAttr);
+    for (int i = 0; i < fChildren.size(); i++) {
+        fChildren[i]->setSubstitutedMissingTargetAttrOnFeature(targetVersion);
+    }
+}
+
+/* recursively set the target status attribute on unmapped node. */
+void FeatureNode::setSubstitutedMissingTargetAttrOnUnmapped(const string& targetVersion) {
+    AttrVal targetSubstitutedAttr(REMAP_SUBSTITUTED_MISSING_TARGET_ATTR, targetVersion);
+    for (int i = 0; i < fUnmappedFeatures.size(); i++) {
+        fUnmappedFeatures[i]->getAttrs().add(targetSubstitutedAttr);
+    }
+    for (int i = 0; i < fChildren.size(); i++) {
+        fChildren[i]->setSubstitutedMissingTargetAttrOnUnmapped(targetVersion);
+    }
+}
+
 /* depth-first output */
 void FeatureNode::write(ostream& fh) const {
     fh << fFeature->toString() << endl;
@@ -215,6 +235,14 @@ RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
     throw logic_error("gene RemapStatus logic error");
 }
 
+/* clone tree, possible changing format */
+FeatureNode* FeatureNode::clone(GxfFormat gxfFormat) const {
+    FeatureNode *newNode = new FeatureNode(gxfFeatureFactory(gxfFormat, fFeature));
+    for (int i = 0; i < fChildren.size(); i++) {
+        newNode->fChildren.push_back(fChildren[i]->clone(gxfFormat));
+    }
+    return newNode;
+}
 
 /* print node for debugging */
 void FeatureNode::dumpNode(ostream& fh) const {
@@ -301,3 +329,4 @@ FeatureNode* GeneTree::geneTreeFactory(GxfParser *gxfParser,
                                        GxfFeature* geneFeature) {
     return loadGene(gxfParser, geneFeature);
 }
+

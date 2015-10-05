@@ -8,6 +8,8 @@
 #include "gxf.hh"
 #include "remapStatus.hh"
 
+// FIXME: add the substituted target stuff caused this to step into hacky
+
 /* Remap status attribute name */
 extern const string REMAP_STATUS_ATTR;
 
@@ -23,7 +25,8 @@ extern const string REMAP_NUM_MAPPINGS_ATTR;
 /* Attribute name for target of mapping */
 extern const string REMAP_TARGET_STATUS_ATTR;
 
-/* Attribute indicating target gene was substituted due to   */
+/* Attribute indicating target gene was substituted due to not being
+* able to map gene. Value version   */
 extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
 
 /**
@@ -40,6 +43,7 @@ class FeatureNode {
     GxfFeatureVector fMappedFeatures;
     GxfFeatureVector fUnmappedFeatures;
     GxfFeatureVector fAllOutputFeatures;   // use for debugging, as it tracks order added.
+    FeatureNode* fSubstitutedMissingTarget;
 
     bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
     bool allChildWithRemapStatus(unsigned remapStatusSet) const;
@@ -50,7 +54,8 @@ class FeatureNode {
         fParent(NULL),
         fRemapStatus(REMAP_STATUS_NONE),
         fTargetStatus(TARGET_STATUS_NA),
-        fNumMappings(0) {
+        fNumMappings(0),
+        fSubstitutedMissingTarget(NULL) {
     }
 
     ~FeatureNode() {
@@ -64,6 +69,7 @@ class FeatureNode {
         for (size_t i = 0; i < fChildren.size(); i++) {
             delete fChildren[i];
         }
+        delete fSubstitutedMissingTarget;
     }
 
     /* recursively get a list features matching the specified filter */
@@ -121,7 +127,16 @@ class FeatureNode {
     }
     
     /* recursively set the target status attribute */
-    void setTargetStatusAttr();;
+    void setTargetStatusAttr();
+
+    /* recursively set the target status attribute on fFeature node. */
+    void setSubstitutedMissingTargetAttrOnFeature(const string& targetVersion);
+
+    /* recursively set the target status attribute on unmapped nodes. */
+    void setSubstitutedMissingTargetAttrOnUnmapped(const string& targetVersion);
+
+    /* clone tree, possible changing format */
+    FeatureNode* clone(GxfFormat gxfFormat) const;
 
     /* print node for debugging */
     void dumpNode(ostream& fh) const;

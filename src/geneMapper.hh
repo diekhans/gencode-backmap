@@ -17,7 +17,7 @@ class GeneMapper {
     private:
     const TransMap* fGenomeTransMap;  // genomic mapping
     const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
-    bool fSubstituteMissingTarget;  // pass through targets when gene new gene doesn't map
+    const string fSubstituteMissingTargetVersion;  // pass through targets when gene new gene doesn't map
 
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
     typedef pair<string, bool> SeqIdMapPair;
@@ -55,6 +55,8 @@ class GeneMapper {
     void updateMappedGeneBounds(FeatureNode* transcriptTree,
                                 string& seqid, string& strand,
                                 int& start, int& end) const;
+    bool shouldSubstituteMissingTarget(FeatureNode* geneTree) const;
+    void substituteMissingTarget(FeatureNode* geneTree) const;
     void buildMappedGeneFeature(FeatureNode* geneTree,
                                 bool srcSeqInMapping) const;
     void buildUnmappedGeneFeature(FeatureNode* geneTree,
@@ -66,6 +68,8 @@ class GeneMapper {
                       ostream& mappedGxfFh) const;
     void outputUnmapped(FeatureNode* featureNode,
                         ostream& unmappedGxfFh) const;
+    void outputSubstituted(FeatureNode* featureNode,
+                           ostream& mappedGxfFh) const;
     void outputFeatures(FeatureNode* geneNode,
                         ostream& mappedGxfFh,
                         ostream& unmappedGxfFh);
@@ -74,6 +78,7 @@ class GeneMapper {
     TargetStatus getTargetAnnotationStatus(FeatureNode* featureNode) const;
     const string& getTargetAnnotationBiotype(FeatureNode* featureNode) const;
     void outputFeatureInfo(FeatureNode* featureNode,
+                           bool substituteMissingTarget,
                            ostream& mappingInfoFh) const;
     void outputInfo(FeatureNode* geneNode,
                     ostream& mappingInfoFh) const;
@@ -93,10 +98,10 @@ class GeneMapper {
     /* Constructor */
     GeneMapper(const TransMap* genomeTransMap,
                const TargetAnnotations* targetAnnotations,
-               bool substituteMissingTarget):
+               const string& substituteMissingTargetVersion):
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
-        fSubstituteMissingTarget(substituteMissingTarget) {
+        fSubstituteMissingTargetVersion(substituteMissingTargetVersion) {
     }
 
     /* Map a GFF3/GTF */

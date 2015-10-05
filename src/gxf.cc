@@ -304,6 +304,17 @@ GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
     }
 }
 
+/* clone a feature, perhaps changing format  */
+GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
+                              const GxfFeature* srcFeature) {
+    if (gxfFormat == GFF3_FORMAT) {
+        return new Gff3Feature(srcFeature->fSeqid, srcFeature->fSource, srcFeature->fType, srcFeature->fStart, srcFeature->fEnd, srcFeature->fScore, srcFeature->fStrand, srcFeature->fPhase, srcFeature->fAttrs);
+    } else {
+        return new GtfFeature(srcFeature->fSeqid, srcFeature->fSource, srcFeature->fType, srcFeature->fStart, srcFeature->fEnd, srcFeature->fScore, srcFeature->fStrand, srcFeature->fPhase, srcFeature->fAttrs);
+    }
+}
+
+
 /* split a feature line of GFF3 or GTF */
 StringVector GxfParser::splitFeatureLine(const string& line) const {
     StringVector columns = stringSplit(line, '\t');
