@@ -173,25 +173,34 @@ void GeneMapper::updateMappedGeneBounds(FeatureNode* transcriptTree,
     }
 }
 
+
 /* should we substitute target version of gene?  */
 bool GeneMapper::shouldSubstituteMissingTarget(FeatureNode* geneTree) const {
-    // requested , and a mis-mapped gene or the right biotype
+    // requested and a mis-mapped gene or the right biotype to a mapped sequence
     if (not ((fSubstituteMissingTargetVersion.size() > 0)
              and ((geneTree->fTargetStatus == TARGET_STATUS_NONOVERLAP)
                   or (geneTree->fTargetStatus == TARGET_STATUS_LOST)))) {
-        return false;
+        return false; // not substituting or not right target status
     }
+    const FeatureNode* targetGene = getTargetAnnotationNode(geneTree);
+    if (not isSrcSeqInMapping(targetGene->fFeature)) {
+        return false;  // sequence not being mapped (moved chroms)
+    }
+
+    assert(targetGene != NULL);
     const string& biotype = geneTree->fFeature->getTypeBiotype();
-    return (biotype == "protein_coding")
-        or (biotype == "polymorphic_pseudogene")
-        or (biotype == "antisense")
-        or (biotype == "lincRNA");
+    return ((biotype == "protein_coding")
+            or (biotype == "polymorphic_pseudogene")
+            or (biotype == "antisense")
+            or (biotype == "lincRNA"))
+        and (targetGene->fFeature->getTypeBiotype() == biotype);
 }
 
 /* copy target gene to substitute for this mapping and set attributes  */
 void GeneMapper::substituteMissingTarget(FeatureNode* geneTree) const {
     assert(not haveMappedTranscripts(geneTree));
-    geneTree->fSubstitutedMissingTarget = geneTree->clone(geneTree->fFeature->getFormat());
+    const FeatureNode* targetGene = getTargetAnnotationNode(geneTree);
+    geneTree->fSubstitutedMissingTarget = targetGene->clone(geneTree->fFeature->getFormat());
     // Set flag in both trees
     geneTree->fSubstitutedMissingTarget->setSubstitutedMissingTargetAttrOnFeature(fSubstituteMissingTargetVersion);
     geneTree->setSubstitutedMissingTargetAttrOnUnmapped(fSubstituteMissingTargetVersion);
@@ -326,6 +335,16 @@ const GxfFeature* GeneMapper::getTargetAnnotation(FeatureNode* featureNode) cons
     } else {
         return fTargetAnnotations->getFeature(featureNode->fFeature->getTypeId(),
                                               featureNode->fFeature->fSeqid);
+    }
+}
+
+/* get target annotation node for a feature, if available */
+const FeatureNode* GeneMapper::getTargetAnnotationNode(FeatureNode* featureNode) const {
+    if (fTargetAnnotations == NULL) {
+        return NULL;
+    } else {
+        return fTargetAnnotations->getFeatureNode(featureNode->fFeature->getTypeId(),
+                                                  featureNode->fFeature->fSeqid);
     }
 }
 

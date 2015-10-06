@@ -25,8 +25,8 @@ gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 
 gtfUcscTest: mkdirs ${testGencodeLiftOverChains}
 	${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
-	gtfToGenePred output/$@.mapped.gtf /dev/null
-	gtfToGenePred output/$@.unmapped.gtf /dev/null
+	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
+	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
 	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
 	diff -u expected/$@.unmapped.gtf output/$@.unmapped.gtf
 	diff -u expected/$@.map-info output/$@.map-info
@@ -46,8 +46,8 @@ gff3NcbiTest: mkdirs
 
 gtfNcbiTest: mkdirs
 	${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
-	gtfToGenePred output/$@.mapped.gtf /dev/null
-	gtfToGenePred output/$@.unmapped.gtf /dev/null
+	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
+	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
 	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
 	diff -u expected/$@.unmapped.gtf output/$@.unmapped.gtf
 	diff -u expected/$@.map-info output/$@.map-info

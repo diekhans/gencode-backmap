@@ -111,8 +111,8 @@ ENST00000447472.4	PLCXD1-008	transcript	protein_coding	HAVANA	chrY	283479	291629
 ENST00000448477.4	PLCXD1-004	transcript	protein_coding	HAVANA	chrY	283734	290757	+		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
 ENSG00000270872.2	SRGAP2D	gene	unprocessed_pseudogene	HAVANA	chr1	143975087	144068350	+	JH636052.4	790501	883763	+	full_contig	1	overlap	protein_coding	
 ENST00000605551.2	SRGAP2D-001	transcript	unprocessed_pseudogene	HAVANA	chr1	143975087	144068350	+	JH636052.4	790500	883763	+	full_contig	1	overlap	protein_coding	
-ENSG00000171943.10	SRGAP2C	gene	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	pseudogene	V19
-ENST00000367123.6	SRGAP2C-001	transcript	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	unprocessed_pseudogene	V19
+ENSG00000171943.10	SRGAP2C	gene	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	pseudogene	
+ENST00000367123.6	SRGAP2C-001	transcript	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	unprocessed_pseudogene	
 ENSG00000272877.1	DDX11L8	gene	unprocessed_pseudogene	HAVANA	GL877875.1	2310	3501	+	GL877875.1	2311	3501	+	full_contig	1	overlap	pseudogene	
 ENST00000572276.1	DDX11L8-001	transcript	unprocessed_pseudogene	HAVANA	GL877875.1	2310	3501	+	GL877875.1	2310	3501	+	full_contig	1	overlap	unprocessed_pseudogene	
 ENSG00000265808.3	SEC22B	gene	protein_coding	HAVANA	chr1	120150898	120176515	-	JH636053.3	222473	248089	-	full_contig	3	overlap	protein_coding	

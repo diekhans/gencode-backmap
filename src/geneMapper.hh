@@ -75,6 +75,7 @@ class GeneMapper {
                         ostream& unmappedGxfFh);
     void outputInfoHeader(ostream& mappingInfoFh) const;
     const GxfFeature* getTargetAnnotation(FeatureNode* featureNode) const;
+    const FeatureNode* getTargetAnnotationNode(FeatureNode* featureNode) const;
     TargetStatus getTargetAnnotationStatus(FeatureNode* featureNode) const;
     const string& getTargetAnnotationBiotype(FeatureNode* featureNode) const;
     void outputFeatureInfo(FeatureNode* featureNode,

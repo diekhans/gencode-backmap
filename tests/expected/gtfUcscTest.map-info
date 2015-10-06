@@ -111,13 +111,13 @@ ENSTR0000447472.4	PLCXD1-008	transcript	protein_coding	HAVANA	chrY	283479	291629
 ENSTR0000448477.4	PLCXD1-004	transcript	protein_coding	HAVANA	chrY	283734	290757	+		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
 ENSG00000270872.2	SRGAP2D	gene	unprocessed_pseudogene	HAVANA	chr1	143975087	144068350	+		0	0	.	partial	3	nonOverlap	protein_coding	
 ENST00000605551.2	SRGAP2D-001	transcript	unprocessed_pseudogene	HAVANA	chr1	143975087	144068350	+		0	0	.	partial	3	nonOverlap	protein_coding	
-ENSG00000171943.10	SRGAP2C	gene	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	pseudogene	V19
-ENST00000367123.6	SRGAP2C-001	transcript	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	unprocessed_pseudogene	V19
+ENSG00000171943.10	SRGAP2C	gene	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	pseudogene	
+ENST00000367123.6	SRGAP2C-001	transcript	protein_coding	HAVANA	chr1	121184810	121392822	+		0	0	.	partial	3	nonOverlap	unprocessed_pseudogene	
 ENSG00000272877.1	DDX11L8	gene	unprocessed_pseudogene	HAVANA	GL877875.1	2310	3501	+		0	0	.	no_seq_map	0	lost	pseudogene	
 ENST00000572276.1	DDX11L8-001	transcript	unprocessed_pseudogene	HAVANA	GL877875.1	2310	3501	+		0	0	.	no_seq_map	0	lost	unprocessed_pseudogene	
-ENSG00000265808.3	SEC22B	gene	protein_coding	HAVANA	chr1	120150898	120176515	-		0	0	.	gene_size_change	2	nonOverlap	protein_coding	V19
-ENST00000578049.3	SEC22B-001	transcript	protein_coding	HAVANA	chr1	120150898	120176515	-		0	0	.	gene_size_change	2	nonOverlap	protein_coding	V19
-ENST00000618538.1	SEC22B-002	transcript	protein_coding	HAVANA	chr1	120157291	120160501	-		0	0	.	gene_size_change	1	new		V19
+ENSG00000265808.3	SEC22B	gene	protein_coding	HAVANA	chr1	120150898	120176515	-		0	0	.	gene_size_change	2	nonOverlap	protein_coding	
+ENST00000578049.3	SEC22B-001	transcript	protein_coding	HAVANA	chr1	120150898	120176515	-		0	0	.	gene_size_change	2	nonOverlap	protein_coding	
+ENST00000618538.1	SEC22B-002	transcript	protein_coding	HAVANA	chr1	120157291	120160501	-		0	0	.	gene_size_change	1	new		
 ENSG00000204174.5	NPY4R	gene	protein_coding	HAVANA	chr10	46461099	46465881	-	chr10	47083535	47088320	+	partial	1	overlap	protein_coding	
 ENST00000395716.3	NPY4R-001	transcript	protein_coding	HAVANA	chr10	46461099	46463755	-	chr10	47085664	47088320	+	partial	1	overlap	protein_coding	
 ENST00000612632.2	NPY4R-202	transcript	protein_coding	ENSEMBL	chr10	46461099	46465881	-	chr10	47083534	47088320	+	partial	1	new		
