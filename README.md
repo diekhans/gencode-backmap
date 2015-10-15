@@ -13,8 +13,8 @@ file.
 
   cd data/
   wget ftp://ftp.ncbi.nlm.nih.gov/pub/murphyte/assm_alignments/GRCh38.p2-GRCh37.p13.gff.gz
-  wget ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.assembly.txt
-  wget ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
+  wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.assembly.txt
+  wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
   cd ..
   ../bin/ncbiAssemblyReportConvert --fromId=refSeqAccn sizes data/GCF_000001405.25.assembly.txt data/GRCh37.p13.sizes
   ../bin/ncbiAssemblyReportConvert --fromId=refSeqAccn sizes data/GCF_000001405.28.assembly.txt data/GRCh38.p2.sizes

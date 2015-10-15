@@ -40,10 +40,10 @@ ENST00000484423.4	PIAS3-008	transcript	retained_intron	HAVANA	chr1	145854542	145
 ENST00000498436.2	PIAS3-007	transcript	retained_intron	HAVANA	chr1	145854610	145859035	-		0	0	.	full_contig	2	nonOverlap	retained_intron	V19
 ENST00000393046.3	PIAS3-006	transcript	protein_coding	HAVANA	chr1	145854746	145859836	-		0	0	.	full_contig	2	nonOverlap	protein_coding	V19
 ENST00000463514.2	PIAS3-005	transcript	protein_coding	HAVANA	chr1	145856761	145859745	-		0	0	.	full_contig	2	nonOverlap	protein_coding	V19
-ENSG00000201699.1	RNU1-59P	gene	snRNA	ENSEMBL	chr1	149162783	149162944	-		0	0	.	full_contig	1	nonOverlap	snRNA	
-ENST00000364829.1	RNU1-59P-201	transcript	snRNA	ENSEMBL	chr1	149162783	149162944	-		0	0	.	full_contig	1	nonOverlap	snRNA	
-ENSG00000242771.1	TRBV5-2	gene	TR_V_pseudogene	HAVANA	chr7	142372640	142372912	+		0	0	.	full_contig	1	nonOverlap	TR_V_pseudogene	
-ENST00000489095.1	TRBV5-2-001	transcript	TR_V_pseudogene	HAVANA	chr7	142372640	142372912	+		0	0	.	full_contig	1	nonOverlap	TR_V_pseudogene	
+ENSG00000201699.1	RNU1-59P	gene	snRNA	ENSEMBL	chr1	149162783	149162944	-		0	0	.	full_contig	1	nonOverlap	snRNA	V19
+ENST00000364829.1	RNU1-59P-201	transcript	snRNA	ENSEMBL	chr1	149162783	149162944	-		0	0	.	full_contig	1	nonOverlap	snRNA	V19
+ENSG00000242771.1	TRBV5-2	gene	TR_V_pseudogene	HAVANA	chr7	142372640	142372912	+		0	0	.	full_contig	1	nonOverlap	TR_V_pseudogene	V19
+ENST00000489095.1	TRBV5-2-001	transcript	TR_V_pseudogene	HAVANA	chr7	142372640	142372912	+		0	0	.	full_contig	1	nonOverlap	TR_V_pseudogene	V19
 ENSG00000229311.1	RP11-475I24.8	gene	lincRNA	HAVANA	chr9	42579414	42586534	-		0	0	.	full_contig	1	nonOverlap	lincRNA	V19
 ENST00000425493.1	RP11-475I24.8-001	transcript	lincRNA	HAVANA	chr9	42579414	42586534	-		0	0	.	full_contig	1	nonOverlap	lincRNA	V19
 ENSG00000167613.14	LAIR1	gene	protein_coding	HAVANA	chr19	54351384	54370558	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
@@ -56,8 +56,8 @@ ENST00000621704.3	POTEH-201	transcript	protein_coding	ENSEMBL	chr22	15690078	157
 ENST00000452800.1	POTEH-002	transcript	nonsense_mediated_decay	HAVANA	chr22	15690246	15721522	+		0	0	.	full_contig	1	nonOverlap	nonsense_mediated_decay	V19
 ENSG00000236666.1	POTEH-AS1	gene	antisense	HAVANA	chr22	15699361	15703403	-		0	0	.	full_contig	1	nonOverlap	antisense	V19
 ENST00000422014.1	POTEH-AS1-001	transcript	antisense	HAVANA	chr22	15699361	15703403	-		0	0	.	full_contig	1	nonOverlap	antisense	V19
-ENSG00000212216.1	RNU6-816P	gene	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	
-ENST00000390914.1	RNU6-816P-201	transcript	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	
+ENSG00000212216.1	RNU6-816P	gene	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	V19
+ENST00000390914.1	RNU6-816P-201	transcript	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	V19
 ENSG00000225255.5	LA16c-83F12.6	gene	lincRNA	HAVANA	chr22	15746630	15778297	+		0	0	.	full_contig	1	nonOverlap	lincRNA	V19
 ENST00000453395.4	LA16c-83F12.6-002	transcript	lincRNA	HAVANA	chr22	15746630	15778297	+		0	0	.	full_contig	1	nonOverlap	lincRNA	V19
 ENST00000438574.1	LA16c-83F12.6-001	transcript	lincRNA	HAVANA	chr22	15765687	15778297	+		0	0	.	full_contig	1	nonOverlap	lincRNA	V19

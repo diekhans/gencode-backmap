@@ -56,8 +56,8 @@ ENST00000621704.3	POTEH-201	transcript	protein_coding	ENSEMBL	chr22	15690078	157
 ENST00000452800.1	POTEH-002	transcript	nonsense_mediated_decay	HAVANA	chr22	15690246	15721522	+		0	0	.	gene_size_change	2	overlap	nonsense_mediated_decay	
 ENSG00000236666.1	POTEH-AS1	gene	antisense	HAVANA	chr22	15699361	15703403	-		0	0	.	partial	1	nonOverlap	antisense	V19
 ENST00000422014.1	POTEH-AS1-001	transcript	antisense	HAVANA	chr22	15699361	15703403	-		0	0	.	partial	1	nonOverlap	antisense	V19
-ENSG00000212216.1	RNU6-816P	gene	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	
-ENST00000390914.1	RNU6-816P-201	transcript	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	
+ENSG00000212216.1	RNU6-816P	gene	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	V19
+ENST00000390914.1	RNU6-816P-201	transcript	snRNA	ENSEMBL	chr22	15701459	15701565	+		0	0	.	full_contig	1	nonOverlap	snRNA	V19
 ENSG00000225255.5	LA16c-83F12.6	gene	lincRNA	HAVANA	chr22	15746630	15778297	+		0	0	.	partial	1	nonOverlap	lincRNA	V19
 ENST00000453395.4	LA16c-83F12.6-002	transcript	lincRNA	HAVANA	chr22	15746630	15778297	+		0	0	.	partial	1	nonOverlap	lincRNA	V19
 ENST00000438574.1	LA16c-83F12.6-001	transcript	lincRNA	HAVANA	chr22	15765687	15778297	+		0	0	.	partial	1	nonOverlap	lincRNA	V19

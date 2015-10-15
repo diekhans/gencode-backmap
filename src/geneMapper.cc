@@ -188,12 +188,7 @@ bool GeneMapper::shouldSubstituteMissingTarget(FeatureNode* geneTree) const {
     }
 
     assert(targetGene != NULL);
-    const string& biotype = geneTree->fFeature->getTypeBiotype();
-    return ((biotype == "protein_coding")
-            or (biotype == "polymorphic_pseudogene")
-            or (biotype == "antisense")
-            or (biotype == "lincRNA"))
-        and (targetGene->fFeature->getTypeBiotype() == biotype);
+    return (targetGene->fFeature->getTypeBiotype() == geneTree->fFeature->getTypeBiotype());
 }
 
 /* copy target gene to substitute for this mapping and set attributes  */
