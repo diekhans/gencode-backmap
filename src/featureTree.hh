@@ -47,6 +47,7 @@ class FeatureNode {
 
     bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
     bool allChildWithRemapStatus(unsigned remapStatusSet) const;
+    void assignTargetStatusAttr();
 
     public:
     FeatureNode(GxfFeature* feature):

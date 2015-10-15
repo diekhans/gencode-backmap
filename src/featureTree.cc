@@ -50,7 +50,7 @@ void FeatureNode::setRemapStatusAttr() {
 }
 
 /* recursively set the target status attribute */
-void FeatureNode::setTargetStatusAttr() {
+void FeatureNode::assignTargetStatusAttr() {
     AttrVal targetStatusAttr(REMAP_TARGET_STATUS_ATTR, targetStatusToStr(fTargetStatus));
     for (int i = 0; i < fMappedFeatures.size(); i++) {
         fMappedFeatures[i]->getAttrs().add(targetStatusAttr);
@@ -58,8 +58,15 @@ void FeatureNode::setTargetStatusAttr() {
     for (int i = 0; i < fUnmappedFeatures.size(); i++) {
         fUnmappedFeatures[i]->getAttrs().add(targetStatusAttr);
     }
-    for (int i = 0; i < fChildren.size(); i++) {
-        fChildren[i]->setTargetStatusAttr();
+}
+
+/* recursively set the target status attribute */
+void FeatureNode::setTargetStatusAttr() {
+    if ((fFeature->fType == GxfFeature::GENE) or (fFeature->fType == GxfFeature::TRANSCRIPT)) {
+        assignTargetStatusAttr();
+        for (int i = 0; i < fChildren.size(); i++) {
+            fChildren[i]->setTargetStatusAttr();
+        }
     }
 }
 

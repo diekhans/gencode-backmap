@@ -429,12 +429,18 @@ void GeneMapper::processGene(GxfParser *gxfParser,
                              ostream* transcriptPslFh) {
     FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
     processTranscripts(geneTree, transcriptPslFh);
-    // handle gene level conflicted */
+    // handle gene level issues
     if (hasMixedMappedSeqStrand(geneTree)) {
         forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_CONFLICT);
     } else if (hasExcessiveSizeChange(geneTree)) {
         forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
     }
+#if 0
+    //geneTree->dump(cerr);
+    if (hasTargetStatusNonOverlap(geneTree)) {
+        forceToUnmappedDueToTargetStatus(geneTree, TARGET_STATUS_NONOVERLAP);
+    }
+#endif
     buildGeneFeature(geneTree);
     geneTree->setBoundingFeatureRemapStatus();
     geneTree->setRemapStatusAttr();
