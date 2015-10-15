@@ -2,7 +2,7 @@
  * Tree structure use to store genes
  */
 #include "featureTree.hh"
-#include <ostream>
+#include <iostream>
 #include <algorithm> 
 
 /* Remap status attribute name */
@@ -232,6 +232,13 @@ RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
     if (allChildWithRemapStatus(REMAP_STATUS_FULL_CONTIG|REMAP_STATUS_FULL_FRAGMENT|REMAP_STATUS_PARTIAL|REMAP_STATUS_DELETED)) {
         return REMAP_STATUS_PARTIAL;
     }
+    if (allChildWithRemapStatus(REMAP_STATUS_GENE_CONFLICT)) {
+        return REMAP_STATUS_GENE_CONFLICT;
+    }
+    if (allChildWithRemapStatus(REMAP_STATUS_GENE_SIZE_CHANGE)) {
+        return REMAP_STATUS_GENE_SIZE_CHANGE;
+    }
+    dump(cerr);
     throw logic_error("gene RemapStatus logic error");
 }
 
