@@ -58,7 +58,8 @@ mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTrans
 	mapInfoSumTransBiocatTest mapInfoSumTransMatrixGenomicSizeTest \
 	mapInfoSumTransBiocatMatrixMapStatusTest \
 	mapInfoSumTransBiocatMatRowFreqMapStatusTest \
-	mapInfoSumTransBiocatMatColFreqMapStatusTest
+	mapInfoSumTransBiocatMatColFreqMapStatusTest \
+	mapInfoSumSubTargetTest
 
 mapInfoSumGeneAllTest: mkdirs
 	../bin/mapInfoSummary --mappingStatusGroup gene expected/gff3UcscTest.map-info output/$@.sum
@@ -94,6 +95,10 @@ mapInfoSumTransBiocatMatRowFreqMapStatusTest: mkdirs
 
 mapInfoSumTransBiocatMatColFreqMapStatusTest: mkdirs
 	../bin/mapInfoSummary --columnFrequencies --matrixColumnKey=mappingStatus --biotypeGroup=biocat transcript expected/gff3UcscTest.map-info output/$@.sum
+	diff -u expected/$@.sum output/$@.sum
+
+mapInfoSumSubTargetTest: mkdirs
+	../bin/mapInfoSummary --targetStatusGroup --substituteTargetGroup transcript expected/gff3UcscTest.map-info output/$@.sum
 	diff -u expected/$@.sum output/$@.sum
 
 ucscLiftEditTest: mkdirs

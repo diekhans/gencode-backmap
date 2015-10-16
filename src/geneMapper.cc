@@ -108,6 +108,11 @@ bool GeneMapper::hasMixedMappedSeqStrand(FeatureNode* geneTree) const {
 
 /* check if gene contains transcripts of a gene have a target status of nonoverlap */
 bool GeneMapper::hasTargetStatusNonOverlap(FeatureNode* geneTree) const {
+    if (geneTree->fTargetStatus == TARGET_STATUS_NONOVERLAP) {
+        // handles weird case of ENSG00000239810 were gene doesn't overlap
+        // however the only transcript is `new'.
+        return true;
+    }
     for (int i = 0; i < geneTree->fChildren.size(); i++) {
         if (geneTree->fChildren[i]->fTargetStatus == TARGET_STATUS_NONOVERLAP) {
             return true;
@@ -183,11 +188,15 @@ bool GeneMapper::shouldSubstituteMissingTarget(FeatureNode* geneTree) const {
         return false; // not substituting or not right target status
     }
     const FeatureNode* targetGene = getTargetAnnotationNode(geneTree);
+    if (targetGene == NULL) {
+        // this should not have happened, but it does because of a transcript id
+        // ENST00000426406 incorrectly being moved to a different gene
+        return false;
+    }
     if (not isSrcSeqInMapping(targetGene->fFeature)) {
         return false;  // sequence not being mapped (moved chroms)
     }
 
-    assert(targetGene != NULL);
     return (targetGene->fFeature->getTypeBiotype() == geneTree->fFeature->getTypeBiotype());
 }
 
@@ -214,7 +223,7 @@ void GeneMapper::buildMappedGeneFeature(FeatureNode* geneTree,
             updateMappedGeneBounds(transcriptTree, seqid, strand, start, end);
         }
     }
-    FeatureMapper::mapBounding(geneTree, seqid, start, end, strand);
+    FeatureMapper::mapBounding(geneTree, seqid, start-1, end, strand);  // takes zero bases
 }
 
 /* If there are any unmapped transcripts of a gene, add a gene
@@ -435,17 +444,17 @@ void GeneMapper::processGene(GxfParser *gxfParser,
     } else if (hasExcessiveSizeChange(geneTree)) {
         forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
     }
-#if 0
-    //geneTree->dump(cerr);
+    buildGeneFeature(geneTree);
     if (hasTargetStatusNonOverlap(geneTree)) {
+        // must come after building gene do to weird case of ENSG00000239810
+        // were gene doesn't overlap however the only transcript is `new'.
         forceToUnmappedDueToTargetStatus(geneTree, TARGET_STATUS_NONOVERLAP);
     }
-#endif
-    buildGeneFeature(geneTree);
     geneTree->setBoundingFeatureRemapStatus();
     geneTree->setRemapStatusAttr();
     geneTree->setNumMappingsAttr();
     geneTree->setTargetStatusAttr();
+
     // must be done after forcing status above
     if (shouldSubstituteMissingTarget(geneTree)) {
         substituteMissingTarget(geneTree);

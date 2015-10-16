@@ -260,10 +260,12 @@ FeatureNode* FeatureNode::clone(GxfFormat gxfFormat) const {
 
 /* print node for debugging */
 void FeatureNode::dumpNode(ostream& fh) const {
-    const string status = remapStatusToStr(fRemapStatus);
     fh << "src" << "\t" << ((fFeature == NULL) ? "NULL" : fFeature->toString()) << endl;
     for (int i = 0; i < fAllOutputFeatures.size(); i++) {
-        fh << (fMappedFeatures.contains(fAllOutputFeatures[i]) ? "mapped" : "unmapped") << "\t" << status << "\t" << fAllOutputFeatures[i]->toString() << endl;
+        fh << (fMappedFeatures.contains(fAllOutputFeatures[i]) ? "mapped" : "unmapped") << "\t"
+           << remapStatusToStr(fRemapStatus) << "\t"
+           << targetStatusToStr(fTargetStatus) << "\t"
+           << fAllOutputFeatures[i]->toString() << endl;
     }
 }
 

@@ -29,6 +29,8 @@ def parseArgs():
                        help="group counts single vs multiple mappers")
     parser.add_argument('--genomicSizeGroup', action="store_true", default=False,
                        help="group binning of gene or transcript genomic length")
+    parser.add_argument('--substituteTargetGroup', action="store_true", default=False,
+                       help="group by substituting target")
     parser.add_argument('--biotypeFilter', dest="biotypeFilters", action="append",
                         help="filter my this biotype, maybe repeated")
     parser.add_argument('--matrixColumnKey', dest="matrixColumnKey",
@@ -54,7 +56,7 @@ def orderOfMagniudeBin(row):
     return magBin
 
 class MapInfoSummary(object):
-    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup, genomicSizeGroup,
+    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup, genomicSizeGroup, substituteTargetGroup,
                  biotypeFilters, columnKeyColumn):
         if biotypeFilters != None:
             self.filterFunc = lambda row: (row.type == whatAnnotation) and (row.biotype in biotypeFilters)
@@ -83,6 +85,9 @@ class MapInfoSummary(object):
         if multimapGroup:
             rowKeyHeader.append("multimap")
             rowKeyFuncs.append(lambda row: "yes" if (row.numMappings > 1) else "no")
+        if substituteTargetGroup:
+            rowKeyHeader.append("targetSubst")
+            rowKeyFuncs.append(lambda row: "yes" if (row.targetSubst != "") else "no")
         # calls all functions in list to generate key
         self.getRowKeys = lambda row: tuple([fn(row) for fn in rowKeyFuncs])
         self.getColumnKey = None
@@ -110,6 +115,7 @@ args = parseArgs()
 summary = MapInfoSummary(args.what, args.biotypeGroup, args.sourceGroup,
                          args.mappingStatusGroup, args.targetStatusGroup,
                          args.multimapGroup, args.genomicSizeGroup,
+                         args.substituteTargetGroup,
                          args.biotypeFilters, args.matrixColumnKey)
 summary.count(args.mapInfoTsv)
 with open(args.summaryOut, "w") as outFh:
