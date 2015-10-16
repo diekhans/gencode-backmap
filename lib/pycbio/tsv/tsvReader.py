@@ -134,7 +134,7 @@ class TsvReader(object):
         if inFh != None:
             self.inFh = inFh
         else:
-            self.inFh = open(fileName, "r")
+            self.inFh = fileOps.opengz(fileName, "r")
         try:
             self.reader = csv.reader(self.inFh, dialect=dialect)
             if columns:
