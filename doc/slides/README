@@ -1,0 +1,5 @@
+
+Slides for talk on ini
+
+tawk '$3=="gene"&&$16=="lost"{print $2,$4}' results/pri/liftover.pri.map-info.tsv >liftover.pri.lost
+tawk '$3=="gene"&&$16=="nonOverlap"{print $2,$4}' results/pri/liftover.pri.map-info.tsv >liftover.pri.nonOverlap
