@@ -245,6 +245,9 @@ RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
     if (allChildWithRemapStatus(REMAP_STATUS_GENE_SIZE_CHANGE)) {
         return REMAP_STATUS_GENE_SIZE_CHANGE;
     }
+    if (allChildWithRemapStatus(REMAP_STATUS_AUTOMATIC_NON_CODING)) {
+        return REMAP_STATUS_AUTOMATIC_NON_CODING;
+    }
     dump(cerr);
     throw logic_error("gene RemapStatus logic error");
 }
