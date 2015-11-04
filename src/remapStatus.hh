@@ -17,6 +17,7 @@ typedef enum {
     REMAP_STATUS_NO_SEQ_MAP        = 0x10,  // no mapping alignments for sequence
     REMAP_STATUS_GENE_CONFLICT     = 0x20,  // transcripts disagree on sequence/strand
     REMAP_STATUS_GENE_SIZE_CHANGE  = 0x40,  // change in size of gene has exceeded threshold
+    REMAP_STATUS_AUTOMATIC_NON_CODING = 0x80   // small, automatic non-coding RNA
 } RemapStatus;
 
 /* Convert a remap status to a string  */

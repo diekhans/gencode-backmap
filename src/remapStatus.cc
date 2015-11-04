@@ -10,6 +10,7 @@ const string REMAP_STATUS_DELETED_STR = "deleted";
 const string REMAP_STATUS_NO_SEQ_MAP_STR = "no_seq_map";
 const string REMAP_STATUS_GENE_CONFLICT_STR = "gene_conflict";
 const string REMAP_STATUS_GENE_SIZE_CHANGE_STR = "gene_size_change";
+const string REMAP_STATUS_AUTOMATIC_NON_CODING_STR = "automatic_ncrna";
 
 /* convert a remap status to a string  */
 const string& remapStatusToStr(RemapStatus remapStatus) {
@@ -30,6 +31,8 @@ const string& remapStatusToStr(RemapStatus remapStatus) {
             return REMAP_STATUS_GENE_CONFLICT_STR;
         case REMAP_STATUS_GENE_SIZE_CHANGE:
             return REMAP_STATUS_GENE_SIZE_CHANGE_STR;
+        case REMAP_STATUS_AUTOMATIC_NON_CODING:
+            return REMAP_STATUS_AUTOMATIC_NON_CODING_STR;
     }
     return emptyString;
 }

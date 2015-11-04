@@ -18,6 +18,7 @@ class GeneMapper {
     const TransMap* fGenomeTransMap;  // genomic mapping
     const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
     const string fSubstituteMissingTargetVersion;  // pass through targets when gene new gene doesn't map
+    bool fSkipAutomaticNonCoding;  // don't map small non-coding
 
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
     typedef pair<string, bool> SeqIdMapPair;
@@ -33,7 +34,8 @@ class GeneMapper {
             return true;
         }
     }
-    
+
+    bool isAutomaticSmallNonCodingGene(FeatureNode* geneTree);
     bool isSrcSeqInMapping(const GxfFeature* feature) const;
     bool isSrcSeqInMapping(FeatureNode* featureNode) const;
     void processTranscript(FeatureNode* transcriptTree,
@@ -99,10 +101,12 @@ class GeneMapper {
     /* Constructor */
     GeneMapper(const TransMap* genomeTransMap,
                const TargetAnnotations* targetAnnotations,
-               const string& substituteMissingTargetVersion):
+               const string& substituteMissingTargetVersion,
+               bool skipAutomaticNonCoding):
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
-        fSubstituteMissingTargetVersion(substituteMissingTargetVersion) {
+        fSubstituteMissingTargetVersion(substituteMissingTargetVersion),
+        fSkipAutomaticNonCoding(skipAutomaticNonCoding) {
     }
 
     /* Map a GFF3/GTF */

@@ -20,7 +20,25 @@ static const char* mappingInfoHeaders[] = {
     "targetStatus", "targetBiotype", "targetSubst", NULL
 };
 
+/* ensembl non-coding gene biotypes to skip */
+static const char* automaticNonCodingGeneBiotypes[] = {
+    "miRNA", "misc_RNA", "Mt_rRNA", "Mt_tRNA", "ribozyme", "rRNA", "scaRNA",
+    "snoRNA", "snRNA", "sRNA", NULL
+};
 
+/* is ensembl small non-coding gene */
+bool GeneMapper::isAutomaticSmallNonCodingGene(FeatureNode* geneTree) {
+    if (geneTree->fFeature->fSource != "ENSEMBL") {
+        return false;
+    }
+    const string& bioType = geneTree->fFeature->getTypeBiotype();
+    for (int i = 0; automaticNonCodingGeneBiotypes[i] != NULL; i++) {
+        if (bioType == automaticNonCodingGeneBiotypes[i]) {
+            return true;
+        }
+    }
+    return false;
+}
 /* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(const GxfFeature* feature) const {
     return fGenomeTransMap->haveQuerySeq(feature->fSeqid);
@@ -439,6 +457,10 @@ void GeneMapper::processGene(GxfParser *gxfParser,
     FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
     processTranscripts(geneTree, transcriptPslFh);
     // handle gene level issues
+    if (fSkipAutomaticNonCoding and 
+        isAutomaticSmallNonCodingGene(geneTree)) {
+        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_AUTOMATIC_NON_CODING);
+    }
     if (hasMixedMappedSeqStrand(geneTree)) {
         forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_CONFLICT);
     } else if (hasExcessiveSizeChange(geneTree)) {
