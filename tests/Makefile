@@ -1,7 +1,5 @@
 ROOT = ..
-
-BINDIR = ${ROOT}/bin
-PROG = ${BINDIR}/gencode-backmap
+include ${ROOT}/config.mk
 
 targetGxfArg = --targetGxf=data/gencode.v19.annotations.gtf
 targetSubstArg = --substituteMissingTargets=V19
@@ -16,7 +14,7 @@ all: test
 test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest mapInfoSumTests ucscLiftEditTest
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
-	${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
 	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
@@ -24,7 +22,7 @@ gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	diff -u expected/$@.map-info output/$@.map-info
 
 gtfUcscTest: mkdirs ${testGencodeLiftOverChains}
-	${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
 	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
@@ -37,7 +35,7 @@ ${testGencodeLiftOverChains}: ${testUcscLiftOverChains}
 	../bin/ucscLiftEdit ${testUcscLiftOverChains} data/GCF_000001405.28.assembly.txt data/GCF_000001405.25.assembly.txt ${testGencodeLiftOverChains}
 
 gff3NcbiTest: mkdirs
-	${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
 	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
@@ -45,7 +43,7 @@ gff3NcbiTest: mkdirs
 	diff -u expected/$@.map-info output/$@.map-info
 
 gtfNcbiTest: mkdirs
-	${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
 	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
@@ -111,10 +109,10 @@ ucscLiftEditTest: mkdirs
 valgrindTest: gff3UcscValgrind gtfUcscValgrind
 
 gff3UcscValgrind: mkdirs
-	${valgrind} ${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testUcscLiftOverChains} /dev/null /dev/null /dev/null >& output/$@.valgrind.out
+	${valgrind} ${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testUcscLiftOverChains} /dev/null /dev/null /dev/null >& output/$@.valgrind.out
 
 gtfUcscValgrind: mkdirs
-	${valgrind} ${PROG} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testUcscLiftOverChains}  /dev/null /dev/null /dev/null >& output/$@.valgrind.out
+	${valgrind} ${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testUcscLiftOverChains}  /dev/null /dev/null /dev/null >& output/$@.valgrind.out
 
 
 liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
@@ -125,22 +123,22 @@ v22Gtf = ${v22Dir}/gencode.v22.chr_patch_hapl_scaff.annotation.gtf.gz
 bigTest: bigGff3UcscTest bigGtfUcscTest bigGff3NcbiTest bigGtfNcbiTest
 
 bigGff3UcscTest: mkdirs
-	${PROG} --swapMap ${v22Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info >& output/$@.gff3.log
+	${gencode_backmap} --swapMap ${v22Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info >& output/$@.gff3.log
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
 
 bigGtfUcscTest: mkdirs
-	${PROG} --swapMap ${v22Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
+	${gencode_backmap} --swapMap ${v22Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
 	gtfToGenePred output/$@.mapped.gtf /dev/null
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
 
 bigGff3NcbiTest: mkdirs
-	${PROG} --swapMap ${v22Gff3} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info >& output/$@.gff3.log
+	${gencode_backmap} --swapMap ${v22Gff3} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info >& output/$@.gff3.log
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
 
 bigGtfNcbiTest: mkdirs
-	${PROG} --swapMap ${v22Gtf} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
+	${gencode_backmap} --swapMap ${v22Gtf} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
 	gtfToGenePred output/$@.mapped.gtf /dev/null
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
 

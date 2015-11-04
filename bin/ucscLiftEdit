@@ -8,8 +8,8 @@ from pycbio.ncbi.assembly import AssemblyReport
 from pycbio.sys import fileOps
 
 def parseArgs():
-    desc="""Convert a UCSC liftover chain file to use GENCODE sequence names.  Replaces
-    the UCSC hg19 chrM with the one used  
+    desc="""Convert a UCSC liftover chain file to use GENCODE sequence names.
+    Replaces the UCSC hg19 chrM with the coordinates of the GRCh37-lite chrM
 """
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('ucscLiftOver', type=str, help="input liftover file, maybe compressed")
