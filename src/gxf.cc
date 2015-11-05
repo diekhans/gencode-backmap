@@ -12,6 +12,22 @@ static bool isQuoted(const string& s) {
     return ((s.size() > 1) and (s[0] == '"') and (s[s.size()-1] == '"'));
 }
 
+/* is a value a integrate or float */
+static bool isNumeric(const string& s) {
+    int dotCount = 0;
+    for (int i = 0; i < s.size(); i++) {
+        if (s[i] == '.') {
+            dotCount++;
+        } else if (!isnumber(s[i])) {
+            return false;
+        }
+    }
+    if (dotCount > 1) {
+        return false;
+    }
+    return true;
+}
+
 /* strip optional quotes */
 static string stripQuotes(const string& s) {
     if (isQuoted(s)) {
@@ -218,15 +234,15 @@ class GtfFeature: public GxfFeature {
 
     /* format an attribute */
     string formatAttr(const string& name,
-                      const string& val,
-                      bool isQuoted) const {
+                      const string& val) const {
         // n.b. this is not general, doesn't handle embedded quotes
+        bool numericAttr = isNumeric(val);
         string strAttr = name + " ";
-        if (isQuoted) {
+        if (!numericAttr) {
             strAttr += "\"";
         }
         strAttr += val;
-        if (isQuoted) {
+        if (!numericAttr) {
             strAttr += "\"";
         }
         return strAttr;
@@ -239,7 +255,7 @@ class GtfFeature: public GxfFeature {
             if (i > 0) {
                 strAttr += " ";  // same formatting as GENCODE
             }
-            strAttr += formatAttr(attrVal->getName(), attrVal->getVals()[i], attrVal->isQuoted()) +  ";";
+            strAttr += formatAttr(attrVal->getName(), attrVal->getVals()[i]) +  ";";
         }
         return strAttr;
     }
