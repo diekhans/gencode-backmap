@@ -37,7 +37,7 @@ static void gencodeBackmap(const string& inGxfFile,
 
 /* Entry point.  Parse arguments. */
 int main(int argc, char *argv[]) {
-    const string usage = "%s [options] target inGxf mappingAligns mappedGxf unmappedGxf mappingInfoTsv\n\n"
+    const string usage = "%s [options] inGxf mappingAligns mappedGxf unmappedGxf mappingInfoTsv\n\n"
         "Map GENCODE annotations between assemblies projecting through genomic\n"
         "alignments. This operates on GENCODE GFF3 and GTF files and makes assumptions\n"
         "about their organization.\n\n"

@@ -18,7 +18,7 @@ static bool isNumeric(const string& s) {
     for (int i = 0; i < s.size(); i++) {
         if (s[i] == '.') {
             dotCount++;
-        } else if (!isnumber(s[i])) {
+        } else if (!isdigit(s[i])) {
             return false;
         }
     }
