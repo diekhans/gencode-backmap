@@ -25,12 +25,15 @@ class TargetAnnotations {
     private:
        
     // map of gene or transcripts to features. Keep up to two for PAR
-    typedef map<const string, FeatureNodeVector> IdFeatureMap;
-    typedef IdFeatureMap::iterator IdFeatureMapIter;
-    typedef IdFeatureMap::const_iterator IdFeatureMapConstIter;
+    typedef map<const string, FeatureNodeVector> FeatureMap;
+    typedef FeatureMap::iterator FeatureMapIter;
+    typedef FeatureMap::const_iterator FeatureMapConstIter;
 
     // map by base id of genes and transcripts
-    IdFeatureMap fIdFeatureMap;
+    FeatureMap fIdFeatureMap;
+
+    // map by names of genes and transcripts
+    FeatureMap fNameFeatureMap;
 
     // list of all gene features found
     FeatureNodeVector fGenes;
@@ -43,6 +46,9 @@ class TargetAnnotations {
     void processRecord(GxfParser *gxfParser,
                        GxfRecord* gxfRecord);
     void freeLocationMap();
+    FeatureNode* getFeatureNodeByKey(const string& key,
+                                     const FeatureMap& featureMap,
+                                     const string& seqIdForParCheck) const;
 
     public:
     /* constructor, load gene and transcript objects from a GxF */
@@ -51,15 +57,20 @@ class TargetAnnotations {
     /* destructor */
     ~TargetAnnotations();
 
-    /* get a target gene or transcript node with same base or NULL.
+    /* get a target gene or transcript node with same base id or NULL.
      * special handling for PARs. Getting node is used if you need whole tree. */
-    FeatureNode* getFeatureNode(const string& id,
-                                const string& seqIdForParCheck) const;
+    FeatureNode* getFeatureNodeById(const string& id,
+                                    const string& seqIdForParCheck) const;
+
+    /* get a target gene or transcript node with same name or NULL.
+     * special handling for PARs. Getting node is used if you need whole tree. */
+    FeatureNode* getFeatureNodeByName(const string& name,
+                                      const string& seqIdForParCheck) const;
 
     /* get a target gene or transcript with same base or NULL.
      * special handling for PARs. */
-    GxfFeature* getFeature(const string& id,
-                           const string& seqIdForParCheck) const;
+    GxfFeature* getFeatureById(const string& id,
+                               const string& seqIdForParCheck) const;
 
     /* find overlapping features */
     FeatureNodeVector findOverlappingFeatures(const string& seqid,

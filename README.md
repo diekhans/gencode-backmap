@@ -18,7 +18,8 @@ growth in number of alt-loci making correct back-mapping difficult.
 The program takes the current (source) GENCODE GFF3 or GTF, cross-assembly
 genomic alignments, and the previous (target) GENCODE annotations.
 
-Mapping is done on a per gene basis using the following steps:
+Mapping is done on a per-gene mapping using the following steps:
+
 - Project transcripts of the gene through the alignments, keeping
   exons chained.
   - If there are multiple mappings, first look for ones that the overlapping
@@ -36,6 +37,16 @@ Mapping is done on a per gene basis using the following steps:
   overlap the target gene, it is also rejected.
   - If a gene did not map or was rejected and a version of the gene with the
     same biotype exists in the target annotations, use the existing gene.
+
+Pairing of source and target genes is somewhat complex due to instability of
+some gene identifiers between assemblies.  If a matching base gene id (less
+version) is not found, an attempt is made to match the genes using the
+symbolic name.
+
+Normally, Ensembl-only non-coding loci are not mapped, just passed through from
+the target annotation set and not mapped.  This avoids complex mappings of
+small RNAs important from other database (e.g. mirRNAs).
+
 
 ### Categorization of mappings 
 

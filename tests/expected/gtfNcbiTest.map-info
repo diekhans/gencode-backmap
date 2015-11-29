@@ -25,11 +25,11 @@ ENSG00000239664.2	RP5-857K21.3	gene	lincRNA	HAVANA	chr1	594453	597498	-	chr1	529
 ENST00000440196.2	RP5-857K21.3-001	transcript	lincRNA	HAVANA	chr1	594453	595217	-	chr1	529833	530597	-	full_contig	1	overlap	lincRNA	
 ENST00000357876.5	RP5-857K21.3-002	transcript	lincRNA	HAVANA	chr1	594459	597498	-	chr1	529839	532878	-	full_contig	1	overlap	lincRNA	
 ENSG00000117281.14	CD160	gene	protein_coding	HAVANA	chr1	145719471	145739288	+		0	0	.	gene_conflict	2	nonOverlap	protein_coding	V19
-ENST00000616463.1	CD160-003	transcript	protein_coding	HAVANA	chr1	145719471	145739153	+		0	0	.	gene_conflict	2	nonOverlap		V19
+ENST00000616463.1	CD160-003	transcript	protein_coding	HAVANA	chr1	145719471	145739153	+		0	0	.	gene_conflict	2	new		V19
 ENST00000369288.5	CD160-001	transcript	protein_coding	HAVANA	chr1	145719520	145739153	+		0	0	.	gene_conflict	2	nonOverlap	protein_coding	V19
 ENST00000235933.9	CD160-201	transcript	protein_coding	ENSEMBL	chr1	145728244	145739288	+		0	0	.	gene_conflict	2	nonOverlap	protein_coding	V19
 ENST00000401557.6	CD160-004	transcript	protein_coding	HAVANA	chr1	145728328	145736301	+		0	0	.	gene_conflict	2	nonOverlap	protein_coding	V19
-ENST00000584442.2	CD160-002	transcript	protein_coding	HAVANA	chr1	145728328	145738493	+		0	0	.	gene_conflict	2	nonOverlap	protein_coding	V19
+ENST00000584442.2	CD160-002	transcript	protein_coding	HAVANA	chr1	145728328	145738493	+		0	0	.	gene_conflict	2	overlap	protein_coding	V19
 ENSG00000131788.14	PIAS3	gene	protein_coding	HAVANA	chr1	145848522	145859836	-		0	0	.	full_contig	2	nonOverlap	protein_coding	V19
 ENST00000472114.4	PIAS3-003	transcript	retained_intron	HAVANA	chr1	145848522	145851354	-		0	0	.	full_contig	2	nonOverlap	retained_intron	V19
 ENST00000475261.1	PIAS3-004	transcript	retained_intron	HAVANA	chr1	145848522	145854664	-		0	0	.	full_contig	2	nonOverlap	retained_intron	V19
@@ -137,5 +137,5 @@ ENSG00000239810.3	PRAMEF11	gene	protein_coding	HAVANA	chr1	12824605	12831410	-		
 ENST00000619922.1	PRAMEF11-001	transcript	protein_coding	HAVANA	chr1	12824605	12831410	-		0	0	.	partial	1	nonOverlap		V19
 ENSG00000279195.1	PRAMEF11	gene	protein_coding	ENSEMBL	chr1	12824942	12828663	-	chr1	12884800	12888523	-	full_contig	1	new		
 ENST00000355096.3	PRAMEF11-201	transcript	protein_coding	ENSEMBL	chr1	12824942	12828663	-	chr1	12884800	12888523	-	full_contig	1	new		
-ENSG00000278566.1	OR4F29	gene	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap		
-ENST00000426406.2	OR4F29-001	transcript	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	
+ENSG00000278566.1	OR4F29	gene	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
+ENST00000426406.2	OR4F29-001	transcript	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         "  --substituteMissingTargets=targetVersion - if target GxF is specified and no GENE maps to\n"
         "    the target locus, pass through the original target location.  Only a subset of the\n"
         "    biotypes are substituted. Argument is target GENCODE version that is stored as an attribute\n"
-        "  --skipAutomaticNonCoding - don't map automatic small non-coding transcripts, substituting\n"
+        "  --skipAutomaticNonCoding - don't map automatic non-coding gebes, substituting\n"
         "    the target if requested.\n"
         "Arguments:\n"
         "  inGxf - Input GENCODE GFF3 or GTF file. The format is identified\n"

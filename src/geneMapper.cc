@@ -352,11 +352,11 @@ void GeneMapper::outputInfoHeader(ostream& mappingInfoFh) const {
 
 /* get target annotation for a feature, if available */
 const GxfFeature* GeneMapper::getTargetAnnotation(FeatureNode* featureNode) const {
-    if (fTargetAnnotations == NULL) {
+    const FeatureNode* targetNode = getTargetAnnotationNode(featureNode);
+    if (targetNode == NULL) {
         return NULL;
     } else {
-        return fTargetAnnotations->getFeature(featureNode->fFeature->getTypeId(),
-                                              featureNode->fFeature->fSeqid);
+        return targetNode->fFeature;
     }
 }
 
@@ -364,10 +364,15 @@ const GxfFeature* GeneMapper::getTargetAnnotation(FeatureNode* featureNode) cons
 const FeatureNode* GeneMapper::getTargetAnnotationNode(FeatureNode* featureNode) const {
     if (fTargetAnnotations == NULL) {
         return NULL;
-    } else {
-        return fTargetAnnotations->getFeatureNode(featureNode->fFeature->getTypeId(),
-                                                  featureNode->fFeature->fSeqid);
     }
+    // try id, then name
+    const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(featureNode->fFeature->getTypeId(),
+                                                                           featureNode->fFeature->fSeqid);
+    if (targetNode == NULL) {
+        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->fFeature->getTypeName(),
+                                                              featureNode->fFeature->fSeqid);
+    }
+    return targetNode;
 }
 
 /* If target gene annotations are available, get status of mapping
@@ -446,6 +451,34 @@ void GeneMapper::outputInfo(FeatureNode* geneNode,
 }
 
 /*
+ * Check for and handle problematic cases after mapping gene.
+ * return true if gene is ok, false if force to unmapped.
+ */
+void GeneMapper::processGeneLevelMapping(FeatureNode* geneTree) {
+    if (fSkipAutomaticNonCoding and 
+        isAutomaticSmallNonCodingGene(geneTree)) {
+        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_AUTOMATIC_NON_CODING);
+    } else if (hasMixedMappedSeqStrand(geneTree)) {
+        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_CONFLICT);
+    } else if (hasExcessiveSizeChange(geneTree)) {
+        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
+    } else if (hasTargetStatusNonOverlap(geneTree)) {
+        // must come after building gene do to weird case of ENSG00000239810
+        // were gene doesn't overlap however the only transcript is `new'.
+        forceToUnmappedDueToTargetStatus(geneTree, TARGET_STATUS_NONOVERLAP);
+    }
+}
+
+/* set gene-level attributes after all mapping decisions have
+ * been made */
+void GeneMapper::setGeneLevelMappingAttributes(FeatureNode* geneTree) {
+    geneTree->setBoundingFeatureRemapStatus();
+    geneTree->setRemapStatusAttr();
+    geneTree->setNumMappingsAttr();
+    geneTree->setTargetStatusAttr();
+}
+
+/*
  * map and output one gene's annotations
  */
 void GeneMapper::processGene(GxfParser *gxfParser,
@@ -456,26 +489,9 @@ void GeneMapper::processGene(GxfParser *gxfParser,
                              ostream* transcriptPslFh) {
     FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
     processTranscripts(geneTree, transcriptPslFh);
-    // handle gene level issues
-    if (fSkipAutomaticNonCoding and 
-        isAutomaticSmallNonCodingGene(geneTree)) {
-        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_AUTOMATIC_NON_CODING);
-    }
-    if (hasMixedMappedSeqStrand(geneTree)) {
-        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_CONFLICT);
-    } else if (hasExcessiveSizeChange(geneTree)) {
-        forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
-    }
     buildGeneFeature(geneTree);
-    if (hasTargetStatusNonOverlap(geneTree)) {
-        // must come after building gene do to weird case of ENSG00000239810
-        // were gene doesn't overlap however the only transcript is `new'.
-        forceToUnmappedDueToTargetStatus(geneTree, TARGET_STATUS_NONOVERLAP);
-    }
-    geneTree->setBoundingFeatureRemapStatus();
-    geneTree->setRemapStatusAttr();
-    geneTree->setNumMappingsAttr();
-    geneTree->setTargetStatusAttr();
+    processGeneLevelMapping(geneTree);
+    setGeneLevelMappingAttributes(geneTree);;
 
     // must be done after forcing status above
     if (shouldSubstituteMissingTarget(geneTree)) {

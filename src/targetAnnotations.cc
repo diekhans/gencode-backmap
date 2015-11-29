@@ -4,9 +4,15 @@
 
 /* link a gene or transcript feature into the maps */
 void TargetAnnotations::loadFeature(FeatureNode* featureNode) {
+    assert((featureNode->fFeature->fType == GxfFeature::GENE)
+           or (featureNode->fFeature->fType == GxfFeature::TRANSCRIPT));
     GxfFeature* feature = featureNode->fFeature;
+    // record by id and name
     string baseId = getBaseId(feature->getTypeId());
     fIdFeatureMap[baseId].push_back(featureNode);
+    if (feature->getTypeName() != "") {
+        fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
+    }
     
     struct TargetLocationLink* locationLink =  static_cast<struct TargetLocationLink*>(needMem(sizeof(struct TargetLocationLink)));  // zeros memory
     locationLink->featureNode = featureNode;
@@ -40,13 +46,12 @@ void TargetAnnotations::processRecord(GxfParser *gxfParser,
 }
 
 
-/* get a target gene or transcript node with same base or NULL.
- * special handling for PARs. Getting node is used if you need whole tree. */
-FeatureNode* TargetAnnotations::getFeatureNode(const string& id,
-                                           const string& seqIdForParCheck) const {
-    string baseId = getBaseId(id);
-    IdFeatureMapConstIter it = fIdFeatureMap.find(baseId);
-    if (it == fIdFeatureMap.end()) {
+/* get a target gene or transcript node from an index by name or id */
+FeatureNode* TargetAnnotations::getFeatureNodeByKey(const string& key,
+                                                    const FeatureMap& featureMap,
+                                                    const string& seqIdForParCheck) const {
+    FeatureMapConstIter it = featureMap.find(key);
+    if (it == featureMap.end()) {
         return NULL;
     } else if (it->second.size() == 2) {
         if (it->second[0]->fFeature->fSeqid == seqIdForParCheck) {
@@ -54,18 +59,34 @@ FeatureNode* TargetAnnotations::getFeatureNode(const string& id,
         } else if (it->second[1]->fFeature->fSeqid == seqIdForParCheck) {
             return it->second[1];
         } else {
-            throw logic_error("PAR target feature hack confused: " + baseId);
+            throw logic_error("PAR target feature hack confused: " + key);
         }
+    } else if (it->second.size() > 2) {
+        throw logic_error("too many nodes for key: " + key);
     } else {
         return it->second[0];
     }
 }
 
+/* get a target gene or transcript node with same base id or NULL.
+ * special handling for PARs. Getting node is used if you need whole tree. */
+FeatureNode* TargetAnnotations::getFeatureNodeById(const string& id,
+                                                   const string& seqIdForParCheck) const {
+    return getFeatureNodeByKey(getBaseId(id), fIdFeatureMap, seqIdForParCheck);
+}
+
+/* get a target gene or transcript node with same name or NULL.
+ * special handling for PARs. Getting node is used if you need whole tree. */
+FeatureNode* TargetAnnotations::getFeatureNodeByName(const string& name,
+                                                     const string& seqIdForParCheck) const {
+    return getFeatureNodeByKey(name, fNameFeatureMap, seqIdForParCheck);
+}
+
 /* get a target gene or transcript with same base or NULL.
  * special handling for PARs/ */
-GxfFeature* TargetAnnotations::getFeature(const string& id,
-                                          const string& seqIdForParCheck) const {
-    FeatureNode* featureNode = getFeatureNode(id, seqIdForParCheck);
+GxfFeature* TargetAnnotations::getFeatureById(const string& id,
+                                              const string& seqIdForParCheck) const {
+    FeatureNode* featureNode = getFeatureNodeById(id, seqIdForParCheck);
     if (featureNode == NULL) {
         return NULL;
     } else {

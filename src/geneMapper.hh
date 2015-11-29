@@ -18,7 +18,7 @@ class GeneMapper {
     const TransMap* fGenomeTransMap;  // genomic mapping
     const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
     const string fSubstituteMissingTargetVersion;  // pass through targets when gene new gene doesn't map
-    bool fSkipAutomaticNonCoding;  // don't map small non-coding
+    bool fSkipAutomaticNonCoding;  // don't map automatic non-coding gennes
 
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
     typedef pair<string, bool> SeqIdMapPair;
@@ -85,6 +85,8 @@ class GeneMapper {
                            ostream& mappingInfoFh) const;
     void outputInfo(FeatureNode* geneNode,
                     ostream& mappingInfoFh) const;
+    void processGeneLevelMapping(FeatureNode* geneTree);
+    void setGeneLevelMappingAttributes(FeatureNode* geneTree);
     void processGene(GxfParser *gxfParser,
                      GxfFeature* geneFeature,
                      ostream& mappedGxfFh,
