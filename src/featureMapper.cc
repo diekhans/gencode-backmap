@@ -122,13 +122,13 @@ void FeatureMapper::processMappedFeature(FeatureNode* featureNode,
                                          const PslMapping* pslMapping) {
     PslCursor srcPslCursor(pslMapping->fSrcPsl);
     PslCursor mappedPslCursor(pslMapping->fMappedPsl);
-    mapFeature(featureNode->fFeature, srcPslCursor, mappedPslCursor, featureNode);
+    mapFeature(featureNode->fSrcFeature, srcPslCursor, mappedPslCursor, featureNode);
 }
 
 /* process unmapped feature, either sequence not in map, or no
  * mappings */
 void FeatureMapper::processUnmappedFeature(FeatureNode* featureNode) {
-    featureNode->addUnmapped(featureNode->fFeature->clone());
+    featureNode->addUnmapped(featureNode->fSrcFeature->clone());
 }
 
 /* Map a single feature though an alignment of that feature.  The pslMapping
@@ -155,7 +155,7 @@ void FeatureMapper::mapBounding(FeatureNode* featureNode,
                                 int targetStart,
                                 int targetEnd,
                                 const string& targetStrand) {
-    const GxfFeature* feature = featureNode->fFeature;
+    const GxfFeature* feature = featureNode->fSrcFeature;
     if (targetStart >= 0) {
         GxfFeature* mappedFeature =
             gxfFeatureFactory(feature->getFormat(), targetSeqid,
@@ -164,7 +164,7 @@ void FeatureMapper::mapBounding(FeatureNode* featureNode,
                               targetStrand, ".", feature->fAttrs);
         featureNode->addMapped(mappedFeature);
     } else {
-        featureNode->addUnmapped(featureNode->fFeature->clone());
+        featureNode->addUnmapped(featureNode->fSrcFeature->clone());
     }
 }
 
@@ -271,6 +271,6 @@ void FeatureMapper::forceToUnmapped(FeatureNode* featureNode) {
     featureNode->fMappedFeatures.free();
     featureNode->fUnmappedFeatures.free();
     featureNode->fAllOutputFeatures.clear();
-    featureNode->addUnmapped(featureNode->fFeature->clone());
+    featureNode->addUnmapped(featureNode->fSrcFeature->clone());
 }
 

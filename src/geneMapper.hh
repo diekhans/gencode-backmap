@@ -87,6 +87,13 @@ class GeneMapper {
                     ostream& mappingInfoFh) const;
     void processGeneLevelMapping(FeatureNode* geneTree);
     void setGeneLevelMappingAttributes(FeatureNode* geneTree);
+    void copySkippedTargetGene(GxfFormat gxfFormat,
+                               const FeatureNode* targetGeneNode,
+                               ostream& mappedGxfFh,
+                               ostream& mappingInfoFh);
+    void copySkippedTargetGenes(GxfFormat gxfFormat,
+                                ostream& mappedGxfFh,
+                                ostream& mappingInfoFh);
     void processGene(GxfParser *gxfParser,
                      GxfFeature* geneFeature,
                      ostream& mappedGxfFh,

@@ -62,7 +62,7 @@ void FeatureNode::assignTargetStatusAttr() {
 
 /* recursively set the target status attribute */
 void FeatureNode::setTargetStatusAttr() {
-    if ((fFeature->fType == GxfFeature::GENE) or (fFeature->fType == GxfFeature::TRANSCRIPT)) {
+    if ((fSrcFeature->fType == GxfFeature::GENE) or (fSrcFeature->fType == GxfFeature::TRANSCRIPT)) {
         assignTargetStatusAttr();
         for (int i = 0; i < fChildren.size(); i++) {
             fChildren[i]->setTargetStatusAttr();
@@ -70,10 +70,10 @@ void FeatureNode::setTargetStatusAttr() {
     }
 }
 
-/* recursively set the target status attribute on fFeature node. */
+/* recursively set the target status attribute on fSrcFeature node. */
 void FeatureNode::setSubstitutedMissingTargetAttrOnFeature(const string& targetVersion) {
     AttrVal targetSubstitutedAttr(REMAP_SUBSTITUTED_MISSING_TARGET_ATTR, targetVersion);
-    fFeature->getAttrs().add(targetSubstitutedAttr);
+    fSrcFeature->getAttrs().add(targetSubstitutedAttr);
     for (int i = 0; i < fChildren.size(); i++) {
         fChildren[i]->setSubstitutedMissingTargetAttrOnFeature(targetVersion);
     }
@@ -92,7 +92,7 @@ void FeatureNode::setSubstitutedMissingTargetAttrOnUnmapped(const string& target
 
 /* depth-first output */
 void FeatureNode::write(ostream& fh) const {
-    fh << fFeature->toString() << endl;
+    fh << fSrcFeature->toString() << endl;
     for (size_t i = 0; i < fChildren.size(); i++) {
         fChildren[i]->write(fh);
     }
@@ -112,14 +112,14 @@ void GeneTree::queueRecords(GxfParser *gxfParser,
  * Find the parent for GFF3.
  */
 FeatureNode* GeneTree::findGff3Parent(FeatureNode* geneTreeLeaf,
-                                      const GxfFeature* gxfFeature) {
-    const string& parentId = gxfFeature->getAttrValue(GxfFeature::PARENT_ATTR);
+                                      const GxfFeature* feature) {
+    const string& parentId = feature->getAttrValue(GxfFeature::PARENT_ATTR);
     FeatureNode* parent = geneTreeLeaf;
-    while ((parent != NULL) and (parent->fFeature->getAttrValue(GxfFeature::ID_ATTR) != parentId)) {
+    while ((parent != NULL) and (parent->fSrcFeature->getAttrValue(GxfFeature::ID_ATTR) != parentId)) {
         parent = parent->fParent;
     }
     if (parent == NULL) {
-        throw invalid_argument("parent node " +  parentId + " for " + gxfFeature->getAttrValue(GxfFeature::ID_ATTR) + " not found");
+        throw invalid_argument("parent node " +  parentId + " for " + feature->getAttrValue(GxfFeature::ID_ATTR) + " not found");
     }
     return parent;
 }
@@ -128,10 +128,10 @@ FeatureNode* GeneTree::findGff3Parent(FeatureNode* geneTreeLeaf,
  * Process a FF3 record for a gene, which uses the explicit tree.
  * Return the new leaf node.
  */
-FeatureNode* GeneTree::loadGff3GeneRecord(GxfFeature* gxfFeature,
+FeatureNode* GeneTree::loadGff3GeneRecord(GxfFeature* feature,
                                           FeatureNode* geneTreeLeaf) {
-    FeatureNode* parent = findGff3Parent(geneTreeLeaf, gxfFeature);
-    FeatureNode* child = new FeatureNode(gxfFeature);
+    FeatureNode* parent = findGff3Parent(geneTreeLeaf, feature);
+    FeatureNode* child = new FeatureNode(feature);
     parent->addChild(child);
     return child;
 }
@@ -155,14 +155,14 @@ const string& GeneTree::getGtfParentType(const string& featureType) {
  * GENCODE file order and know how GENCODE is structures.
  */
 FeatureNode* GeneTree::findGtfParent(FeatureNode* geneTreeLeaf,
-                                     const GxfFeature* gxfFeature) {
-    const string& parentType = getGtfParentType(gxfFeature->fType);
+                                     const GxfFeature* feature) {
+    const string& parentType = getGtfParentType(feature->fType);
     FeatureNode* parent = geneTreeLeaf;
-    while ((parent != NULL) and (parent->fFeature->fType != parentType)) {
+    while ((parent != NULL) and (parent->fSrcFeature->fType != parentType)) {
         parent = parent->fParent;
     }
     if (parent == NULL) {
-        throw invalid_argument("parent node of type " + parentType + "  not found for type " + parent->fFeature->fType);
+        throw invalid_argument("parent node of type " + parentType + "  not found for type " + parent->fSrcFeature->fType);
     }
     return parent;
 }
@@ -223,7 +223,7 @@ bool FeatureNode::allChildWithRemapStatus(unsigned remapStatusSet) const {
  * handle GENE_CONFLICT or_GENE_SIZE_CHANGE, which are forced.
  */
 RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
-    assert((fFeature->fType == GxfFeature::GENE) || (fFeature->fType == GxfFeature::TRANSCRIPT));
+    assert((fSrcFeature->fType == GxfFeature::GENE) || (fSrcFeature->fType == GxfFeature::TRANSCRIPT));
     if (anyChildWithRemapStatus(REMAP_STATUS_NO_SEQ_MAP)) {
         return REMAP_STATUS_NO_SEQ_MAP;
     }
@@ -254,7 +254,7 @@ RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
 
 /* clone tree, possible changing format */
 FeatureNode* FeatureNode::clone(GxfFormat gxfFormat) const {
-    FeatureNode *newNode = new FeatureNode(gxfFeatureFactory(gxfFormat, fFeature));
+    FeatureNode *newNode = new FeatureNode(gxfFeatureFactory(gxfFormat, fSrcFeature));
     for (int i = 0; i < fChildren.size(); i++) {
         newNode->fChildren.push_back(fChildren[i]->clone(gxfFormat));
     }
@@ -263,7 +263,7 @@ FeatureNode* FeatureNode::clone(GxfFormat gxfFormat) const {
 
 /* print node for debugging */
 void FeatureNode::dumpNode(ostream& fh) const {
-    fh << "src" << "\t" << ((fFeature == NULL) ? "NULL" : fFeature->toString()) << endl;
+    fh << "src" << "\t" << ((fSrcFeature == NULL) ? "NULL" : fSrcFeature->toString()) << endl;
     for (int i = 0; i < fAllOutputFeatures.size(); i++) {
         fh << (fMappedFeatures.contains(fAllOutputFeatures[i]) ? "mapped" : "unmapped") << "\t"
            << remapStatusToStr(fRemapStatus) << "\t"
@@ -305,15 +305,15 @@ bool GeneTree::loadGeneRecord(GxfParser *gxfParser,
         queuedRecords.push_back(gxfRecord);
         return true;
     } else {
-        GxfFeature* gxfFeature = dynamic_cast<GxfFeature*>(gxfRecord);
-        if (gxfFeature->fType == GxfFeature::GENE) {
+        GxfFeature* feature = dynamic_cast<GxfFeature*>(gxfRecord);
+        if (feature->fType == GxfFeature::GENE) {
             queuedRecords.push_back(gxfRecord); // next gene
             return false;
         } else {
             if (gxfParser->getGxfFormat() == GFF3_FORMAT) {
-                geneTreeLeaf = loadGff3GeneRecord(gxfFeature, geneTreeLeaf);
+                geneTreeLeaf = loadGff3GeneRecord(feature, geneTreeLeaf);
             } else {
-                geneTreeLeaf = loadGtfGeneRecord(gxfFeature, geneTreeLeaf);
+                geneTreeLeaf = loadGtfGeneRecord(feature, geneTreeLeaf);
             }
             return true;
         }

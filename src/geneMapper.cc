@@ -28,10 +28,10 @@ static const char* automaticNonCodingGeneBiotypes[] = {
 
 /* is ensembl small non-coding gene */
 bool GeneMapper::isAutomaticSmallNonCodingGene(FeatureNode* geneTree) {
-    if (geneTree->fFeature->fSource != "ENSEMBL") {
+    if (geneTree->fSrcFeature->fSource != "ENSEMBL") {
         return false;
     }
-    const string& bioType = geneTree->fFeature->getTypeBiotype();
+    const string& bioType = geneTree->fSrcFeature->getTypeBiotype();
     for (int i = 0; automaticNonCodingGeneBiotypes[i] != NULL; i++) {
         if (bioType == automaticNonCodingGeneBiotypes[i]) {
             return true;
@@ -46,7 +46,7 @@ bool GeneMapper::isSrcSeqInMapping(const GxfFeature* feature) const {
 
 /* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(FeatureNode* featureNode) const {
-    return isSrcSeqInMapping(featureNode->fFeature);
+    return isSrcSeqInMapping(featureNode->fSrcFeature);
 }
 
 /* process one transcript */
@@ -66,8 +66,8 @@ void GeneMapper::processTranscripts(FeatureNode* geneTree,
                                     ostream* transcriptPslFh) const {
     for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
         FeatureNode* transcriptTree = geneTree->fChildren[i];
-        if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
-            throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
+        if (transcriptTree->fSrcFeature->fType != GxfFeature::TRANSCRIPT) {
+            throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fSrcFeature->toString());
         }
         processTranscript(transcriptTree, transcriptPslFh);
     }
@@ -161,7 +161,7 @@ int GeneMapper::calcMappedGeneLength(FeatureNode* geneTree) const {
 /* check if gene transcripts cause the gene size to expand beyond a
  * threshold*/
 bool GeneMapper::hasExcessiveSizeChange(FeatureNode* geneTree) const {
-    int srcGeneLength = geneTree->fFeature->size();
+    int srcGeneLength = geneTree->fSrcFeature->size();
     int mappedGeneLength = calcMappedGeneLength(geneTree);
     if (mappedGeneLength == 0) {
         return 0;  // not mapped
@@ -211,18 +211,18 @@ bool GeneMapper::shouldSubstituteMissingTarget(FeatureNode* geneTree) const {
         // ENST00000426406 incorrectly being moved to a different gene
         return false;
     }
-    if (not isSrcSeqInMapping(targetGene->fFeature)) {
+    if (not isSrcSeqInMapping(targetGene->fSrcFeature)) {
         return false;  // sequence not being mapped (moved chroms)
     }
 
-    return (targetGene->fFeature->getTypeBiotype() == geneTree->fFeature->getTypeBiotype());
+    return (targetGene->fSrcFeature->getTypeBiotype() == geneTree->fSrcFeature->getTypeBiotype());
 }
 
 /* copy target gene to substitute for this mapping and set attributes  */
 void GeneMapper::substituteMissingTarget(FeatureNode* geneTree) const {
     assert(not haveMappedTranscripts(geneTree));
     const FeatureNode* targetGene = getTargetAnnotationNode(geneTree);
-    geneTree->fSubstitutedMissingTarget = targetGene->clone(geneTree->fFeature->getFormat());
+    geneTree->fSubstitutedMissingTarget = targetGene->clone(geneTree->fSrcFeature->getFormat());
     // Set flag in both trees
     geneTree->fSubstitutedMissingTarget->setSubstitutedMissingTargetAttrOnFeature(fSubstituteMissingTargetVersion);
     geneTree->setSubstitutedMissingTargetAttrOnUnmapped(fSubstituteMissingTargetVersion);
@@ -273,10 +273,10 @@ void GeneMapper::buildGeneFeature(FeatureNode* geneTree) const {
 void GeneMapper::outputMappedSeqRegionIfNeed(FeatureNode* geneTree,
                                              ostream& mappedGxfFh) {
     assert((geneTree->fSubstitutedMissingTarget != NULL) || (geneTree->fMappedFeatures.size() > 0));
-    if (geneTree->fFeature->getFormat() == GFF3_FORMAT) {
+    if (geneTree->fSrcFeature->getFormat() == GFF3_FORMAT) {
         // count be due to substituted gene
         const string& mappedSeqId = (geneTree->fSubstitutedMissingTarget != NULL)
-            ? geneTree->fSubstitutedMissingTarget->fFeature->fSeqid
+            ? geneTree->fSubstitutedMissingTarget->fSrcFeature->fSeqid
             : geneTree->fMappedFeatures[0]->fSeqid;
         if (not checkRecordSeqRegionWritten(mappedSeqId)) {
             mappedGxfFh << "##sequence-region " << mappedSeqId << " 1 "
@@ -316,7 +316,7 @@ void GeneMapper::outputUnmapped(FeatureNode* featureNode,
  */
 void GeneMapper::outputSubstituted(FeatureNode* featureNode,
                                    ostream& mappedGxfFh) const {
-    mappedGxfFh << featureNode->fFeature->toString() << endl;
+    mappedGxfFh << featureNode->fSrcFeature->toString() << endl;
     for (int i = 0; i < featureNode->fChildren.size(); i++) {
         outputSubstituted(featureNode->fChildren[i], mappedGxfFh);
     }
@@ -356,7 +356,7 @@ const GxfFeature* GeneMapper::getTargetAnnotation(FeatureNode* featureNode) cons
     if (targetNode == NULL) {
         return NULL;
     } else {
-        return targetNode->fFeature;
+        return targetNode->fSrcFeature;
     }
 }
 
@@ -366,11 +366,11 @@ const FeatureNode* GeneMapper::getTargetAnnotationNode(FeatureNode* featureNode)
         return NULL;
     }
     // try id, then name
-    const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(featureNode->fFeature->getTypeId(),
-                                                                           featureNode->fFeature->fSeqid);
+    const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(featureNode->fSrcFeature->getTypeId(),
+                                                                           featureNode->fSrcFeature->fSeqid);
     if (targetNode == NULL) {
-        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->fFeature->getTypeName(),
-                                                              featureNode->fFeature->fSeqid);
+        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->fSrcFeature->getTypeName(),
+                                                              featureNode->fSrcFeature->fSeqid);
     }
     return targetNode;
 }
@@ -411,15 +411,15 @@ void GeneMapper::outputFeatureInfo(FeatureNode* featureNode,
                                    bool substituteMissingTarget,
                                    ostream& mappingInfoFh) const {
     assert(featureNode->fMappedFeatures.size() <= 1);  // only handles bounding features
-    mappingInfoFh << featureNode->fFeature->getTypeId() << "\t"
-                  << featureNode->fFeature->getTypeName() << "\t"
-                  << featureNode->fFeature->fType << "\t"
-                  << featureNode->fFeature->getTypeBiotype() << "\t"
-                  << featureNode->fFeature->fSource << "\t"
-                  << featureNode->fFeature->fSeqid << "\t"
-                  << featureNode->fFeature->fStart << "\t"
-                  << featureNode->fFeature->fEnd << "\t"
-                  << featureNode->fFeature->fStrand << "\t";
+    mappingInfoFh << featureNode->fSrcFeature->getTypeId() << "\t"
+                  << featureNode->fSrcFeature->getTypeName() << "\t"
+                  << featureNode->fSrcFeature->fType << "\t"
+                  << featureNode->fSrcFeature->getTypeBiotype() << "\t"
+                  << featureNode->fSrcFeature->fSource << "\t"
+                  << featureNode->fSrcFeature->fSeqid << "\t"
+                  << featureNode->fSrcFeature->fStart << "\t"
+                  << featureNode->fSrcFeature->fEnd << "\t"
+                  << featureNode->fSrcFeature->fStrand << "\t";
     if (featureNode->fMappedFeatures.size() > 0) {
         const GxfFeature* mappedFeature = featureNode->fMappedFeatures[0];
         mappingInfoFh << mappedFeature->fSeqid << "\t"
@@ -463,8 +463,6 @@ void GeneMapper::processGeneLevelMapping(FeatureNode* geneTree) {
     } else if (hasExcessiveSizeChange(geneTree)) {
         forceToUnmappedDueToRemapStatus(geneTree, REMAP_STATUS_GENE_SIZE_CHANGE);
     } else if (hasTargetStatusNonOverlap(geneTree)) {
-        // must come after building gene do to weird case of ENSG00000239810
-        // were gene doesn't overlap however the only transcript is `new'.
         forceToUnmappedDueToTargetStatus(geneTree, TARGET_STATUS_NONOVERLAP);
     }
 }
@@ -523,6 +521,32 @@ void GeneMapper::processRecord(GxfParser *gxfParser,
     }
 }
 
+/*
+ * copy a target gene annotation that was skipped for mapping
+ */
+void GeneMapper::copySkippedTargetGene(GxfFormat gxfFormat,
+                                       const FeatureNode* targetGeneNode,
+                                       ostream& mappedGxfFh,
+                                       ostream& mappingInfoFh) {
+    //FeatureNode* copiedGeneNode = targetGeneNode->clone(gxfFormat);
+    //outputInfo(copiedGeneNode, mappingInfoFh);
+    
+}
+
+/*
+ * copy target annotations that are skipped for mapping
+ */
+void GeneMapper::copySkippedTargetGenes(GxfFormat gxfFormat,
+                                        ostream& mappedGxfFh,
+                                        ostream& mappingInfoFh) {
+    const FeatureNodeVector& genes = fTargetAnnotations->getGenes();
+    for (int iGene = 0; iGene < genes.size(); iGene++) {
+        if (isAutomaticSmallNonCodingGene(genes[iGene])) {
+            copySkippedTargetGene(gxfFormat, genes[iGene], mappedGxfFh, mappingInfoFh);
+        }
+    }
+}
+
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfParser *gxfParser,
                         ostream& mappedGxfFh,
@@ -533,6 +557,10 @@ void GeneMapper::mapGxf(GxfParser *gxfParser,
     GxfRecord* gxfRecord;
     while ((gxfRecord = gxfParser->next()) != NULL) {
         processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
+    }
+
+    if (fSkipAutomaticNonCoding and (fTargetAnnotations != NULL)) {
+        copySkippedTargetGenes(gxfParser->getGxfFormat(), mappedGxfFh, mappingInfoFh);
     }
 }
 

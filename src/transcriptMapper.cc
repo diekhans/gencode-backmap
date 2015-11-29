@@ -24,7 +24,7 @@ GxfFeatureVector TranscriptMapper::getExons(const FeatureNode* transcriptTree) {
 /* build transcript exons PSL to query and mapping to target genome.
  * Return NULL if no mappings for whatever reason.*/
 PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcriptTree) const {
-    const string& qName(transcriptTree->fFeature->getAttr(GxfFeature::TRANSCRIPT_ID_ATTR)->getVal());
+    const string& qName(transcriptTree->fSrcFeature->getAttr(GxfFeature::TRANSCRIPT_ID_ATTR)->getVal());
     GxfFeatureVector exons = getExons(transcriptTree);
     // get alignment of exons to srcGenome and to targetGenome
     PslMapping* exonsMapping = FeatureTransMap(fGenomeTransMap).mapFeatures(qName, exons);
@@ -69,9 +69,9 @@ void TranscriptMapper::mapTranscriptFeature(FeatureNode* transcriptNode) {
 
 /* recursive map features below transcript */
 void TranscriptMapper::mapFeatures(FeatureNode* featureNode) {
-    const AttrVal* idAttr = featureNode->fFeature->findAttr(GxfFeature::ID_ATTR);
+    const AttrVal* idAttr = featureNode->fSrcFeature->findAttr(GxfFeature::ID_ATTR);
     const string& nodeId = (idAttr != NULL) ? idAttr->getVal() : "someFeature";
-    PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fFeature);
+    PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fSrcFeature);
     FeatureMapper::map(featureNode, pslMapping);
     for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
        mapFeatures(featureNode->fChildren[iChild]);
@@ -108,15 +108,15 @@ TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
     fViaExonsFeatureTransMap(NULL),
     fTargetGene(NULL),
     fTargetTranscript(NULL) {
-    assert(transcriptTree->fFeature->fType == GxfFeature::TRANSCRIPT);
+    assert(transcriptTree->fSrcFeature->fType == GxfFeature::TRANSCRIPT);
 
     // if available, find target transcripts to use in selecting multiple mappings.  Special handling
     // for PAR requires sequence id.
     if (targetAnnotations != NULL) {
-        fTargetGene = targetAnnotations->getFeatureById(transcriptTree->fFeature->getAttrValue(GxfFeature::GENE_ID_ATTR),
-                                                        transcriptTree->fFeature->fSeqid);
-        fTargetTranscript = targetAnnotations->getFeatureById(transcriptTree->fFeature->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
-                                                              transcriptTree->fFeature->fSeqid);
+        fTargetGene = targetAnnotations->getFeatureById(transcriptTree->fSrcFeature->getAttrValue(GxfFeature::GENE_ID_ATTR),
+                                                        transcriptTree->fSrcFeature->fSeqid);
+        fTargetTranscript = targetAnnotations->getFeatureById(transcriptTree->fSrcFeature->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
+                                                              transcriptTree->fSrcFeature->fSeqid);
     }
 
     // map all exons together, this will be used to project the other exons

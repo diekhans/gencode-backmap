@@ -34,7 +34,7 @@ extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
  */
 class FeatureNode {
     public:
-    GxfFeature* fFeature;
+    GxfFeature* fSrcFeature;
     FeatureNode* fParent;
     vector<FeatureNode*> fChildren;
     RemapStatus fRemapStatus;
@@ -50,8 +50,8 @@ class FeatureNode {
     void assignTargetStatusAttr();
 
     public:
-    FeatureNode(GxfFeature* feature):
-        fFeature(feature),
+    FeatureNode(GxfFeature* srcFeature):
+        fSrcFeature(srcFeature),
         fParent(NULL),
         fRemapStatus(REMAP_STATUS_NONE),
         fTargetStatus(TARGET_STATUS_NA),
@@ -60,7 +60,7 @@ class FeatureNode {
     }
 
     ~FeatureNode() {
-        delete fFeature;
+        delete fSrcFeature;
         for (size_t i = 0; i < fMappedFeatures.size(); i++) {
             delete fMappedFeatures[i];
         }
@@ -76,8 +76,8 @@ class FeatureNode {
     /* recursively get a list features matching the specified filter */
     void getMatching(GxfFeatureVector& hits,
                      function<bool(const GxfFeature*)>(filter)) const {
-        if (filter(fFeature)) {
-            hits.push_back(fFeature);
+        if (filter(fSrcFeature)) {
+            hits.push_back(fSrcFeature);
         }
         for (int i = 0; i < fChildren.size(); i++) {
             fChildren[i]->getMatching(hits, filter);
@@ -130,7 +130,7 @@ class FeatureNode {
     /* recursively set the target status attribute */
     void setTargetStatusAttr();
 
-    /* recursively set the target status attribute on fFeature node. */
+    /* recursively set the target status attribute on fSrcFeature node. */
     void setSubstitutedMissingTargetAttrOnFeature(const string& targetVersion);
 
     /* recursively set the target status attribute on unmapped nodes. */
@@ -167,13 +167,13 @@ class GeneTree {
     static void queueRecords(GxfParser *gxfParser,
                              GxfRecordVector& gxfRecords);
     static FeatureNode* findGff3Parent(FeatureNode* geneTreeLeaf,
-                                const GxfFeature* gxfFeature);
-    static FeatureNode* loadGff3GeneRecord(GxfFeature* gxfFeature,
-                                    FeatureNode* geneTreeLeaf);
+                                       const GxfFeature* cfeature);
+    static FeatureNode* loadGff3GeneRecord(GxfFeature* srcFeature,
+                                           FeatureNode* geneTreeLeaf);
     static const string& getGtfParentType(const string& featureType);
     static FeatureNode* findGtfParent(FeatureNode* geneTreeLeaf,
-                                  const GxfFeature* gxfFeature);
-    static FeatureNode* loadGtfGeneRecord(GxfFeature* gxfFeature,
+                                  const GxfFeature* srcFeature);
+    static FeatureNode* loadGtfGeneRecord(GxfFeature* feature,
                                    FeatureNode* geneTreeLeaf);    
     static bool loadGeneRecord(GxfParser *gxfParser,
                                GxfRecord* gxfRecord,

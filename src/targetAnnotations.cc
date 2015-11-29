@@ -4,9 +4,9 @@
 
 /* link a gene or transcript feature into the maps */
 void TargetAnnotations::loadFeature(FeatureNode* featureNode) {
-    assert((featureNode->fFeature->fType == GxfFeature::GENE)
-           or (featureNode->fFeature->fType == GxfFeature::TRANSCRIPT));
-    GxfFeature* feature = featureNode->fFeature;
+    assert((featureNode->fSrcFeature->fType == GxfFeature::GENE)
+           or (featureNode->fSrcFeature->fType == GxfFeature::TRANSCRIPT));
+    GxfFeature* feature = featureNode->fSrcFeature;
     // record by id and name
     string baseId = getBaseId(feature->getTypeId());
     fIdFeatureMap[baseId].push_back(featureNode);
@@ -26,8 +26,8 @@ void TargetAnnotations::loadGene(FeatureNode* geneTree) {
     loadFeature(geneTree);
     for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
         FeatureNode* transcriptTree = geneTree->fChildren[i];
-        if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
-            throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
+        if (transcriptTree->fSrcFeature->fType != GxfFeature::TRANSCRIPT) {
+            throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fSrcFeature->toString());
         }
         loadFeature(transcriptTree);
     }
@@ -54,9 +54,9 @@ FeatureNode* TargetAnnotations::getFeatureNodeByKey(const string& key,
     if (it == featureMap.end()) {
         return NULL;
     } else if (it->second.size() == 2) {
-        if (it->second[0]->fFeature->fSeqid == seqIdForParCheck) {
+        if (it->second[0]->fSrcFeature->fSeqid == seqIdForParCheck) {
             return it->second[0];
-        } else if (it->second[1]->fFeature->fSeqid == seqIdForParCheck) {
+        } else if (it->second[1]->fSrcFeature->fSeqid == seqIdForParCheck) {
             return it->second[1];
         } else {
             throw logic_error("PAR target feature hack confused: " + key);
@@ -90,7 +90,7 @@ GxfFeature* TargetAnnotations::getFeatureById(const string& id,
     if (featureNode == NULL) {
         return NULL;
     } else {
-        return featureNode->fFeature;
+        return featureNode->fSrcFeature;
     }
 }
 

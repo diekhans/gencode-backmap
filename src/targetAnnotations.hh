@@ -76,6 +76,11 @@ class TargetAnnotations {
     FeatureNodeVector findOverlappingFeatures(const string& seqid,
                                              int start,
                                              int end);
+
+    /* get list of all gene features */
+    const FeatureNodeVector& getGenes() const {
+        return fGenes;
+    }
 };
 
 #endif
