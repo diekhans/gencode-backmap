@@ -27,6 +27,10 @@ typedef enum {
     GTF_FORMAT,
 } GxfFormat;
 
+/* Get format from file name, or error */
+GxfFormat gxfFormatFromFileName(const string& fileName);
+
+
 /* Get a base id, deleting the version, if it exists.
  * deal with the ENSTR->ENST0 PAR hack
  */
@@ -247,9 +251,6 @@ public:
     const string fPhase;
     AttrVals fAttrs;     // attribute maybe modified
 
-    protected:
-    string baseColumnsAsString() const;
-    
     public:
     /* construct a new feature object */
     GxfFeature(const string& seqid, const string& source, const string& type,
@@ -264,15 +265,17 @@ public:
     }
 
     /* clone the feature */
-    virtual GxfFeature* clone() const = 0;
-    
-    /* get the format */
-    virtual GxfFormat getFormat() const = 0;
+    GxfFeature* clone() const {
+        return new GxfFeature(fSeqid, fSource, fType, fStart, fEnd, fScore, fStrand, fPhase, fAttrs);
+    }
     
     /* destructor */
     virtual ~GxfFeature() {
     }
 
+    /* convert all columns, except attributes, to a string */
+    string baseColumnsAsString() const;
+    
     /* get all attribute */
     const AttrVals& getAttrs() const {
         return fAttrs;
@@ -341,21 +344,10 @@ public:
             return true;
         }
     }
+
+    /* return feature as a string */
+    virtual string toString() const;
 };
-
-/* create the appropriate feature type */
-GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                              const StringVector& columns);
-
-/* create the appropriate feature type */
-GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                              const string& seqid, const string& source, const string& type,
-                              int start, int end, const string& score, const string& strand,
-                              const string& phase, const AttrVals& attrs);
-
-/* clone a feature, perhaps changing format  */
-GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                              const GxfFeature* srcFeature);
 
 /* vector of feature objects, doesn't own features */
 class GxfFeatureVector: public vector<GxfFeature*> {
@@ -392,25 +384,30 @@ class GxfFeatureVector: public vector<GxfFeature*> {
 class GxfParser {
     private:
     FIOStream* fIn;  // input stream
-    GxfFormat fGxfFormat; // format of file
     queue<GxfRecord*> fPending; // FIFO of pushed records to be read before file
 
     StringVector splitFeatureLine(const string& line) const;
     GxfRecord* read();
+
+    protected:
+    /* parse a feature */
+    virtual GxfFeature* parseFeature(const StringVector& columns) = 0;
     
+    /* constructor that opens file */
+    GxfParser(const string& fileName);
+
     public:
-    /* constructor that opens file, which maybe compressed.
-    * if gxfFormat is unknown, guess from filename*/
-    GxfParser(const string& fileName,
-              GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
-
-    /* Get format from file name, or error */
-    static GxfFormat formatFromFileName(const string& fileName);
-
     /* destructor */
-    ~GxfParser();
+    virtual ~GxfParser();
 
-    
+    /* get the format being parser */
+    virtual GxfFormat getFormat() const = 0;
+
+    /* Factory to create a parser. file maybe compressed.  If gxfFormat is
+     * unknown, guess from filename*/
+    static GxfParser *factory(const string& fileName,
+                              GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
+
     /* Read the next record, either queued by push() or from the file , use
      * instanceOf to determine the type.  Return NULL on EOF.
      */
@@ -420,11 +417,37 @@ class GxfParser {
     void push(GxfRecord* gxfRecord) {
         fPending.push(gxfRecord);
     }
-
-    /* Accessors */
-    GxfFormat getGxfFormat() const {
-        return fGxfFormat;
-    }
 };
 
+/**
+ * gff3 or gtf writer.
+ */
+class GxfWriter {
+    private:
+    FIOStream* fOut;  // output stream
+
+    protected:
+    /* format a feature line */
+    virtual string formatFeature(const GxfFeature* feature) = 0;
+    
+    public:
+    /* constructor that opens file */
+    GxfWriter(const string& fileName);
+
+    /* destructor */
+    virtual ~GxfWriter();
+
+    /* get the format being written */
+    virtual GxfFormat getFormat() const = 0;
+
+    static GxfWriter *factory(const string& fileName,
+                              GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
+
+    /* write one GxF record. */
+    void write(const GxfRecord* gxfRecord);
+
+    /* write one GxF line. */
+    void write(const string& line);
+    
+};
 #endif

@@ -249,11 +249,11 @@ RemapStatus ResultFeatureTrees::calcBoundingFeatureRemapStatus(bool srcSeqInMapp
     throw logic_error("gene RemapStatus logic error");
 }
 
-/* clone tree, possible changing format */
-FeatureNode* FeatureNode::clone(GxfFormat gxfFormat) const {
-    FeatureNode *newNode = new FeatureNode(gxfFeatureFactory(gxfFormat, fFeature));
+/* clone tree */
+FeatureNode* FeatureNode::clone() const {
+    FeatureNode *newNode = new FeatureNode(fFeature->clone());
     for (int i = 0; i < fChildren.size(); i++) {
-        newNode->fChildren.push_back(fChildren[i]->clone(gxfFormat));
+        newNode->fChildren.push_back(fChildren[i]->clone());
     }
     return newNode;
 }
@@ -302,7 +302,7 @@ bool GeneTree::loadGeneRecord(GxfParser *gxfParser,
             return false;
         } else {
             // FIXME: should have parser/format convert to common in memory object
-            if (gxfParser->getGxfFormat() == GFF3_FORMAT) {
+            if (gxfParser->getFormat() == GFF3_FORMAT) {
                 geneTreeLeaf = loadGff3GeneRecord(feature, geneTreeLeaf);
             } else {
                 geneTreeLeaf = loadGtfGeneRecord(feature, geneTreeLeaf);

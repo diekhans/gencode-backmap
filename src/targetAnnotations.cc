@@ -110,10 +110,10 @@ FeatureNodeVector TargetAnnotations::findOverlappingFeatures(const string& seqid
 /* constructor, load gene and transcript objects from a GxF */
 TargetAnnotations::TargetAnnotations(const string& gxfFile):
     fLocationMap(genomeRangeTreeNew()) {
-    GxfParser gxfParser(gxfFile);
+    GxfParser* gxfParser = GxfParser::factory(gxfFile);
     GxfRecord* gxfRecord;
-    while ((gxfRecord = gxfParser.next()) != NULL) {
-        processRecord(&gxfParser, gxfRecord);
+    while ((gxfRecord = gxfParser->next()) != NULL) {
+        processRecord(gxfParser, gxfRecord);
     }
 }
 

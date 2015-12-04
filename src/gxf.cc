@@ -1,4 +1,3 @@
-
 #include "gxf.hh"
 #include "FIOStream.hh"
 #include <typeinfo>
@@ -57,7 +56,18 @@ const string GxfFeature::TRANSCRIPT_ID_ATTR = "transcript_id";
 const string GxfFeature::TRANSCRIPT_NAME_ATTR = "transcript_name";
 const string GxfFeature::TRANSCRIPT_TYPE_ID_ATTR = "transcript_type";
 const string GxfFeature::EXON_ID_ATTR = "exon_id";
-    
+
+/* Get format from file name, or error */
+GxfFormat gxfFormatFromFileName(const string& fileName) {
+    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")) {
+        return GFF3_FORMAT;
+    } else if (stringEndsWith(fileName, ".gtf") or stringEndsWith(fileName, ".gtf.gz")) {
+        return GTF_FORMAT;
+    } else {
+        errAbort(toCharStr("Error: expected input annotation with an extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
+        return GXF_UNKNOWN_FORMAT;
+    }
+}
 
 /* return base columns (excluding attributes) as a string */
 string GxfFeature::baseColumnsAsString() const {
@@ -104,16 +114,9 @@ const string& GxfFeature::getTypeBiotype() const {
     }
 }
 
-/*
- * GFF3 Feature
- */
-class Gff3Feature: public GxfFeature {
-    public:
-    /* get the format */
-    virtual GxfFormat getFormat() const {
-        return GFF3_FORMAT;
-    }
-
+/* Parse for GFF 3 */
+class Gff3Parser: public GxfParser {
+    private:
     /* is this a multi-valued attribute? */
     /* parse ID=ENSG00000223972.5 */
     static void parseAttr(const string& attrStr,
@@ -131,7 +134,7 @@ class Gff3Feature: public GxfFeature {
             attrVal->addVal(values[i]);
         }
     }
-    
+
     /* parse: ID=ENSG00000223972.5;gene_id=ENSG00000223972.5 */
     static AttrVals parseAttrs(const string& attrsStr) {
         AttrVals attrVals;
@@ -143,67 +146,28 @@ class Gff3Feature: public GxfFeature {
         return attrVals;
     }
 
-    /* format an attribute */
-    string formatAttr(const AttrVal* attrVal) const {
-        // n.b. this is not general, doesn't handle embedded quotes
-        string strAttr = attrVal->getName() + "=";
-        if (attrVal->isQuoted()) {
-            strAttr += "\"";
-        }
-        for (int i = 0; i < attrVal->getVals().size(); i++) {
-            if (i > 0) {
-                strAttr += ",";
-            }
-            strAttr += attrVal->getVals()[i];
-
-        }
-        if (attrVal->isQuoted()) {
-            strAttr += "\"";
-        }
-        return strAttr;
+    public:
+    /* constructor */
+    Gff3Parser(const string& fileName):
+        GxfParser(fileName) {
+    }
+ 
+    /* get the format being parser */
+    virtual GxfFormat getFormat() const {
+        return GFF3_FORMAT;
     }
 
-    /* format attributes */
-    string formatAttrs() const {
-        string strAttrs;
-        for (size_t i = 0; i < fAttrs.size(); i++) {
-            if (i > 0) {
-                strAttrs += ";"; // separator
-            }
-            strAttrs += formatAttr(fAttrs[i]);
-        }
-        return strAttrs;
-    }
-    
-    /* constructor. */
-    Gff3Feature(const string& seqid, const string& source, const string& type, int
-                start, int end, const string& score, const string& strand, const
-                string& phase, const AttrVals& attrs):
-        GxfFeature(seqid, source, type, start, end, score, strand, phase, attrs) {
-    }
-
-    /* clone the feature */
-    virtual GxfFeature* clone() const {
-        return new Gff3Feature(fSeqid, fSource, fType, fStart, fEnd, fScore, fStrand, fPhase, fAttrs);
-    }
-    
-    /* return record as a string */
-    virtual string toString() const {
-        return baseColumnsAsString() + formatAttrs();
+    /* parse a feature */
+    virtual GxfFeature* parseFeature(const StringVector& columns) {
+        return new GxfFeature(columns[0], columns[1], columns[2],
+                              stringToInt(columns[3]), stringToInt(columns[4]),
+                               columns[5], columns[6], columns[7], parseAttrs(columns[8]));
     }
 };
-
-
-/*
- * GTF Feature
- */
-class GtfFeature: public GxfFeature {
-    public:
-    /* get the format */
-    virtual GxfFormat getFormat() const {
-        return GTF_FORMAT;
-    }
     
+/* Parse for GTF */
+class GtfParser: public GxfParser {
+    private:
     /* parse ID=ENSG00000223972.5 */
     static void parseAttr(const string& attrStr,
                           AttrVals& attrVals) {
@@ -232,104 +196,24 @@ class GtfFeature: public GxfFeature {
         return attrVals;
     }
 
-    /* format an attribute */
-    string formatAttr(const string& name,
-                      const string& val) const {
-        // n.b. this is not general, doesn't handle embedded quotes
-        bool numericAttr = isNumeric(val);
-        string strAttr = name + " ";
-        if (!numericAttr) {
-            strAttr += "\"";
-        }
-        strAttr += val;
-        if (!numericAttr) {
-            strAttr += "\"";
-        }
-        return strAttr;
-    }
-
-    /* format an attribute and values */
-    string formatAttr(const AttrVal* attrVal) const {
-        string strAttr;
-        for (int i = 0; i < attrVal->getVals().size(); i++) {
-            if (i > 0) {
-                strAttr += " ";  // same formatting as GENCODE
-            }
-            strAttr += formatAttr(attrVal->getName(), attrVal->getVals()[i]) +  ";";
-        }
-        return strAttr;
-    }
-
-    /* format attribute */
-    string formatAttrs() const {
-        string strAttrs;
-        for (int i = 0; i < fAttrs.size(); i++) {
-            if (i > 0) {
-                strAttrs += " ";  // same formatting as GENCODE
-            }
-            strAttrs += formatAttr(fAttrs[i]);
-        }
-        return strAttrs;
-    }
     public:
-    /* constructor */
-    GtfFeature(const string& seqid, const string& source, const string& type, int
-               start, int end, const string& score, const string& strand, const
-               string& phase, const AttrVals& attrs):
-        GxfFeature(seqid, source, type, start, end, score, strand, phase, attrs) {
+   /* constructor */
+    GtfParser(const string& fileName):
+        GxfParser(fileName) {
+    }
+ 
+    /* get the format being parser */
+    virtual GxfFormat getFormat() const {
+        return GTF_FORMAT;
     }
 
-    /* clone the feature */
-    virtual GxfFeature* clone() const {
-        return new GtfFeature(fSeqid, fSource, fType, fStart, fEnd, fScore, fStrand, fPhase, fAttrs);
-    }
-    
-    /* return record as a string */
-    virtual string toString() const {
-        return baseColumnsAsString() + formatAttrs();
+     /* parse a feature */
+    virtual GxfFeature* parseFeature(const StringVector& columns) {
+        return new GxfFeature(columns[0], columns[1], columns[2],
+                              stringToInt(columns[3]), stringToInt(columns[4]),
+                              columns[5], columns[6], columns[7], parseAttrs(columns[8]));
     }
 };
-
-
-/* create the appropriate feature type */
-GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                              const StringVector& columns) {
-    if (columns.size() != 9) {
-        throw invalid_argument("expected 9 columns in GxF file");
-    }
-    if (gxfFormat == GFF3_FORMAT) {
-        return new Gff3Feature(columns[0], columns[1], columns[2],
-                               stringToInt(columns[3]), stringToInt(columns[4]),
-                               columns[5], columns[6], columns[7], Gff3Feature::parseAttrs(columns[8]));
-    } else {
-        return new GtfFeature(columns[0], columns[1], columns[2],
-                              stringToInt(columns[3]), stringToInt(columns[4]),
-                              columns[5], columns[6], columns[7], GtfFeature::parseAttrs(columns[8]));
-    }
-}
-
-/* create the appropriate feature type */
-GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                              const string& seqid, const string& source, const string& type,
-                              int start, int end, const string& score, const string& strand, const string& phase,
-                              const AttrVals& attrs) {
-    if (gxfFormat == GFF3_FORMAT) {
-        return new Gff3Feature(seqid, source, type, start, end, score, strand, phase, attrs);
-    } else {
-        return new GtfFeature(seqid, source, type, start, end, score, strand, phase, attrs);
-    }
-}
-
-/* clone a feature, perhaps changing format  */
-GxfFeature* gxfFeatureFactory(GxfFormat gxfFormat,
-                              const GxfFeature* srcFeature) {
-    if (gxfFormat == GFF3_FORMAT) {
-        return new Gff3Feature(srcFeature->fSeqid, srcFeature->fSource, srcFeature->fType, srcFeature->fStart, srcFeature->fEnd, srcFeature->fScore, srcFeature->fStrand, srcFeature->fPhase, srcFeature->fAttrs);
-    } else {
-        return new GtfFeature(srcFeature->fSeqid, srcFeature->fSource, srcFeature->fType, srcFeature->fStart, srcFeature->fEnd, srcFeature->fScore, srcFeature->fStrand, srcFeature->fPhase, srcFeature->fAttrs);
-    }
-}
-
 
 /* split a feature line of GFF3 or GTF */
 StringVector GxfParser::splitFeatureLine(const string& line) const {
@@ -340,29 +224,14 @@ StringVector GxfParser::splitFeatureLine(const string& line) const {
     return columns;
 }
 
-/* constructor that opens file, which maybe compressed. If gxfFormat is
- * unknown, guess from filename */
-GxfParser::GxfParser(const string& fileName,
-                     GxfFormat gxfFormat):
-    fIn(new FIOStream(fileName)),
-    fGxfFormat((gxfFormat==GXF_UNKNOWN_FORMAT) ? formatFromFileName(fileName) : gxfFormat) {
+/* constructor that opens file, which maybe compressed. */
+GxfParser::GxfParser(const string& fileName):
+    fIn(new FIOStream(fileName)) {
 }
 
 /* destructor */
 GxfParser::~GxfParser() {
     delete fIn;
-}
-
-/* Get format from file name, or error */
-GxfFormat GxfParser::formatFromFileName(const string& fileName) {
-    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")) {
-        return GFF3_FORMAT;
-    } else if (stringEndsWith(fileName, ".gtf") or stringEndsWith(fileName, ".gtf.gz")) {
-        return GTF_FORMAT;
-    } else {
-        errAbort(toCharStr("Error: expected input annotation with an extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
-        return GXF_UNKNOWN_FORMAT;
-    }
 }
 
 /* Read the next record */
@@ -371,7 +240,7 @@ GxfRecord* GxfParser::read() {
     if (not fIn->readLine(line)) {
         return NULL;
     } else if ((line.size() > 0) and line[0] != '#') {
-        return gxfFeatureFactory(fGxfFormat, splitFeatureLine(line));
+        return parseFeature(splitFeatureLine(line));
     } else {
         return new GxfLine(line);
     }
@@ -388,4 +257,171 @@ GxfRecord* GxfParser::next() {
     } else {
         return read();
     }
+}
+
+/* Factory to create a parser. file maybe compressed.  If gxfFormat is
+ * unknown, guess from filename*/
+GxfParser *GxfParser::factory(const string& fileName,
+                              GxfFormat gxfFormat) {
+    if (gxfFormat==GXF_UNKNOWN_FORMAT) {
+        gxfFormat = gxfFormatFromFileName(fileName);
+    }
+    if (gxfFormat == GFF3_FORMAT) {
+        return new Gff3Parser(fileName);
+    } else {
+        return new GtfParser(fileName);
+    }
+}
+
+/* Write for GFF3 */
+class Gff3Writer: public GxfWriter {
+    public:
+    /* format an attribute */
+    static string formatAttr(const AttrVal* attrVal) {
+        // n.b. this is not general, doesn't handle embedded quotes
+        string strAttr = attrVal->getName() + "=";
+        if (attrVal->isQuoted()) {
+            strAttr += "\"";
+        }
+        for (int i = 0; i < attrVal->getVals().size(); i++) {
+            if (i > 0) {
+                strAttr += ",";
+            }
+            strAttr += attrVal->getVals()[i];
+
+        }
+        if (attrVal->isQuoted()) {
+            strAttr += "\"";
+        }
+        return strAttr;
+    }
+
+    /* format attributes */
+    static string formatAttrs(const AttrVals& attrVals) {
+        string strAttrs;
+        for (size_t i = 0; i < attrVals.size(); i++) {
+            if (i > 0) {
+                strAttrs += ";"; // separator
+            }
+            strAttrs += formatAttr(attrVals[i]);
+        }
+        return strAttrs;
+    }
+
+    /* constructor */
+    Gff3Writer(const string& fileName):
+        GxfWriter(fileName) {
+    }
+
+    /* get the format being parser */
+    virtual GxfFormat getFormat() const {
+        return GFF3_FORMAT;
+    }
+
+    /* format a feature line */
+    virtual string formatFeature(const GxfFeature* feature) {
+        return feature->baseColumnsAsString() + formatAttrs(feature->getAttrs());
+    }
+};
+
+/* Write for GTF */
+class GtfWriter: public GxfWriter {
+    public:
+    /* format an attribute */
+    static string formatAttr(const string& name,
+                             const string& val) {
+        // n.b. this is not general, doesn't handle embedded quotes
+        bool numericAttr = isNumeric(val);
+        string strAttr = name + " ";
+        if (!numericAttr) {
+            strAttr += "\"";
+        }
+        strAttr += val;
+        if (!numericAttr) {
+            strAttr += "\"";
+        }
+        return strAttr;
+    }
+
+    /* format an attribute and values */
+    static string formatAttr(const AttrVal* attrVal) {
+        string strAttr;
+        for (int i = 0; i < attrVal->getVals().size(); i++) {
+            if (i > 0) {
+                strAttr += " ";  // same formatting as GENCODE
+            }
+            strAttr += formatAttr(attrVal->getName(), attrVal->getVals()[i]) +  ";";
+        }
+        return strAttr;
+    }
+
+    /* format attribute */
+    static string formatAttrs(const AttrVals& attrVals) {
+        string strAttrs;
+        for (int i = 0; i < attrVals.size(); i++) {
+            if (i > 0) {
+                strAttrs += " ";  // same formatting as GENCODE
+            }
+            strAttrs += formatAttr(attrVals[i]);
+        }
+        return strAttrs;
+    }
+    /* constructor */
+    GtfWriter(const string& fileName):
+        GxfWriter(fileName) {
+    }
+
+    /* get the format being parser */
+    virtual GxfFormat getFormat() const {
+        return GTF_FORMAT;
+    }
+
+    /* format a feature line */
+    virtual string formatFeature(const GxfFeature* feature) {
+        return feature->baseColumnsAsString() + formatAttrs(feature->getAttrs());
+    }
+};
+
+/* constructor that opens file */
+GxfWriter::GxfWriter(const string& fileName):
+    fOut(new FIOStream(fileName, ios::out)) {
+}
+
+/* destructor */
+GxfWriter::~GxfWriter() {
+    delete fOut;
+}
+
+/* Factory to create a writer. file maybe compressed.  If gxfFormat is
+ * unknown, guess from filename*/
+GxfWriter *GxfWriter::factory(const string& fileName,
+                              GxfFormat gxfFormat) {
+    if (gxfFormat==GXF_UNKNOWN_FORMAT) {
+        gxfFormat = gxfFormatFromFileName(fileName);
+    }
+    if (gxfFormat == GFF3_FORMAT) {
+        return new Gff3Writer(fileName);
+    } else {
+        return new GtfWriter(fileName);
+    }
+}
+
+/* write one GxF record. */
+void GxfWriter::write(const GxfRecord* gxfRecord) {
+    if (instanceOf(gxfRecord, GxfFeature)) {
+        *fOut << formatFeature(dynamic_cast<const GxfFeature*>(gxfRecord)) << endl;
+    } else {
+        *fOut << gxfRecord->toString() << endl;
+    }
+}
+
+/* write one GxF line. */
+void GxfWriter::write(const string& line) {
+    *fOut << line << endl;
+}
+
+/* return feature as a string */
+string GxfFeature::toString() const {
+    // just use GFF3 format, this is for debugging, not output
+    return baseColumnsAsString() + Gff3Writer::formatAttrs(getAttrs());
 }

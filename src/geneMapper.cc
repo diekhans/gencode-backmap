@@ -114,7 +114,7 @@ void GeneMapper::copyGeneMetadata(const FeatureNode* origGene,
 /* force to unmapped */
 void GeneMapper::forceToUnmapped(ResultFeatureTrees* mappedGene) const {
     // create copy and update attributes at gene/transcript level before freeing.
-    FeatureNode* srcCopy = mappedGene->src->clone(mappedGene->src->fFeature->getFormat());
+    FeatureNode* srcCopy = mappedGene->src->clone();
     if (mappedGene->mapped != NULL) {
         copyGeneMetadata(mappedGene->mapped, srcCopy);
     }
@@ -226,7 +226,7 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
 /* copy target gene to use instead of a mapping  */
 void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) const {
     const FeatureNode* targetGene = getTargetAnnotationNode(mappedGene->src);
-    mappedGene->target = targetGene->clone(mappedGene->src->fFeature->getFormat());
+    mappedGene->target = targetGene->clone();
     // Set flag in both trees
     mappedGene->target->rsetSubstitutedMissingTargetAttr(fSubstituteTargetVersion);
     if (mappedGene->mapped != NULL) {
@@ -314,12 +314,12 @@ ResultFeatureTrees GeneMapper::buildGeneFeature(const FeatureNode* srcGeneTree,
 
 /* output GFF3 mapped ##sequence-region if not already written */
 void GeneMapper::outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
-                                             ostream& mappedGxfFh) {
-    if (geneTree->fFeature->getFormat() == GFF3_FORMAT) {
+                                             GxfWriter& mappedGxfFh) {
+    if (mappedGxfFh.getFormat() == GFF3_FORMAT) {
         const string& mappedSeqId = geneTree->fFeature->fSeqid;
         if (not checkRecordSeqRegionWritten(mappedSeqId)) {
-            mappedGxfFh << "##sequence-region " << mappedSeqId << " 1 "
-                        << fGenomeTransMap->getTargetSeqSize(mappedSeqId) << endl;
+            mappedGxfFh.write(string("##sequence-region ") + mappedSeqId + " 1 "
+                              + toString(fGenomeTransMap->getTargetSeqSize(mappedSeqId)));
         }
     }
 }
@@ -328,8 +328,8 @@ void GeneMapper::outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
  * recursive output of a GxF feature tree
  */
 void GeneMapper::outputFeature(const FeatureNode* featureNode,
-                               ostream& gxfFh) const {
-    gxfFh << featureNode->fFeature->toString() << endl;
+                               GxfWriter& gxfFh) const {
+    gxfFh.write(featureNode->fFeature);
     for (size_t i = 0; i < featureNode->fChildren.size(); i++) {
         outputFeature(featureNode->fChildren[i], gxfFh);
     }
@@ -337,8 +337,8 @@ void GeneMapper::outputFeature(const FeatureNode* featureNode,
 
 /* output genes */
 void GeneMapper::outputFeatures(const ResultFeatureTrees& mappedGene,
-                                ostream& mappedGxfFh,
-                                ostream& unmappedGxfFh) {
+                                GxfWriter& mappedGxfFh,
+                                GxfWriter& unmappedGxfFh) {
     // either one of target or mapped is written
     if (mappedGene.target != NULL) {
         outputMappedSeqRegionIfNeed(mappedGene.target, mappedGxfFh);
@@ -514,8 +514,8 @@ void GeneMapper::setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene) {
  */
 void GeneMapper::processGene(GxfParser *gxfParser,
                              GxfFeature* geneFeature,
-                             ostream& mappedGxfFh,
-                             ostream& unmappedGxfFh,
+                             GxfWriter& mappedGxfFh,
+                             GxfWriter& unmappedGxfFh,
                              ostream& mappingInfoFh,
                              ostream* transcriptPslFh) {
     FeatureNode* srcGeneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
@@ -536,20 +536,20 @@ void GeneMapper::processGene(GxfParser *gxfParser,
 /* process a record, this may consume additional feature records  */
 void GeneMapper::processRecord(GxfParser *gxfParser,
                                GxfRecord* gxfRecord,
-                               ostream& mappedGxfFh,
-                               ostream& unmappedGxfFh,
+                               GxfWriter& mappedGxfFh,
+                               GxfWriter& unmappedGxfFh,
                                ostream& mappingInfoFh,
                                ostream* transcriptPslFh) {
     if (instanceOf(gxfRecord, GxfFeature)) {
         processGene(gxfParser, dynamic_cast<GxfFeature*>(gxfRecord), mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
-    } else if ((gxfParser->getGxfFormat() == GFF3_FORMAT) and (gxfRecord->toString().find("##sequence-region") == 0)) {
+    } else if ((gxfParser->getFormat() == GFF3_FORMAT) and (gxfRecord->toString().find("##sequence-region") == 0)) {
         // mapped ##sequence-region records are created based on sequences written
-        unmappedGxfFh << gxfRecord->toString() << endl;
+        unmappedGxfFh.write(gxfRecord);
         delete gxfRecord;
     } else {
         // write all others as-is
-        mappedGxfFh << gxfRecord->toString() << endl;
-        unmappedGxfFh << gxfRecord->toString() << endl;
+        mappedGxfFh.write(gxfRecord->toString());
+        unmappedGxfFh.write(gxfRecord->toString());
         delete gxfRecord;
     }
 }
@@ -557,9 +557,8 @@ void GeneMapper::processRecord(GxfParser *gxfParser,
 /*
  * copy a target gene annotation that was skipped for mapping
  */
-void GeneMapper::copySkippedTargetGene(GxfFormat gxfFormat,
-                                       const FeatureNode* targetGeneNode,
-                                       ostream& mappedGxfFh,
+void GeneMapper::copySkippedTargetGene(const FeatureNode* targetGeneNode,
+                                       GxfWriter& mappedGxfFh,
                                        ostream& mappingInfoFh) {
 #if 0 // FIXME
     FeatureNode* copiedGeneNode = targetGeneNode->clone(gxfFormat);
@@ -570,21 +569,20 @@ void GeneMapper::copySkippedTargetGene(GxfFormat gxfFormat,
 /*
  * copy target annotations that are skipped for mapping
  */
-void GeneMapper::copySkippedTargetGenes(GxfFormat gxfFormat,
-                                        ostream& mappedGxfFh,
+void GeneMapper::copySkippedTargetGenes(GxfWriter& mappedGxfFh,
                                         ostream& mappingInfoFh) {
     const FeatureNodeVector& genes = fTargetAnnotations->getGenes();
     for (int iGene = 0; iGene < genes.size(); iGene++) {
         if (isAutomaticSmallNonCodingGene(genes[iGene])) {
-            copySkippedTargetGene(gxfFormat, genes[iGene], mappedGxfFh, mappingInfoFh);
+            copySkippedTargetGene(genes[iGene], mappedGxfFh, mappingInfoFh);
         }
     }
 }
 
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfParser *gxfParser,
-                        ostream& mappedGxfFh,
-                        ostream& unmappedGxfFh,
+                        GxfWriter& mappedGxfFh,
+                        GxfWriter& unmappedGxfFh,
                         ostream& mappingInfoFh,
                         ostream* transcriptPslFh) {
     outputInfoHeader(mappingInfoFh);
@@ -594,7 +592,7 @@ void GeneMapper::mapGxf(GxfParser *gxfParser,
     }
 
     if (fSkipAutomaticNonCoding and (fTargetAnnotations != NULL)) {
-        copySkippedTargetGenes(gxfParser->getGxfFormat(), mappedGxfFh, mappingInfoFh);
+        copySkippedTargetGenes(mappedGxfFh, mappingInfoFh);
     }
 }
 

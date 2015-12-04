@@ -110,8 +110,8 @@ class FeatureNode {
     /* recursively set the target status attribute node. */
     void rsetSubstitutedMissingTargetAttr(const string& targetVersion);
 
-    /* clone tree, possible changing format */
-    FeatureNode* clone(GxfFormat gxfFormat) const;
+    /* clone tree */
+    FeatureNode* clone() const;
 
     /* print node for debugging */
     void dumpNode(ostream& fh) const;

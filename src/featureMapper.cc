@@ -22,12 +22,12 @@ FeatureNode* FeatureMapper::mkMappedFeature(const GxfFeature* feature,
     mappedPslCursor.getTRangeStrand('+', length, &mappedTStart, &mappedTEnd);
 
     // add mapped feature. but don't update id now
-    GxfFeature* mappedFeature =
-        gxfFeatureFactory(feature->getFormat(), string(mappedPslCursor.getPsl()->tName),
-                          feature->fSource, feature->fType,
-                          mappedTStart+1, mappedTEnd, feature->fScore,
-                          charToString(pslTStrand(mappedPslCursor.getPsl())),
-                          frame.toPhaseStr(), feature->fAttrs);
+    GxfFeature* mappedFeature
+        = new GxfFeature(string(mappedPslCursor.getPsl()->tName),
+                         feature->fSource, feature->fType,
+                         mappedTStart+1, mappedTEnd, feature->fScore,
+                         charToString(pslTStrand(mappedPslCursor.getPsl())),
+                         frame.toPhaseStr(), feature->fAttrs);
 
     // save original coordinates for this region
     int srcTStart, srcTEnd;
@@ -59,9 +59,9 @@ FeatureNode* FeatureMapper::mkUnmappedFeature(const GxfFeature* feature,
 
     // add unmapped feature. but don't update id now. 
     GxfFeature* unmappedFeature =
-        gxfFeatureFactory(feature->getFormat(), feature->fSeqid, feature->fSource, feature->fType,
-                          unmappedTStart+1, unmappedTEnd, feature->fScore, feature->fStrand,
-                          frame.toPhaseStr(), feature->fAttrs);
+        new GxfFeature(feature->fSeqid, feature->fSource, feature->fType,
+                       unmappedTStart+1, unmappedTEnd, feature->fScore, feature->fStrand,
+                       frame.toPhaseStr(), feature->fAttrs);
     return new FeatureNode(unmappedFeature);
 }
 
@@ -165,7 +165,7 @@ void FeatureMapper::processMappedFeature(const FeatureNode* featureNode,
 void FeatureMapper::processUnmappedFeature(const FeatureNode* featureNode,
                                            TransMappedFeature& transMappedFeature) {
     // FIXME: abstract format stuff.
-    transMappedFeature.addUnmapped(featureNode->clone(featureNode->fFeature->getFormat()));
+    transMappedFeature.addUnmapped(featureNode->clone());
 }
 
 /* Map a single feature though an alignment of that feature.  The pslMapping
@@ -247,10 +247,10 @@ FeatureNode* FeatureMapper::mapBounding(const FeatureNode* featureNode,
     // FIXME: could parent update be here?
     const GxfFeature* feature = featureNode->fFeature;
     if (targetStart >= 0) {
-        return new FeatureNode(gxfFeatureFactory(feature->getFormat(), targetSeqid,
-                                                 feature->fSource, feature->fType,
-                                                 targetStart+1, targetEnd, feature->fScore,
-                                                 targetStrand, ".", feature->fAttrs));
+        return new FeatureNode(new GxfFeature(targetSeqid,
+                                              feature->fSource, feature->fType,
+                                              targetStart+1, targetEnd, feature->fScore,
+                                              targetStrand, ".", feature->fAttrs));
     } else {
         // clone only feature, not tree.
         return new FeatureNode(featureNode->fFeature->clone());

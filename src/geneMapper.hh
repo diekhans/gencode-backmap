@@ -70,14 +70,14 @@ class GeneMapper {
     ResultFeatureTrees buildGeneFeature(const FeatureNode* srcGeneTree,
                                         ResultFeatureTreesVector& mappedTranscripts) const;
     void outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
-                                     ostream& mappedGxfFh);
+                                     GxfWriter& mappedGxfFh);
     void outputFeature(const FeatureNode* featureNode,
-                       ostream& gxfFh) const;
+                       GxfWriter& gxfFh) const;
     void outputSubstituted(const FeatureNode* featureNode,
-                           ostream& mappedGxfFh) const;
+                           GxfWriter& mappedGxfFh) const;
     void outputFeatures(const ResultFeatureTrees& mappedGene,
-                        ostream& mappedGxfFh,
-                        ostream& unmappedGxfFh);
+                        GxfWriter& mappedGxfFh,
+                        GxfWriter& unmappedGxfFh);
     void outputInfoHeader(ostream& mappingInfoFh) const;
     const GxfFeature* getTargetAnnotation(const FeatureNode* featureNode) const;
     const FeatureNode* getTargetAnnotationNode(const FeatureNode* featureNode) const;
@@ -94,23 +94,21 @@ class GeneMapper {
                     ostream& mappingInfoFh) const;
     void processGeneLevelMapping(ResultFeatureTrees* mappedGene);
     void setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene);
-    void copySkippedTargetGene(GxfFormat gxfFormat,
-                               const FeatureNode* targetGeneNode,
-                               ostream& mappedGxfFh,
+    void copySkippedTargetGene(const FeatureNode* targetGeneNode,
+                               GxfWriter& mappedGxfFh,
                                ostream& mappingInfoFh);
-    void copySkippedTargetGenes(GxfFormat gxfFormat,
-                                ostream& mappedGxfFh,
+    void copySkippedTargetGenes(GxfWriter& mappedGxfFh,
                                 ostream& mappingInfoFh);
     void processGene(GxfParser *gxfParser,
                      GxfFeature* geneFeature,
-                     ostream& mappedGxfFh,
-                     ostream& unmappedGxfFh,
+                     GxfWriter& mappedGxfFh,
+                     GxfWriter& unmappedGxfFh,
                      ostream& mappingInfoFh,
                      ostream* transcriptPslFh);
     void processRecord(GxfParser *gxfParser,
                        GxfRecord* gxfRecord,
-                       ostream& mappedGxfFh,
-                       ostream& unmappedGxfFh,
+                       GxfWriter& mappedGxfFh,
+                       GxfWriter& unmappedGxfFh,
                        ostream& mappingInfoFh,
                        ostream* transcriptPslFh);
     public:
@@ -127,8 +125,8 @@ class GeneMapper {
 
     /* Map a GFF3/GTF */
     void mapGxf(GxfParser *gxfParser,
-                ostream& mappedGxfFh,
-                ostream& unmappedGxfFh,
+                GxfWriter& mappedGxfFh,
+                GxfWriter& unmappedGxfFh,
                 ostream& mappingInfoFh,
                 ostream* transcriptPslFh);
 };

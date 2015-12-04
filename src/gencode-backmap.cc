@@ -23,13 +23,16 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& transcriptPsls) {
     TransMap* genomeTransMap = TransMap::factoryFromFile(mappingAligns, swapMap);
     TargetAnnotations* targetAnnotations = (targetGxf.size() > 0) ? new TargetAnnotations(targetGxf) : NULL;
-    GxfParser gxfParser(inGxfFile);
-    FIOStream mappedGxfFh(mappedGxfFile, ios::out);
-    FIOStream unmappedGxfFh(unmappedGxfFile, ios::out);
+    GxfParser* gxfParser = GxfParser::factory(inGxfFile);
+    GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile);
+    GxfWriter* unmappedGxfFh = GxfWriter::factory(unmappedGxfFile);
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
     GeneMapper geneMapper(genomeTransMap, targetAnnotations, substituteMissingTargetVersion, skipAutomaticNonCoding);
-    geneMapper.mapGxf(&gxfParser, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
+    geneMapper.mapGxf(gxfParser, *mappedGxfFh, *unmappedGxfFh, mappingInfoFh, transcriptPslFh);
+    delete gxfParser;
+    delete mappedGxfFh;
+    delete unmappedGxfFh;
     delete genomeTransMap;
     delete targetAnnotations;
     delete transcriptPslFh;
