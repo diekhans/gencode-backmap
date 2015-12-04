@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <functional>
 #include "gxf.hh"
+#include <ostream>
 #include "remapStatus.hh"
 
 // FIXME: add the substituted target stuff caused this to step into hacky
@@ -29,55 +30,52 @@ extern const string REMAP_TARGET_STATUS_ATTR;
 * able to map gene. Value version   */
 extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
 
+class FeatureNode;
+/* Vector of FeatureNode objects */
+typedef vector<FeatureNode*> FeatureNodeVector;
+
+
 /**
  * Tree container for a GxfFeature object and children
  */
 class FeatureNode {
     public:
-    GxfFeature* fSrcFeature;
+    GxfFeature* fFeature;
     FeatureNode* fParent;
-    vector<FeatureNode*> fChildren;
+    FeatureNodeVector fChildren;
     RemapStatus fRemapStatus;
     TargetStatus fTargetStatus;
     int fNumMappings;    // Number of location feature was mapped too.  Not set for all node types.
-    GxfFeatureVector fMappedFeatures;
-    GxfFeatureVector fUnmappedFeatures;
-    GxfFeatureVector fAllOutputFeatures;   // use for debugging, as it tracks order added.
-    FeatureNode* fSubstitutedMissingTarget;
-
-    bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
-    bool allChildWithRemapStatus(unsigned remapStatusSet) const;
-    void assignTargetStatusAttr();
 
     public:
-    FeatureNode(GxfFeature* srcFeature):
-        fSrcFeature(srcFeature),
+    FeatureNode(GxfFeature* feature):
+        fFeature(feature),
         fParent(NULL),
         fRemapStatus(REMAP_STATUS_NONE),
         fTargetStatus(TARGET_STATUS_NA),
-        fNumMappings(0),
-        fSubstitutedMissingTarget(NULL) {
+        fNumMappings(0) {
     }
 
     ~FeatureNode() {
-        delete fSrcFeature;
-        for (size_t i = 0; i < fMappedFeatures.size(); i++) {
-            delete fMappedFeatures[i];
-        }
-        for (size_t i = 0; i < fUnmappedFeatures.size(); i++) {
-            delete fUnmappedFeatures[i];
-        }
+        delete fFeature;
         for (size_t i = 0; i < fChildren.size(); i++) {
             delete fChildren[i];
         }
-        delete fSubstitutedMissingTarget;
     }
+
+    /* is this a gene or transcript */
+    bool isGeneOrTranscript() const {
+        return (fFeature->fType == GxfFeature::GENE) or (fFeature->fType == GxfFeature::TRANSCRIPT);
+    }
+
+    bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
+    bool allChildWithRemapStatus(unsigned remapStatusSet) const;
 
     /* recursively get a list features matching the specified filter */
     void getMatching(GxfFeatureVector& hits,
                      function<bool(const GxfFeature*)>(filter)) const {
-        if (filter(fSrcFeature)) {
-            hits.push_back(fSrcFeature);
+        if (filter(fFeature)) {
+            hits.push_back(fFeature);
         }
         for (int i = 0; i < fChildren.size(); i++) {
             fChildren[i]->getMatching(hits, filter);
@@ -92,49 +90,25 @@ class FeatureNode {
         node->fParent = this;
     }
 
-    /* add a mapped and take ownership */
-    void addMapped(GxfFeature* mappedFeature) {
-        fMappedFeatures.push_back(mappedFeature);
-        fAllOutputFeatures.push_back(mappedFeature);
-    }
-
-    /* add a unmapped and take ownership */
-    void addUnmapped(GxfFeature* unmappedFeature) {
-        fUnmappedFeatures.push_back(unmappedFeature);
-        fAllOutputFeatures.push_back(unmappedFeature);
-    }
-
-    /* compute the remap status of the feature. srcSeqInMapping
-     * indicates of the srcSequence qs in the genomic map */
-    RemapStatus calcRemapStatus(bool srcSeqInMapping) const;
-
     /* set remap status to specified value */
     void setRemapStatus(RemapStatus remapStatus) {
         fRemapStatus = remapStatus;
     }
 
-    /* recursively set the remap status.  This does not work for genes,
-    * only within a transcript were all features where mapped together */
-    void recursiveSetRemapStatus(bool srcSeqInMapping);
+    /* recursively set the remap status. */
+    void rsetRemapStatus(RemapStatus remapStatus);
 
-    /* determine gene or transcript remap status from children.  This doesn't
-     * handle GENE_CONFLICT or_GENE_SIZE_CHANGE, which are forced.
-     */
-    RemapStatus calcBoundingFeatureRemapStatus() const;
+    /* Set the target status. Not recursive */
+    void setTargetStatus(TargetStatus targetStatus);
 
-    /* remap status on a bounding */
-    void setBoundingFeatureRemapStatus() {
-        fRemapStatus = calcBoundingFeatureRemapStatus();
-    }
-    
+    /* Recursively set the target status. */
+    void rsetTargetStatus(TargetStatus targetStatus);
+
     /* recursively set the target status attribute */
-    void setTargetStatusAttr();
+    void rsetTargetStatusAttr();
 
-    /* recursively set the target status attribute on fSrcFeature node. */
-    void setSubstitutedMissingTargetAttrOnFeature(const string& targetVersion);
-
-    /* recursively set the target status attribute on unmapped nodes. */
-    void setSubstitutedMissingTargetAttrOnUnmapped(const string& targetVersion);
+    /* recursively set the target status attribute node. */
+    void rsetSubstitutedMissingTargetAttr(const string& targetVersion);
 
     /* clone tree, possible changing format */
     FeatureNode* clone(GxfFormat gxfFormat) const;
@@ -149,14 +123,250 @@ class FeatureNode {
     void setNumMappingsAttr();
 
     /* recursively set the remap status attribute */
-    void setRemapStatusAttr();
+    void rsetRemapStatusAttr();
 
     /* depth-first output */
     void write(ostream& fh) const;
 };
 
-/* Vector of FeatureNode objects */
-typedef vector<FeatureNode*> FeatureNodeVector;
+/**
+ * Trees resulting from a map.
+ */
+class ResultFeatureTrees {
+    private:
+    bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
+    bool allChildWithRemapStatus(unsigned remapStatusSet) const;
+
+
+    public:
+    const FeatureNode* src;
+    FeatureNode* mapped;
+    FeatureNode* unmapped;
+    FeatureNode* target;    // substituted from target
+
+    /* constructor */
+    ResultFeatureTrees(const FeatureNode* src = NULL,
+                       FeatureNode* mapped = NULL,
+                       FeatureNode* unmapped = NULL):
+        src(src), mapped(mapped), unmapped(unmapped), target(NULL) {
+    }
+
+    /* free data all */
+    void free() {
+        delete src;
+        delete mapped;
+        delete unmapped;
+        delete target;
+    }
+    /* free mapped */
+    void freeMapped() {
+        delete mapped;
+        mapped = NULL;
+    }
+
+    /* free unmapped */
+    void freeUnmapped() {
+        delete unmapped;
+        unmapped = NULL;
+    }
+
+    /* get remap status from either mapped or unmapped. */
+    RemapStatus getRemapStatus() const {
+        if (mapped != NULL) {
+            return mapped->fRemapStatus;
+        } else if (unmapped != NULL) {
+            return unmapped->fRemapStatus;
+        } else {
+            return REMAP_STATUS_DELETED;
+        }
+    }
+
+    /* recursively set the remap status. */
+    void rsetRemapStatus(RemapStatus remapStatus) {
+        if (mapped != NULL) {
+            mapped->rsetRemapStatus(remapStatus);
+        }
+        if (unmapped != NULL) {
+            unmapped->rsetRemapStatus(remapStatus);
+        }
+    }
+
+    /* get target status from either mapped or unmapped. */
+    TargetStatus getTargetStatus() const {
+        if (mapped != NULL) {
+            return mapped->fTargetStatus;
+        } else if (unmapped != NULL) {
+            return unmapped->fTargetStatus;
+        } else {
+            return TARGET_STATUS_LOST;
+        }
+    }
+
+    /* set target status on trees */
+    void setTargetStatus(TargetStatus targetStatus) {
+        if (mapped != NULL) {
+            mapped->setTargetStatus(targetStatus);
+        }
+        if (unmapped != NULL) {
+            unmapped->setTargetStatus(targetStatus);
+        }
+    }
+
+    /* recursively set target status on trees */
+    void rsetTargetStatus(TargetStatus targetStatus) {
+        if (mapped != NULL) {
+            mapped->rsetTargetStatus(targetStatus);
+        }
+        if (unmapped != NULL) {
+            unmapped->rsetTargetStatus(targetStatus);
+        }
+    }
+
+    /* recursively set the target status attribute */
+    void rsetTargetStatusAttr() {
+        if (mapped != NULL) {
+            mapped->rsetTargetStatusAttr();
+        }
+        if (unmapped != NULL) {
+            unmapped->rsetTargetStatusAttr();
+        }
+    }
+
+    /* get number of mappings from either mapped or unmapped. */
+    int getNumMappings() const {
+        if (mapped != NULL) {
+            return mapped->fNumMappings;
+        } else if (unmapped != NULL) {
+            return unmapped->fNumMappings;
+        } else {
+            return 0;
+        }
+    }
+
+    /* set the remap number of mappings attribute on this node (not
+     * recursive) */
+    void setNumMappingsAttr() {
+        if (mapped != NULL) {
+            mapped->setNumMappingsAttr();
+        }
+        if (unmapped != NULL) {
+            unmapped->setNumMappingsAttr();
+        }
+    }
+
+    /* recursively set the remap status attribute */
+    void rsetRemapStatusAttr() {
+        if (mapped != NULL) {
+            mapped->rsetRemapStatusAttr();
+        }
+        if (unmapped != NULL) {
+            unmapped->rsetRemapStatusAttr();
+        }
+    }
+
+    /* determine gene or transcript remap status from children.  This doesn't
+     * handle GENE_CONFLICT or_GENE_SIZE_CHANGE, which are forced.
+     */
+    RemapStatus calcBoundingFeatureRemapStatus(bool srcSeqInMapping) const;
+
+    /* set remap status on a bounding */
+    void setBoundingFeatureRemapStatus(bool srcSeqInMapping) {
+        RemapStatus remapStatus = calcBoundingFeatureRemapStatus(srcSeqInMapping);
+        if (mapped != NULL) {
+            mapped->setRemapStatus(remapStatus);
+        }
+        if (unmapped != NULL) {
+            unmapped->setRemapStatus(remapStatus);
+        }
+    }
+
+    /* print for debugging */
+    void dump(ostream& fh) const {
+        if (mapped != NULL) {
+            fh << "@@@ mapped" << endl;
+            mapped->dump(fh);
+        }
+        if (unmapped != NULL) {
+            fh << "@@@ unmapped" << endl;
+            unmapped->dump(fh);
+        }
+    }
+};
+
+/* vector of mapped resulting feature */
+class ResultFeatureTreesVector: public vector<ResultFeatureTrees> {
+    public:
+    bool haveMapped() const {
+        for (int i = 0; i < size(); i++) {
+            if (((*this)[i]).mapped != NULL) {
+                return true;
+            }
+        }
+        return false;
+    }
+    bool haveUnmapped() const {
+        for (int i = 0; i < size(); i++) {
+            if (((*this)[i]).unmapped != NULL) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+/**
+ * Set of mapped and unmapped features resulting from transmap.  A feature maybe split when mapped,
+ * hence vectors.
+ */
+class TransMappedFeature {
+    public:
+    const FeatureNode* src;
+    FeatureNodeVector mapped;
+    FeatureNodeVector unmapped;
+
+    /* constructors */
+    TransMappedFeature(const FeatureNode* src = NULL):
+        src(src) {
+    }
+
+    TransMappedFeature(ResultFeatureTrees& featureTrees) {
+        src = featureTrees.src;
+        if (featureTrees.mapped != NULL) {
+            mapped.push_back(featureTrees.mapped);
+        }
+        if (featureTrees.unmapped != NULL) {
+            unmapped.push_back(featureTrees.unmapped);
+        }
+    }
+
+    /** add a mapped node */
+    void addMapped(FeatureNode* featureNode) {
+        mapped.push_back(featureNode);
+    }
+
+    /** add a unmapped node */
+    void addUnmapped(FeatureNode* featureNode) {
+        unmapped.push_back(featureNode);
+    }
+
+    /* compute status for a transmapped feature.  this only looks at a single
+     * level of mappings, not a tree. srcSeqInMapping indicates of the srcSequence
+     * was in the genomic map */
+    RemapStatus calcRemapStatus(bool srcSeqInMapping) const;
+
+    /**
+     * calculate the remap status and set it in the feature nodes
+     */
+    void setRemapStatus(bool srcSeqInMapping) {
+        RemapStatus remapStatus = calcRemapStatus(srcSeqInMapping);
+        for (int i = 0; i < mapped.size(); i++) {
+            mapped[i]->fRemapStatus = remapStatus;
+        }
+        for (int i = 0; i < unmapped.size(); i++) {
+            unmapped[i]->fRemapStatus = remapStatus;
+        }
+    }
+};
 
 
 /**
@@ -168,13 +378,13 @@ class GeneTree {
                              GxfRecordVector& gxfRecords);
     static FeatureNode* findGff3Parent(FeatureNode* geneTreeLeaf,
                                        const GxfFeature* cfeature);
-    static FeatureNode* loadGff3GeneRecord(GxfFeature* srcFeature,
+    static FeatureNode* loadGff3GeneRecord(GxfFeature* feature,
                                            FeatureNode* geneTreeLeaf);
     static const string& getGtfParentType(const string& featureType);
     static FeatureNode* findGtfParent(FeatureNode* geneTreeLeaf,
-                                  const GxfFeature* srcFeature);
+                                      const GxfFeature* feature);
     static FeatureNode* loadGtfGeneRecord(GxfFeature* feature,
-                                   FeatureNode* geneTreeLeaf);    
+                                          FeatureNode* geneTreeLeaf);    
     static bool loadGeneRecord(GxfParser *gxfParser,
                                GxfRecord* gxfRecord,
                                FeatureNode* geneTreeRoot,

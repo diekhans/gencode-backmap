@@ -3,7 +3,8 @@ Mt_tRNA	full_contig	6	0.13
 TR_V_pseudogene	full_contig	1	0.02
 antisense	partial	1	0.02
 lincRNA	full_contig	4	0.09
-lincRNA	partial	2	0.04
+lincRNA	gene_size_change	1	0.02
+lincRNA	partial	1	0.02
 miRNA	full_contig	2	0.04
 miRNA	no_seq_map	1	0.02
 processed_transcript	full_contig	1	0.02
@@ -17,6 +18,6 @@ snRNA	partial	1	0.02
 snoRNA	full_contig	1	0.02
 transcribed_unprocessed_pseudogene	full_contig	1	0.02
 unprocessed_pseudogene	full_contig	4	0.09
+unprocessed_pseudogene	gene_size_change	1	0.02
 unprocessed_pseudogene	no_seq_map	1	0.02
-unprocessed_pseudogene	partial	1	0.02
 all	all	47	1.00

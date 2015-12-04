@@ -23,76 +23,45 @@ const string REMAP_TARGET_STATUS_ATTR = "remap_target_status";
 /* Attribute indicating target gene was substituted due to   */
 const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR = "remap_substituted_missing_target";
 
-
-/* set the remap number of mappings attribute on this node  */
+/* set the remap number of mappings attribute on this node.  not recursive,
+ * since it's only set on gene/transcript */
 void FeatureNode::setNumMappingsAttr() {
-    AttrVal numMappingsAttr(REMAP_NUM_MAPPINGS_ATTR, toString(fNumMappings));
-    for (int i = 0; i < fMappedFeatures.size(); i++) {
-        fMappedFeatures[i]->getAttrs().add(numMappingsAttr);
-    }
-    for (int i = 0; i < fUnmappedFeatures.size(); i++) {
-        fUnmappedFeatures[i]->getAttrs().add(numMappingsAttr);
-    }
+    fFeature->getAttrs().update(AttrVal(REMAP_NUM_MAPPINGS_ATTR, toString(fNumMappings)));
 }
 
 /* recursively set the remap status attribute */
-void FeatureNode::setRemapStatusAttr() {
-    AttrVal remapStatusAttr(REMAP_STATUS_ATTR, remapStatusToStr(fRemapStatus));
-    for (int i = 0; i < fMappedFeatures.size(); i++) {
-        fMappedFeatures[i]->getAttrs().add(remapStatusAttr);
-    }
-    for (int i = 0; i < fUnmappedFeatures.size(); i++) {
-        fUnmappedFeatures[i]->getAttrs().add(remapStatusAttr);
+void FeatureNode::rsetRemapStatusAttr() {
+    if (fRemapStatus != REMAP_STATUS_NONE) {
+        fFeature->getAttrs().update(AttrVal(REMAP_STATUS_ATTR, remapStatusToStr(fRemapStatus)));
     }
     for (int i = 0; i < fChildren.size(); i++) {
-        fChildren[i]->setRemapStatusAttr();
+        fChildren[i]->rsetRemapStatusAttr();
     }
 }
 
 /* recursively set the target status attribute */
-void FeatureNode::assignTargetStatusAttr() {
-    AttrVal targetStatusAttr(REMAP_TARGET_STATUS_ATTR, targetStatusToStr(fTargetStatus));
-    for (int i = 0; i < fMappedFeatures.size(); i++) {
-        fMappedFeatures[i]->getAttrs().add(targetStatusAttr);
-    }
-    for (int i = 0; i < fUnmappedFeatures.size(); i++) {
-        fUnmappedFeatures[i]->getAttrs().add(targetStatusAttr);
-    }
-}
-
-/* recursively set the target status attribute */
-void FeatureNode::setTargetStatusAttr() {
-    if ((fSrcFeature->fType == GxfFeature::GENE) or (fSrcFeature->fType == GxfFeature::TRANSCRIPT)) {
-        assignTargetStatusAttr();
+void FeatureNode::rsetTargetStatusAttr() {
+    if (isGeneOrTranscript()) {
+        if (fTargetStatus != TARGET_STATUS_NA) {
+            fFeature->getAttrs().update(AttrVal(REMAP_TARGET_STATUS_ATTR, targetStatusToStr(fTargetStatus)));
+        }
         for (int i = 0; i < fChildren.size(); i++) {
-            fChildren[i]->setTargetStatusAttr();
+            fChildren[i]->rsetTargetStatusAttr();
         }
     }
 }
 
-/* recursively set the target status attribute on fSrcFeature node. */
-void FeatureNode::setSubstitutedMissingTargetAttrOnFeature(const string& targetVersion) {
-    AttrVal targetSubstitutedAttr(REMAP_SUBSTITUTED_MISSING_TARGET_ATTR, targetVersion);
-    fSrcFeature->getAttrs().add(targetSubstitutedAttr);
+/* recursively set the target status attribute on fFeature node. */
+void FeatureNode::rsetSubstitutedMissingTargetAttr(const string& targetVersion) {
+    fFeature->getAttrs().update(AttrVal(REMAP_SUBSTITUTED_MISSING_TARGET_ATTR, targetVersion));
     for (int i = 0; i < fChildren.size(); i++) {
-        fChildren[i]->setSubstitutedMissingTargetAttrOnFeature(targetVersion);
-    }
-}
-
-/* recursively set the target status attribute on unmapped node. */
-void FeatureNode::setSubstitutedMissingTargetAttrOnUnmapped(const string& targetVersion) {
-    AttrVal targetSubstitutedAttr(REMAP_SUBSTITUTED_MISSING_TARGET_ATTR, targetVersion);
-    for (int i = 0; i < fUnmappedFeatures.size(); i++) {
-        fUnmappedFeatures[i]->getAttrs().add(targetSubstitutedAttr);
-    }
-    for (int i = 0; i < fChildren.size(); i++) {
-        fChildren[i]->setSubstitutedMissingTargetAttrOnUnmapped(targetVersion);
+        fChildren[i]->rsetSubstitutedMissingTargetAttr(targetVersion);
     }
 }
 
 /* depth-first output */
 void FeatureNode::write(ostream& fh) const {
-    fh << fSrcFeature->toString() << endl;
+    fh << fFeature->toString() << endl;
     for (size_t i = 0; i < fChildren.size(); i++) {
         fChildren[i]->write(fh);
     }
@@ -115,7 +84,7 @@ FeatureNode* GeneTree::findGff3Parent(FeatureNode* geneTreeLeaf,
                                       const GxfFeature* feature) {
     const string& parentId = feature->getAttrValue(GxfFeature::PARENT_ATTR);
     FeatureNode* parent = geneTreeLeaf;
-    while ((parent != NULL) and (parent->fSrcFeature->getAttrValue(GxfFeature::ID_ATTR) != parentId)) {
+    while ((parent != NULL) and (parent->fFeature->getAttrValue(GxfFeature::ID_ATTR) != parentId)) {
         parent = parent->fParent;
     }
     if (parent == NULL) {
@@ -158,45 +127,60 @@ FeatureNode* GeneTree::findGtfParent(FeatureNode* geneTreeLeaf,
                                      const GxfFeature* feature) {
     const string& parentType = getGtfParentType(feature->fType);
     FeatureNode* parent = geneTreeLeaf;
-    while ((parent != NULL) and (parent->fSrcFeature->fType != parentType)) {
+    while ((parent != NULL) and (parent->fFeature->fType != parentType)) {
         parent = parent->fParent;
     }
     if (parent == NULL) {
-        throw invalid_argument("parent node of type " + parentType + "  not found for type " + parent->fSrcFeature->fType);
+        throw invalid_argument("parent node of type " + parentType + "  not found for type " + parent->fFeature->fType);
     }
     return parent;
 }
 
-/* compute the remap status of feature. srcSeqInMapping
- * indicates of the srcSequence qs in the genomic map */
-RemapStatus FeatureNode::calcRemapStatus(bool srcSeqInMapping) const {
+/* compute status for a transmapped feature.  this only looks at a single
+ * level of mappings, not a tree. srcSeqInMapping indicates of the srcSequence
+ * was in the genomic map */
+RemapStatus TransMappedFeature::calcRemapStatus(bool srcSeqInMapping) const {
     if (not srcSeqInMapping) {
         // couldn't even try mapping, chrom not in map
         return REMAP_STATUS_NO_SEQ_MAP;
-    } else if (fMappedFeatures.size() == 0) {
-        assert(fUnmappedFeatures.size() > 0);
+    } else if (mapped.size() == 0) {
+        assert(unmapped.size() > 0);
         // nothing mapped
         return REMAP_STATUS_DELETED;
-    } else if (fUnmappedFeatures.size() == 0) {
+    } else if (unmapped.size() == 0) {
         // full mapped
-        if (fMappedFeatures.size() == 1) {
+        if (mapped.size() == 1) {
             return REMAP_STATUS_FULL_CONTIG;
         } else {
             return REMAP_STATUS_FULL_FRAGMENT;
         }
     } else {
         // partially mapped
+        assert(mapped.size() > 0);
+        assert(unmapped.size() > 0);
         return REMAP_STATUS_PARTIAL;
     }
 }
 
-/* recursively determine the remap status.  This does not work for genes,
- * only within a transcript were all features where mapped together */
-void FeatureNode::recursiveSetRemapStatus(bool srcSeqInMapping) {
+/* recursively set the remap status. */
+void FeatureNode::rsetRemapStatus(RemapStatus remapStatus) {
+    fRemapStatus = remapStatus;
     for (size_t i = 0; i < fChildren.size(); i++) {
-        fChildren[i]->recursiveSetRemapStatus(srcSeqInMapping);
+        fChildren[i]->rsetRemapStatus(remapStatus);
     }
-    fRemapStatus = calcRemapStatus(srcSeqInMapping);
+}
+
+/* Set the target status. Not recursive */
+void FeatureNode::setTargetStatus(TargetStatus targetStatus) {
+    fTargetStatus = targetStatus;
+}
+
+/* Recursively set the target status. */
+void FeatureNode::rsetTargetStatus(TargetStatus targetStatus) {
+    fTargetStatus = targetStatus;
+    for (size_t i = 0; i < fChildren.size(); i++) {
+        fChildren[i]->rsetTargetStatus(targetStatus);
+    }
 }
 
 /* do any child belond to the specified status */
@@ -219,12 +203,25 @@ bool FeatureNode::allChildWithRemapStatus(unsigned remapStatusSet) const {
     return true;
 }
 
+
+/* do any child belond to the specified status */
+bool ResultFeatureTrees::anyChildWithRemapStatus(unsigned remapStatusSet) const {
+    return ((mapped != NULL) && mapped->anyChildWithRemapStatus(remapStatusSet))
+        || ((unmapped != NULL) && unmapped->anyChildWithRemapStatus(remapStatusSet));
+}
+
+/* do all child have belong to the specified status set */
+bool ResultFeatureTrees::allChildWithRemapStatus(unsigned remapStatusSet) const {
+    return ((mapped == NULL) || ((mapped != NULL) && mapped->allChildWithRemapStatus(remapStatusSet)))
+        && ((unmapped == NULL) || ((unmapped != NULL) && unmapped->allChildWithRemapStatus(remapStatusSet)));
+}
+
 /* determine gene or transcript remap status from children.  This doesn't
  * handle GENE_CONFLICT or_GENE_SIZE_CHANGE, which are forced.
  */
-RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
-    assert((fSrcFeature->fType == GxfFeature::GENE) || (fSrcFeature->fType == GxfFeature::TRANSCRIPT));
-    if (anyChildWithRemapStatus(REMAP_STATUS_NO_SEQ_MAP)) {
+RemapStatus ResultFeatureTrees::calcBoundingFeatureRemapStatus(bool srcSeqInMapping) const {
+    assert(src->isGeneOrTranscript());
+    if (not srcSeqInMapping) {
         return REMAP_STATUS_NO_SEQ_MAP;
     }
     if (allChildWithRemapStatus(REMAP_STATUS_FULL_CONTIG)) {
@@ -254,7 +251,7 @@ RemapStatus FeatureNode::calcBoundingFeatureRemapStatus() const {
 
 /* clone tree, possible changing format */
 FeatureNode* FeatureNode::clone(GxfFormat gxfFormat) const {
-    FeatureNode *newNode = new FeatureNode(gxfFeatureFactory(gxfFormat, fSrcFeature));
+    FeatureNode *newNode = new FeatureNode(gxfFeatureFactory(gxfFormat, fFeature));
     for (int i = 0; i < fChildren.size(); i++) {
         newNode->fChildren.push_back(fChildren[i]->clone(gxfFormat));
     }
@@ -263,13 +260,7 @@ FeatureNode* FeatureNode::clone(GxfFormat gxfFormat) const {
 
 /* print node for debugging */
 void FeatureNode::dumpNode(ostream& fh) const {
-    fh << "src" << "\t" << ((fSrcFeature == NULL) ? "NULL" : fSrcFeature->toString()) << endl;
-    for (int i = 0; i < fAllOutputFeatures.size(); i++) {
-        fh << (fMappedFeatures.contains(fAllOutputFeatures[i]) ? "mapped" : "unmapped") << "\t"
-           << remapStatusToStr(fRemapStatus) << "\t"
-           << targetStatusToStr(fTargetStatus) << "\t"
-           << fAllOutputFeatures[i]->toString() << endl;
-    }
+    fh << fFeature->toString() << endl;
 }
 
 /* recursively print for debugging */
@@ -310,6 +301,7 @@ bool GeneTree::loadGeneRecord(GxfParser *gxfParser,
             queuedRecords.push_back(gxfRecord); // next gene
             return false;
         } else {
+            // FIXME: should have parser/format convert to common in memory object
             if (gxfParser->getGxfFormat() == GFF3_FORMAT) {
                 geneTreeLeaf = loadGff3GeneRecord(feature, geneTreeLeaf);
             } else {

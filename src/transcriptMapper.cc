@@ -24,12 +24,12 @@ GxfFeatureVector TranscriptMapper::getExons(const FeatureNode* transcriptTree) {
 /* build transcript exons PSL to query and mapping to target genome.
  * Return NULL if no mappings for whatever reason.*/
 PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcriptTree) const {
-    const string& qName(transcriptTree->fSrcFeature->getAttr(GxfFeature::TRANSCRIPT_ID_ATTR)->getVal());
+    const string& qName(transcriptTree->fFeature->getAttr(GxfFeature::TRANSCRIPT_ID_ATTR)->getVal());
     GxfFeatureVector exons = getExons(transcriptTree);
     // get alignment of exons to srcGenome and to targetGenome
     PslMapping* exonsMapping = FeatureTransMap(fGenomeTransMap).mapFeatures(qName, exons);
     if (exonsMapping == NULL) {
-        return NULL;  // source sequence not in map; FIXME: not sure this should even get here in this case
+        return NULL;  // source sequence not in map
     }
     // resort using more evidence
     exonsMapping->sortMappedPsls(fTargetTranscript, fTargetGene);
@@ -52,53 +52,56 @@ const TransMapVector TranscriptMapper::makeViaExonsTransMap(const PslMapping* ex
     return transMaps;
 }
 
-/* create a new transcript record that covers the alignment */
-void TranscriptMapper::mapTranscriptFeature(FeatureNode* transcriptNode) {
-    struct psl* mappedPsl = fExonsMapping->fMappedPsl;
-    // transcript for mapped PSLs
-    FeatureMapper::mapBounding(transcriptNode,
-                               string(mappedPsl->tName),
-                               mappedPsl->tStart, mappedPsl->tEnd,
-                               charToString(pslTStrand(mappedPsl)));
-    transcriptNode->fNumMappings = fExonsMapping->fMappedPsls.size();
-    // if any parts was unmapped, also need a copy of the original transcript
-    if (not pslQueryFullyMapped(mappedPsl)) {
-        FeatureMapper::mapBounding(transcriptNode);
-    }
+/* get PSL of feature mapping */
+PslMapping* TranscriptMapper::featurePslMap(const FeatureNode* featureNode) {
+    const AttrVal* idAttr = featureNode->fFeature->findAttr(GxfFeature::ID_ATTR);
+    const string& nodeId = (idAttr != NULL) ? idAttr->getVal() : "someFeature";
+    return fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fFeature);
+}
+
+/* map one nodes feature, linking in a child nodes. */
+TransMappedFeature TranscriptMapper::mapNodeFeature(const FeatureNode* featureNode) {
+    PslMapping* pslMapping = (fViaExonsFeatureTransMap != NULL) ? featurePslMap(featureNode) : NULL;
+    TransMappedFeature transMappedFeature = FeatureMapper::map(featureNode, pslMapping);
+    transMappedFeature.setRemapStatus(fSrcSeqInMapping);
+    delete pslMapping;
+    return transMappedFeature;
 }
 
 /* recursive map features below transcript */
-void TranscriptMapper::mapFeatures(FeatureNode* featureNode) {
-    const AttrVal* idAttr = featureNode->fSrcFeature->findAttr(GxfFeature::ID_ATTR);
-    const string& nodeId = (idAttr != NULL) ? idAttr->getVal() : "someFeature";
-    PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(nodeId, featureNode->fSrcFeature);
-    FeatureMapper::map(featureNode, pslMapping);
+TransMappedFeature TranscriptMapper::mapFeatures(const FeatureNode* featureNode) {
+    TransMappedFeature transMappedFeature = mapNodeFeature(featureNode);
     for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
-       mapFeatures(featureNode->fChildren[iChild]);
+        TransMappedFeature childFeatureNodes = mapFeatures(featureNode->fChildren[iChild]);
+        FeatureMapper::updateParents(transMappedFeature, childFeatureNodes);
     }
-    delete pslMapping;
+    return transMappedFeature;
 }
 
-/* do work of mapping features when we have transmap mapping alignments
- * and know something will map */
-void TranscriptMapper::mapTranscriptFeaturesViaExons(FeatureNode* transcriptTree) {
-    mapTranscriptFeature(transcriptTree);
-    for (int iChild = 0; iChild < transcriptTree->fChildren.size(); iChild++) {
-        mapFeatures(transcriptTree->fChildren[iChild]);
+/* create a new transcript record that covers the alignment */
+ResultFeatureTrees TranscriptMapper::mapTranscriptFeature(const FeatureNode* transcriptNode) {
+    ResultFeatureTrees mappedTranscript(transcriptNode);
+    struct psl* mappedPsl = (fExonsMapping != NULL) ? fExonsMapping->fMappedPsl : NULL;
+    if (mappedPsl != NULL) {
+        // transcript for mapped PSLs
+        mappedTranscript.mapped
+            = FeatureMapper::mapBounding(transcriptNode,
+                                         string(mappedPsl->tName),
+                                         mappedPsl->tStart, mappedPsl->tEnd,
+                                         charToString(pslTStrand(mappedPsl)));
+        mappedTranscript.mapped->fNumMappings = fExonsMapping->fMappedPsls.size();
     }
-}
 
-/* recursive process features that are unmapped */
-void TranscriptMapper::processUnmappedFeatures(FeatureNode* featureNode) {
-    FeatureMapper::map(featureNode, NULL);
-    for (int iChild = 0; iChild < featureNode->fChildren.size(); iChild++) {
-        processUnmappedFeatures(featureNode->fChildren[iChild]);
+    // if any parts was unmapped, also need a copy of the original transcript
+    if ((mappedPsl == NULL) or (not pslQueryFullyMapped(mappedPsl))) {
+        mappedTranscript.unmapped = FeatureMapper::mapBounding(transcriptNode);
     }
+    return mappedTranscript;
 }
 
 /* constructor, targetAnnotations can be NULL */
 TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
-                                   FeatureNode* transcriptTree,
+                                   const FeatureNode* transcriptTree,
                                    const TargetAnnotations* targetAnnotations,
                                    bool srcSeqInMapping,
                                    ostream* transcriptPslFh):
@@ -108,15 +111,15 @@ TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
     fViaExonsFeatureTransMap(NULL),
     fTargetGene(NULL),
     fTargetTranscript(NULL) {
-    assert(transcriptTree->fSrcFeature->fType == GxfFeature::TRANSCRIPT);
+    assert(transcriptTree->fFeature->fType == GxfFeature::TRANSCRIPT);
 
     // if available, find target transcripts to use in selecting multiple mappings.  Special handling
     // for PAR requires sequence id.
     if (targetAnnotations != NULL) {
-        fTargetGene = targetAnnotations->getFeatureById(transcriptTree->fSrcFeature->getAttrValue(GxfFeature::GENE_ID_ATTR),
-                                                        transcriptTree->fSrcFeature->fSeqid);
-        fTargetTranscript = targetAnnotations->getFeatureById(transcriptTree->fSrcFeature->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
-                                                              transcriptTree->fSrcFeature->fSeqid);
+        fTargetGene = targetAnnotations->getFeatureById(transcriptTree->fFeature->getAttrValue(GxfFeature::GENE_ID_ATTR),
+                                                        transcriptTree->fFeature->fSeqid);
+        fTargetTranscript = targetAnnotations->getFeatureById(transcriptTree->fFeature->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
+                                                              transcriptTree->fFeature->fSeqid);
     }
 
     // map all exons together, this will be used to project the other exons
@@ -140,15 +143,16 @@ TranscriptMapper::~TranscriptMapper() {
 /*
  * map one transcript's annotations.  Fill in transcriptTree
  */
-void TranscriptMapper::mapTranscriptFeatures(FeatureNode* transcriptTree) {
+ResultFeatureTrees TranscriptMapper::mapTranscriptFeatures(const FeatureNode* transcriptTree) {
     // project features via exons (including redoing exons)
-    if (fViaExonsFeatureTransMap != NULL) {
-        mapTranscriptFeaturesViaExons(transcriptTree);
-    } else {
-        processUnmappedFeatures(transcriptTree);
+    ResultFeatureTrees mappedTranscript = mapTranscriptFeature(transcriptTree);
+    TransMappedFeature mappedTranscriptSet(mappedTranscript);
+    for (int iChild = 0; iChild < transcriptTree->fChildren.size(); iChild++) {
+        TransMappedFeature transMappedFeature = mapFeatures(transcriptTree->fChildren[iChild]);
+        FeatureMapper::updateParents(mappedTranscriptSet, transMappedFeature);
     }
-    transcriptTree->recursiveSetRemapStatus(fSrcSeqInMapping);
-    transcriptTree->setBoundingFeatureRemapStatus();
-    FeatureMapper::updateIds(transcriptTree);
-    transcriptTree->setNumMappingsAttr();
+
+    mappedTranscript.setBoundingFeatureRemapStatus(fSrcSeqInMapping);
+    mappedTranscript.setNumMappingsAttr();
+    return mappedTranscript;
 }

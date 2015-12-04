@@ -25,7 +25,7 @@ ${OBJDIR}/%.o: %.cc
 clean:
 	rm -f ${OBJS} ${PROG} ${DEPENDS}
 savebak:
-	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh HOLD ../tests/data
+	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh ../tests/data
 
 test:
 	cd ../tests && ${MAKE} test

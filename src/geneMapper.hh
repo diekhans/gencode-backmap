@@ -17,7 +17,7 @@ class GeneMapper {
     private:
     const TransMap* fGenomeTransMap;  // genomic mapping
     const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
-    const string fSubstituteMissingTargetVersion;  // pass through targets when gene new gene doesn't map
+    const string fSubstituteTargetVersion;  // pass through targets when gene new gene doesn't map
     bool fSkipAutomaticNonCoding;  // don't map automatic non-coding gennes
 
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
@@ -35,58 +35,65 @@ class GeneMapper {
         }
     }
 
-    bool isAutomaticSmallNonCodingGene(FeatureNode* geneTree);
+    bool isAutomaticSmallNonCodingGene(const FeatureNode* geneTree);
     bool isSrcSeqInMapping(const GxfFeature* feature) const;
-    bool isSrcSeqInMapping(FeatureNode* featureNode) const;
-    void processTranscript(FeatureNode* transcriptTree,
-                           ostream* transcriptPslFh) const;
-    void processTranscripts(FeatureNode* geneTree,
-                            ostream* transcriptPslFh) const;
-    void forceToUnmappedDueToRemapStatus(FeatureNode* featureNode,
+    bool isSrcSeqInMapping(const FeatureNode* featureNode) const;
+    ResultFeatureTrees processTranscript(const FeatureNode* transcriptTree,
+                                    ostream* transcriptPslFh) const;
+    ResultFeatureTreesVector processTranscripts(const FeatureNode* geneTree,
+                                           ostream* transcriptPslFh) const;
+    FeatureNode* findMatchingBoundingNode(const FeatureNodeVector& features,
+                                          const FeatureNode* srcFeature) const;
+    void copyMappingMetadata(const FeatureNode* origFeature,
+                             FeatureNode* newFeature) const;
+    void copyGeneMetadata(const FeatureNode* origGene,
+                          FeatureNode* newGene) const;
+    void forceToUnmapped(ResultFeatureTrees* mappedGene) const;
+    void forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
                                          RemapStatus remapStatus) const;
-    void forceToUnmappedDueToTargetStatus(FeatureNode* featureNode,
+    void forceToUnmappedDueToTargetStatus(ResultFeatureTrees* mappedGene,
                                           TargetStatus targetStatus) const;
-    bool haveMappedTranscripts(FeatureNode* geneTree) const;
-    bool haveUnmappedTranscripts(FeatureNode* geneTree) const;
-    bool hasMixedMappedSeqStrand(FeatureNode* geneTree) const;
-    bool hasTargetStatusNonOverlap(FeatureNode* geneTree) const;
-    int calcMappedGeneLength(FeatureNode* geneTree) const;
-    bool hasExcessiveSizeChange(FeatureNode* geneTree) const;
+    bool hasMixedMappedSeqStrand(const ResultFeatureTrees* mappedGene) const;
+    bool hasTargetStatusNonOverlap(const ResultFeatureTrees* mappedGene) const;
+    bool hasExcessiveSizeChange(const ResultFeatureTrees* mappedGene) const;
 
-    void setNumGeneMappings(FeatureNode* geneTree) const;
-    void updateMappedGeneBounds(FeatureNode* transcriptTree,
+    void setNumGeneMappings(FeatureNode* mappedGeneTree) const;
+    bool shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const;
+    void substituteTarget(ResultFeatureTrees* mappedGene) const;
+    void updateMappedGeneBounds(const FeatureNode* mappedTranscript,
                                 string& seqid, string& strand,
                                 int& start, int& end) const;
-    bool shouldSubstituteMissingTarget(FeatureNode* geneTree) const;
-    void substituteMissingTarget(FeatureNode* geneTree) const;
-    void buildMappedGeneFeature(FeatureNode* geneTree,
-                                bool srcSeqInMapping) const;
-    void buildUnmappedGeneFeature(FeatureNode* geneTree,
-                                  bool srcSeqInMapping) const;
-    void buildGeneFeature(FeatureNode* geneTree) const;
-    void outputMappedSeqRegionIfNeed(FeatureNode* geneTree,
+    FeatureNode* buildMappedGeneFeature(const FeatureNode* srcGeneTree,
+                                        ResultFeatureTreesVector& mappedTranscripts) const;
+    FeatureNode* buildUnmappedGeneFeature(const FeatureNode* srcGeneTree,
+                                          ResultFeatureTreesVector& mappedTranscripts) const;
+    ResultFeatureTrees buildGeneFeature(const FeatureNode* srcGeneTree,
+                                        ResultFeatureTreesVector& mappedTranscripts) const;
+    void outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
                                      ostream& mappedGxfFh);
-    void outputMapped(FeatureNode* featureNode,
-                      ostream& mappedGxfFh) const;
-    void outputUnmapped(FeatureNode* featureNode,
-                        ostream& unmappedGxfFh) const;
-    void outputSubstituted(FeatureNode* featureNode,
+    void outputFeature(const FeatureNode* featureNode,
+                       ostream& gxfFh) const;
+    void outputSubstituted(const FeatureNode* featureNode,
                            ostream& mappedGxfFh) const;
-    void outputFeatures(FeatureNode* geneNode,
+    void outputFeatures(const ResultFeatureTrees& mappedGene,
                         ostream& mappedGxfFh,
                         ostream& unmappedGxfFh);
     void outputInfoHeader(ostream& mappingInfoFh) const;
-    const GxfFeature* getTargetAnnotation(FeatureNode* featureNode) const;
-    const FeatureNode* getTargetAnnotationNode(FeatureNode* featureNode) const;
-    TargetStatus getTargetAnnotationStatus(FeatureNode* featureNode) const;
-    const string& getTargetAnnotationBiotype(FeatureNode* featureNode) const;
-    void outputFeatureInfo(FeatureNode* featureNode,
-                           bool substituteMissingTarget,
+    const GxfFeature* getTargetAnnotation(const FeatureNode* featureNode) const;
+    const FeatureNode* getTargetAnnotationNode(const FeatureNode* featureNode) const;
+    TargetStatus getTargetAnnotationStatus(const ResultFeatureTrees* mappedFeature) const;
+    const string& getTargetAnnotationBiotype(const ResultFeatureTrees* mappedFeature) const;
+    void outputFeatureInfo(const ResultFeatureTrees* mappedGene,
+                           bool substituteTarget,
                            ostream& mappingInfoFh) const;
-    void outputInfo(FeatureNode* geneNode,
+    void outputTranscriptInfo(const ResultFeatureTrees* mappedGene,
+                              bool substituteTarget,
+                              const FeatureNode* srcTranscript,
+                              ostream& mappingInfoFh) const;
+    void outputInfo(const ResultFeatureTrees* mappedGene,
                     ostream& mappingInfoFh) const;
-    void processGeneLevelMapping(FeatureNode* geneTree);
-    void setGeneLevelMappingAttributes(FeatureNode* geneTree);
+    void processGeneLevelMapping(ResultFeatureTrees* mappedGene);
+    void setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene);
     void copySkippedTargetGene(GxfFormat gxfFormat,
                                const FeatureNode* targetGeneNode,
                                ostream& mappedGxfFh,
@@ -110,11 +117,11 @@ class GeneMapper {
     /* Constructor */
     GeneMapper(const TransMap* genomeTransMap,
                const TargetAnnotations* targetAnnotations,
-               const string& substituteMissingTargetVersion,
+               const string& substituteTargetVersion,
                bool skipAutomaticNonCoding):
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
-        fSubstituteMissingTargetVersion(substituteMissingTargetVersion),
+        fSubstituteTargetVersion(substituteTargetVersion),
         fSkipAutomaticNonCoding(skipAutomaticNonCoding) {
     }
 

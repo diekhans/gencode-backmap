@@ -7,8 +7,8 @@ class TransMap;
 class PslMapping;
 class FeatureTransMap;
 class GxfFeature;
-class FeatureNode;
 class TargetAnnotations;
+#include "featureTree.hh"
 #include "gxf.hh"
 #include "transMap.hh"
 
@@ -36,15 +36,15 @@ class TranscriptMapper {
     static GxfFeatureVector getExons(const FeatureNode* transcriptTree);
     PslMapping* allExonsTransMap(const FeatureNode* transcriptTree) const;
     static const TransMapVector makeViaExonsTransMap(const PslMapping* exonsMapping);
-    void mapTranscriptFeature(FeatureNode* transcriptNode);
-    void mapFeatures(FeatureNode* featureNode);
-    void mapTranscriptFeaturesViaExons(FeatureNode* transcriptTree);
-    void processUnmappedFeatures(FeatureNode* featureNode);
+    PslMapping* featurePslMap(const FeatureNode* featureNode);
+    TransMappedFeature mapNodeFeature(const FeatureNode* featureNode);
+    TransMappedFeature mapFeatures(const FeatureNode* featureNode);
+    ResultFeatureTrees mapTranscriptFeature(const FeatureNode* transcriptNode);
 
     public:
     /* constructor, targetAnnotations can be NULL */
     TranscriptMapper(const TransMap* genomeTransMap,
-                     FeatureNode* transcriptTree,
+                     const FeatureNode* transcriptTree,
                      const TargetAnnotations* targetAnnotations,
                      bool srcSeqInMapping,
                      ostream* transcriptPslFh);
@@ -55,7 +55,7 @@ class TranscriptMapper {
     /*
      * map one transcript's annotations.  Fill in transcriptTree
      */
-    void mapTranscriptFeatures(FeatureNode* transcriptTree);
+    ResultFeatureTrees mapTranscriptFeatures(const FeatureNode* transcriptTree);
 };
 
 #endif

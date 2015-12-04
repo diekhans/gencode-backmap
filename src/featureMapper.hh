@@ -5,6 +5,7 @@
 #define featureMapper_hh
 #include <string>
 #include "remapStatus.hh"
+#include "featureTree.hh"
 using namespace std;
 
 
@@ -14,79 +15,71 @@ class PslCursor;
 class FeatureNode;
 class PslMapping;
 
+
 /**
  * Class of static functions to map a set of features of a transcript, using
  * an mapping of the feature coordinates.
  */
 class FeatureMapper {
     private:
-    static void mkMappedFeature(const GxfFeature* feature,
-                                const PslCursor& srcPslCursor,
-                                const PslCursor& mappedPslCursor,
-                                int length,
-                                FeatureNode* featureNode);
-    static void mkUnmappedFeature(const GxfFeature* feature,
-                                  const PslCursor& srcPslCursor,
-                                  const PslCursor& mappedPslCursor,
-                                  int length,
-                                  FeatureNode* featureNode);
+    static FeatureNode* mkMappedFeature(const GxfFeature* feature,
+                                        const PslCursor& srcPslCursor,
+                                        const PslCursor& mappedPslCursor,
+                                        int length);
+    static FeatureNode* mkUnmappedFeature(const GxfFeature* feature,
+                                          const PslCursor& srcPslCursor,
+                                          const PslCursor& mappedPslCursor,
+                                          int length);
     static void mapFeaturePart(const GxfFeature* feature,
                                PslCursor& srcPslCursor,
                                PslCursor& mappedPslCursor,
-                               FeatureNode* featureNode);
+                               TransMappedFeature& transMappedFeature);
     static void mapFeature(const GxfFeature* feature,
                            PslCursor& srcPslCursor,
                            PslCursor& mappedPslCursor,
-                           FeatureNode* featureNode);
-    static void processMappedFeature(FeatureNode* featureNode,
-                                     const PslMapping* pslMapping);
-    static void processUnmappedFeature(FeatureNode* featureNode);
-    static bool shouldSplitIds(const GxfFeatureVector& outputFeatures);
-    static void splitId(GxfFeature* outputFeature,
+                           TransMappedFeature& transMappedFeature);
+    static bool shouldSplitIds(const FeatureNodeVector& featureNodes);
+    static void splitId(FeatureNode* featureNode,
                         int partIdx);
-    static void splitId(GxfFeatureVector& outputFeatures,
-                        int partIdx);
-    static void splitIds(GxfFeatureVector& outputFeatures);
-    static void splitIds(FeatureNode* featureNode);
-    static GxfFeature* findContaining(GxfFeature* child,
-                                      GxfFeatureVector& parentParts);
-    static void updateParent(GxfFeature* child,
-                             GxfFeatureVector& parentParts);
-    static void updateParents(GxfFeatureVector& childParts,
-                              GxfFeatureVector& parentParts);
-    static void updateParents(FeatureNode* featureNode,
-                              FeatureNode* parentNode);
-
+    static void splitIds(FeatureNodeVector& featureNode);
+    static void splitIds(TransMappedFeature& transMappedFeature);
+    static void processMappedFeature(const FeatureNode* featureNode,
+                                     const PslMapping* pslMapping,
+                                     TransMappedFeature& transMappedFeature);
+    static void processUnmappedFeature(const FeatureNode* featureNode,
+                                       TransMappedFeature& transMappedFeature);
+    static FeatureNode* findContaining(FeatureNodeVector& parentFeatures,
+                                       FeatureNode* childNode);
+    static void updateParent(FeatureNodeVector& parentFeatures,
+                             FeatureNode* childNode);
+    static void updateParents(FeatureNodeVector& parentFeatures,
+                              FeatureNodeVector& childFeatures);
     public:
     /* Map a single feature though an alignment of that feature.  The
      * pslMapping object will be NULL if source is not in mapping alignments
      * or when indirect mappings can't be done because initial mapping is
-     * deleted.  Fill in mapped and unmapped arrays in featureNode. */
-    static bool map(FeatureNode* featureNode,
-                    const PslMapping* pslMapping);
+     * deleted. */
+    static TransMappedFeature map(const FeatureNode* featureNode,
+                               const PslMapping* pslMapping);
+
+    /* update Parent id for mapped or unmapped, if needed. Link FeatureNode
+     * objects. */
+    static void updateParent(FeatureNode* parentFeature,
+                             FeatureNode* childFeature);
+
+    /* validate parents and update Parent id for mapped and unmapped, in
+     * needed. */
+    static void updateParents(TransMappedFeature& parentFeatures,
+                              TransMappedFeature& childFeatures);
 
     /* Map as single, bounding feature, like a gene or transcript record.
      * it's range is covered by contained ranges.  Omit new ranges if
      * unmapped.
      */
-    static void mapBounding(FeatureNode* featureNode,
-                            const string& targetSeqid="",
-                            int targetStart=-1,
-                            int targetEnd=-1,
-                            const string& targetStrand=".");
-
-    /*
-     * Recursively update node ids and parent links if this is a GFF3.  Also
-     * verifies that child node is contained withing a parent.  This is all that
-     * is done for GTF.  Parent is passed down rather than found by pointer in
-     * structure so we don't attempt to update above the tree we started with.
-     */
-    static void updateIds(FeatureNode* featureNode,
-                          FeatureNode* parentNode=NULL);
-
-    /* Convert a feature to full unmapped, removing any partial unmapped features.
-     * Used when transcript conflicts withing a gene are found.
-     */
-    static void forceToUnmapped(FeatureNode* featureNode);
+    static FeatureNode* mapBounding(const FeatureNode* featureNode,
+                                    const string& targetSeqid="",
+                                    int targetStart=-1,
+                                    int targetEnd=-1,
+                                    const string& targetStrand=".");
 };
 #endif
