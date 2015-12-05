@@ -20,25 +20,6 @@ static const char* mappingInfoHeaders[] = {
     "targetStatus", "targetBiotype", "targetSubst", NULL
 };
 
-/* ensembl non-coding gene biotypes to skip */
-static const char* automaticNonCodingGeneBiotypes[] = {
-    "miRNA", "misc_RNA", "Mt_rRNA", "Mt_tRNA", "ribozyme", "rRNA", "scaRNA",
-    "snoRNA", "snRNA", "sRNA", NULL
-};
-
-/* is ensembl small non-coding gene */
-bool GeneMapper::isAutomaticSmallNonCodingGene(const FeatureNode* geneTree) {
-    if (geneTree->fFeature->fSource != "ENSEMBL") {
-        return false;
-    }
-    const string& bioType = geneTree->fFeature->getTypeBiotype();
-    for (int i = 0; automaticNonCodingGeneBiotypes[i] != NULL; i++) {
-        if (bioType == automaticNonCodingGeneBiotypes[i]) {
-            return true;
-        }
-    }
-    return false;
-}
 /* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(const GxfFeature* feature) const {
     return fGenomeTransMap->haveQuerySeq(feature->fSeqid);
@@ -488,10 +469,7 @@ void GeneMapper::outputInfo(const ResultFeatureTrees* mappedGene,
  * return true if gene is ok, false if force to unmapped.
  */
 void GeneMapper::processGeneLevelMapping(ResultFeatureTrees* mappedGene) {
-    if (fUseTargetForAutoGenes and 
-        isAutomaticSmallNonCodingGene(mappedGene->src)) {
-        forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_AUTOMATIC_GENE);
-    } else if (hasMixedMappedSeqStrand(mappedGene)) {
+    if (hasMixedMappedSeqStrand(mappedGene)) {
         forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_GENE_CONFLICT);
     } else if (hasExcessiveSizeChange(mappedGene)) {
         forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_GENE_SIZE_CHANGE);
@@ -535,8 +513,10 @@ void GeneMapper::mapGene(FeatureNode* srcGeneTree,
 /* determine if this is a gene type that should not be mapped, returning
  * the remap status */
 RemapStatus GeneMapper::getNoMapRemapStatus(const FeatureNode* geneTree) {
-    if (fUseTargetForAutoGenes && (geneTree->fFeature->fSource == GxfFeature::SOURCE_ENSEMBL)) {
+    if (fUseTargetForAutoGenes && geneTree->isAutomatic()) {
         return REMAP_STATUS_AUTOMATIC_GENE;
+    } else if (fUseTargetForPseudoGenes && geneTree->isPseudogene()) {
+        return REMAP_STATUS_PSEUDOGENE;
     } else {
         return REMAP_STATUS_NONE;
     }

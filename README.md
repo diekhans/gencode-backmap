@@ -37,15 +37,13 @@ Mapping is done on a per-gene mapping using the following steps:
   overlap the target gene, it is also rejected.
   - If a gene did not map or was rejected and a version of the gene with the
     same biotype exists in the target annotations, use the existing gene.
+- Optionally, automatic genes and pseudogenes.  This avoids complex mappings of
+  small RNAs imported from other database (e.g. mirRNAs).
 
 Pairing of source and target genes is somewhat complex due to instability of
 some gene identifiers between assemblies.  If a matching base gene id (less
 version) is not found, an attempt is made to match the genes using the
 symbolic name.
-
-Normally, Ensembl-only non-coding loci are not mapped, just passed through from
-the target annotation set and not mapped.  This avoids complex mappings of
-small RNAs important from other database (e.g. mirRNAs).
 
 
 ### Categorization of mappings 
@@ -65,8 +63,10 @@ the mapping information file.  The attributes and their values are:
   - `gene_conflict` - Transcripts in the gene mapped to multiple locations.
   - `gene_size_change` - Transcripts caused gene's length to change by more than 50%.
      This is to detect mapping to processed pseudogenes and mapping across tandem gene duplications.
-  - `automatic_ncrna` - Gene is a small non-coding RNA from an automatic process (ENSEMBL source).  These
-     are not mapped if the `--skipAutomaticNonCoding` is available.
+  - `automatic_gene` - Gene is a from an automatic process (ENSEMBL source).  These
+     are take from the target annotations `--useTargetForAutoGenes` is specified.
+  - `pseudogene` - Pseuduogene annotations (excluding polymorphic).  These
+     are take from the target annotations `--useTargetForPseudoGenes` is specified.
 - `remap_original_id` - Original ID attribute of the feature.  If a feature is split when mapped,
   new IDs are created, otherwise the original ID is used.
 - `remap_original_location` - Location of the feature in the source genome.

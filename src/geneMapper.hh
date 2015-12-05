@@ -36,7 +36,6 @@ class GeneMapper {
         }
     }
 
-    bool isAutomaticSmallNonCodingGene(const FeatureNode* geneTree);
     bool isSrcSeqInMapping(const GxfFeature* feature) const;
     bool isSrcSeqInMapping(const FeatureNode* featureNode) const;
     ResultFeatureTrees processTranscript(const FeatureNode* transcriptTree,

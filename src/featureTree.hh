@@ -68,6 +68,18 @@ class FeatureNode {
         return (fFeature->fType == GxfFeature::GENE) or (fFeature->fType == GxfFeature::TRANSCRIPT);
     }
 
+    /* is this an automatic annotation? */
+    bool isAutomatic() const {
+        return fFeature->fSource == GxfFeature::SOURCE_ENSEMBL;
+    }
+
+    /* is this an pseudogene annotation (excluding polymorphic)? */
+    bool isPseudogene() const {
+        const string& biotype = fFeature->getTypeBiotype();
+        return (biotype != "polymorphic_pseudogene")
+            and (biotype.find("pseudogene") != biotype.npos);
+    }
+
     bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
     bool allChildWithRemapStatus(unsigned remapStatusSet) const;
 
