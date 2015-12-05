@@ -240,6 +240,10 @@ public:
     static const string TRANSCRIPT_TYPE_ID_ATTR;
     static const string EXON_ID_ATTR;
     
+    /* source names */
+    static const string SOURCE_HAVANA;
+    static const string SOURCE_ENSEMBL;
+    
     // columns parsed from file.
     const string fSeqid;
     const string fSource;

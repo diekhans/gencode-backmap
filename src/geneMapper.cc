@@ -488,9 +488,9 @@ void GeneMapper::outputInfo(const ResultFeatureTrees* mappedGene,
  * return true if gene is ok, false if force to unmapped.
  */
 void GeneMapper::processGeneLevelMapping(ResultFeatureTrees* mappedGene) {
-    if (fSkipAutomaticNonCoding and 
+    if (fUseTargetForAutoGenes and 
         isAutomaticSmallNonCodingGene(mappedGene->src)) {
-        forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_AUTOMATIC_NON_CODING);
+        forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_AUTOMATIC_GENE);
     } else if (hasMixedMappedSeqStrand(mappedGene)) {
         forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_GENE_CONFLICT);
     } else if (hasExcessiveSizeChange(mappedGene)) {
@@ -512,13 +512,12 @@ void GeneMapper::setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene) {
 /*
  * map and output one gene's annotations
  */
-void GeneMapper::processGene(GxfParser *gxfParser,
-                             GxfFeature* geneFeature,
-                             GxfWriter& mappedGxfFh,
-                             GxfWriter& unmappedGxfFh,
-                             ostream& mappingInfoFh,
-                             ostream* transcriptPslFh) {
-    FeatureNode* srcGeneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
+void GeneMapper::mapGene(FeatureNode* srcGeneTree,
+                         GxfFeature* geneFeature,
+                         GxfWriter& mappedGxfFh,
+                         GxfWriter& unmappedGxfFh,
+                         ostream& mappingInfoFh,
+                         ostream* transcriptPslFh) {
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
     ResultFeatureTrees mappedGene = buildGeneFeature(srcGeneTree, mappedTranscripts);
     setGeneLevelMappingAttributes(&mappedGene);
@@ -531,6 +530,71 @@ void GeneMapper::processGene(GxfParser *gxfParser,
     outputFeatures(mappedGene, mappedGxfFh, unmappedGxfFh);
     outputInfo(&mappedGene, mappingInfoFh);
     mappedGene.free();
+}
+
+/* determine if this is a gene type that should not be mapped, returning
+ * the remap status */
+RemapStatus GeneMapper::getNoMapRemapStatus(const FeatureNode* geneTree) {
+    if (fUseTargetForAutoGenes && (geneTree->fFeature->fSource == GxfFeature::SOURCE_ENSEMBL)) {
+        return REMAP_STATUS_AUTOMATIC_GENE;
+    } else {
+        return REMAP_STATUS_NONE;
+    }
+} 
+
+/*
+ * check if a gene type should be mapped or targets of this type substituted.
+ */
+bool GeneMapper::shouldMapGeneType(const FeatureNode* geneTree) {
+    return getNoMapRemapStatus(geneTree) == REMAP_STATUS_NONE;
+}
+
+/*
+ * copy a target gene annotation that was skipped for mapping
+ */
+void GeneMapper::copyTargetGene(const FeatureNode* targetGeneNode,
+                                GxfWriter& mappedGxfFh,
+                                ostream& mappingInfoFh) {
+    ResultFeatureTrees mappedGene;
+    mappedGene.src = targetGeneNode;
+    mappedGene.target = targetGeneNode->clone();
+    mappedGene.target->rsetRemapStatus(getNoMapRemapStatus(targetGeneNode));
+    mappedGene.target->rsetRemapStatusAttr();
+    mappedGene.target->rsetTargetStatusAttr();
+    mappedGene.target->rsetSubstitutedMissingTargetAttr(fSubstituteTargetVersion);
+    outputFeature(mappedGene.target, mappedGxfFh);
+    outputInfo(&mappedGene, mappingInfoFh);
+    mappedGene.src = NULL; // don't free!!
+}
+
+/*
+ * copy target annotations that are skipped for mapping
+ */
+void GeneMapper::copyTargetGenes(GxfWriter& mappedGxfFh,
+                                 ostream& mappingInfoFh) {
+    const FeatureNodeVector& genes = fTargetAnnotations->getGenes();
+    for (int iGene = 0; iGene < genes.size(); iGene++) {
+        if ((not shouldMapGeneType(genes[iGene])) and isSrcSeqInMapping(genes[iGene])) {
+            copyTargetGene(genes[iGene], mappedGxfFh, mappingInfoFh);
+        }
+    }
+}
+
+/*
+ * map and output one gene's annotations
+ */
+void GeneMapper::processGene(GxfParser *gxfParser,
+                             GxfFeature* geneFeature,
+                             GxfWriter& mappedGxfFh,
+                             GxfWriter& unmappedGxfFh,
+                             ostream& mappingInfoFh,
+                             ostream* transcriptPslFh) {
+    FeatureNode* srcGeneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
+    if (shouldMapGeneType(srcGeneTree)) {
+        mapGene(srcGeneTree, geneFeature, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
+    } else  {
+        delete srcGeneTree;
+    }
 }
 
 /* process a record, this may consume additional feature records  */
@@ -554,31 +618,6 @@ void GeneMapper::processRecord(GxfParser *gxfParser,
     }
 }
 
-/*
- * copy a target gene annotation that was skipped for mapping
- */
-void GeneMapper::copySkippedTargetGene(const FeatureNode* targetGeneNode,
-                                       GxfWriter& mappedGxfFh,
-                                       ostream& mappingInfoFh) {
-#if 0 // FIXME
-    FeatureNode* copiedGeneNode = targetGeneNode->clone(gxfFormat);
-    outputInfo(copiedGeneNode, mappingInfoFh);
-#endif
-}
-
-/*
- * copy target annotations that are skipped for mapping
- */
-void GeneMapper::copySkippedTargetGenes(GxfWriter& mappedGxfFh,
-                                        ostream& mappingInfoFh) {
-    const FeatureNodeVector& genes = fTargetAnnotations->getGenes();
-    for (int iGene = 0; iGene < genes.size(); iGene++) {
-        if (isAutomaticSmallNonCodingGene(genes[iGene])) {
-            copySkippedTargetGene(genes[iGene], mappedGxfFh, mappingInfoFh);
-        }
-    }
-}
-
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfParser *gxfParser,
                         GxfWriter& mappedGxfFh,
@@ -591,8 +630,9 @@ void GeneMapper::mapGxf(GxfParser *gxfParser,
         processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     }
 
-    if (fSkipAutomaticNonCoding and (fTargetAnnotations != NULL)) {
-        copySkippedTargetGenes(mappedGxfFh, mappingInfoFh);
+    if ((fUseTargetForAutoGenes or fUseTargetForPseudoGenes)
+        and (fTargetAnnotations != NULL)) {
+        copyTargetGenes(mappedGxfFh, mappingInfoFh);
     }
 }
 

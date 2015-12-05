@@ -170,18 +170,20 @@ class ResultFeatureTrees {
         unmapped = NULL;
     }
 
-    /* get remap status from either mapped or unmapped. */
+    /* get remap status from either mappedm unmapped, or target. */
     RemapStatus getRemapStatus() const {
         if (mapped != NULL) {
             return mapped->fRemapStatus;
         } else if (unmapped != NULL) {
             return unmapped->fRemapStatus;
+        } else if (target != NULL) {
+            return target->fRemapStatus;
         } else {
             return REMAP_STATUS_DELETED;
         }
     }
 
-    /* recursively set the remap status. */
+    /* recursively set the remap status on mapped and unmapped */
     void rsetRemapStatus(RemapStatus remapStatus) {
         if (mapped != NULL) {
             mapped->rsetRemapStatus(remapStatus);
@@ -191,18 +193,20 @@ class ResultFeatureTrees {
         }
     }
 
-    /* get target status from either mapped or unmapped. */
+    /* get target status from either mapped, unmapped, or target */
     TargetStatus getTargetStatus() const {
         if (mapped != NULL) {
             return mapped->fTargetStatus;
         } else if (unmapped != NULL) {
             return unmapped->fTargetStatus;
+        } else if (target != NULL) {
+            return target->fTargetStatus;
         } else {
             return TARGET_STATUS_LOST;
         }
     }
 
-    /* set target status on trees */
+    /* set target status on mapped and unmapped trees */
     void setTargetStatus(TargetStatus targetStatus) {
         if (mapped != NULL) {
             mapped->setTargetStatus(targetStatus);

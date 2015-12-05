@@ -57,6 +57,10 @@ const string GxfFeature::TRANSCRIPT_NAME_ATTR = "transcript_name";
 const string GxfFeature::TRANSCRIPT_TYPE_ID_ATTR = "transcript_type";
 const string GxfFeature::EXON_ID_ATTR = "exon_id";
 
+const string GxfFeature::SOURCE_HAVANA = "HAVANA";
+const string GxfFeature::SOURCE_ENSEMBL = "ENSEMBL";
+
+
 /* Get format from file name, or error */
 GxfFormat gxfFormatFromFileName(const string& fileName) {
     if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")) {

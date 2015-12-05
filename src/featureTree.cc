@@ -242,8 +242,8 @@ RemapStatus ResultFeatureTrees::calcBoundingFeatureRemapStatus(bool srcSeqInMapp
     if (allChildWithRemapStatus(REMAP_STATUS_GENE_SIZE_CHANGE)) {
         return REMAP_STATUS_GENE_SIZE_CHANGE;
     }
-    if (allChildWithRemapStatus(REMAP_STATUS_AUTOMATIC_NON_CODING)) {
-        return REMAP_STATUS_AUTOMATIC_NON_CODING;
+    if (allChildWithRemapStatus(REMAP_STATUS_AUTOMATIC_GENE)) {
+        return REMAP_STATUS_AUTOMATIC_GENE;
     }
     dump(cerr);
     throw logic_error("gene RemapStatus logic error");

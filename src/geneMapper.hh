@@ -18,7 +18,8 @@ class GeneMapper {
     const TransMap* fGenomeTransMap;  // genomic mapping
     const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
     const string fSubstituteTargetVersion;  // pass through targets when gene new gene doesn't map
-    bool fSkipAutomaticNonCoding;  // don't map automatic non-coding gennes
+    bool fUseTargetForAutoGenes;  // don't map automatic genes
+    bool fUseTargetForPseudoGenes;  // don't map pseudogenes
 
     typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
     typedef pair<string, bool> SeqIdMapPair;
@@ -94,11 +95,19 @@ class GeneMapper {
                     ostream& mappingInfoFh) const;
     void processGeneLevelMapping(ResultFeatureTrees* mappedGene);
     void setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene);
-    void copySkippedTargetGene(const FeatureNode* targetGeneNode,
-                               GxfWriter& mappedGxfFh,
-                               ostream& mappingInfoFh);
-    void copySkippedTargetGenes(GxfWriter& mappedGxfFh,
-                                ostream& mappingInfoFh);
+    void mapGene(FeatureNode* srcGeneTree,
+                 GxfFeature* geneFeature,
+                 GxfWriter& mappedGxfFh,
+                 GxfWriter& unmappedGxfFh,
+                 ostream& mappingInfoFh,
+                 ostream* transcriptPslFh);
+    RemapStatus getNoMapRemapStatus(const FeatureNode* geneTree);
+    bool shouldMapGeneType(const FeatureNode* geneTree);
+    void copyTargetGene(const FeatureNode* targetGeneNode,
+                        GxfWriter& mappedGxfFh,
+                        ostream& mappingInfoFh);
+    void copyTargetGenes(GxfWriter& mappedGxfFh,
+                         ostream& mappingInfoFh);
     void processGene(GxfParser *gxfParser,
                      GxfFeature* geneFeature,
                      GxfWriter& mappedGxfFh,
@@ -116,11 +125,13 @@ class GeneMapper {
     GeneMapper(const TransMap* genomeTransMap,
                const TargetAnnotations* targetAnnotations,
                const string& substituteTargetVersion,
-               bool skipAutomaticNonCoding):
+               bool useTargetForAutoGenes,
+               bool useTargetForPseudoGenes):
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
         fSubstituteTargetVersion(substituteTargetVersion),
-        fSkipAutomaticNonCoding(skipAutomaticNonCoding) {
+        fUseTargetForAutoGenes(useTargetForAutoGenes),
+        fUseTargetForPseudoGenes(useTargetForPseudoGenes) {
     }
 
     /* Map a GFF3/GTF */
