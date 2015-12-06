@@ -30,6 +30,52 @@ bool GeneMapper::isSrcSeqInMapping(const FeatureNode* featureNode) const {
     return isSrcSeqInMapping(featureNode->fFeature);
 }
 
+/* record gene or transcript as being mapped */
+void GeneMapper::recordMapped(const FeatureNode* featureNode) {
+    fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getTypeId()));
+    fMappedIdsNames.insert(featureNode->fFeature->getTypeName());
+    if (featureNode->fFeature->getHavanaTypeId() != "") {
+        fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getHavanaTypeId()));
+    }
+}
+
+/* record gene and it's transcript as being mapped */
+void GeneMapper::recordGeneMapped(const FeatureNode* geneTree) {
+    recordMapped(geneTree);
+    for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
+        recordMapped(geneTree->fChildren[i]);
+    }
+}
+
+/* check if gene or transcript have been mapped */
+bool GeneMapper::checkMapped(const FeatureNode* featureNode) {
+    if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getTypeId())) != fMappedIdsNames.end()) {
+        return true;
+    }
+    if (fMappedIdsNames.find(featureNode->fFeature->getTypeName()) != fMappedIdsNames.end()) {
+        return true;
+    }
+    if (featureNode->fFeature->getHavanaTypeId() != "") {
+        if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getHavanaTypeId())) != fMappedIdsNames.end()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/* check if gene or it's transcript have been mapped */
+bool GeneMapper::checkGeneMapped(const FeatureNode* geneTree) {
+    if (checkMapped(geneTree)) {
+        return true;
+    }
+    for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
+        if (checkMapped(geneTree->fChildren[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /* process one transcript */
 ResultFeatureTrees GeneMapper::processTranscript(const FeatureNode* transcriptTree,
                                                  ostream* transcriptPslFh) const {
@@ -359,9 +405,13 @@ const FeatureNode* GeneMapper::getTargetAnnotationNode(const FeatureNode* featur
     if (fTargetAnnotations == NULL) {
         return NULL;
     }
-    // try id, then name
+    // try id, havana id, then name
     const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(featureNode->fFeature->getTypeId(),
                                                                            featureNode->fFeature->fSeqid);
+    if ((targetNode == NULL) and (featureNode->fFeature->getHavanaTypeId() != "")) {
+        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->fFeature->getHavanaTypeId(),
+                                                              featureNode->fFeature->fSeqid);
+    }
     if (targetNode == NULL) {
         targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->fFeature->getTypeName(),
                                                               featureNode->fFeature->fSeqid);
@@ -507,6 +557,11 @@ void GeneMapper::mapGene(FeatureNode* srcGeneTree,
     }
     outputFeatures(mappedGene, mappedGxfFh, unmappedGxfFh);
     outputInfo(&mappedGene, mappingInfoFh);
+    // remember we wrote this so we don't copy target when source changes
+    recordGeneMapped(mappedGene.src);
+    if (mappedGene.target != NULL) {
+        recordGeneMapped(mappedGene.target);
+    }
     mappedGene.free();
 }
 
@@ -554,7 +609,8 @@ void GeneMapper::copyTargetGenes(GxfWriter& mappedGxfFh,
                                  ostream& mappingInfoFh) {
     const FeatureNodeVector& genes = fTargetAnnotations->getGenes();
     for (int iGene = 0; iGene < genes.size(); iGene++) {
-        if ((not shouldMapGeneType(genes[iGene])) and isSrcSeqInMapping(genes[iGene])) {
+        if ((not shouldMapGeneType(genes[iGene])) and isSrcSeqInMapping(genes[iGene])
+            and not checkGeneMapped(genes[iGene])) {
             copyTargetGene(genes[iGene], mappedGxfFh, mappingInfoFh);
         }
     }

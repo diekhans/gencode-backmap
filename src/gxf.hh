@@ -235,9 +235,11 @@ public:
     static const string GENE_ID_ATTR;
     static const string GENE_NAME_ATTR;
     static const string GENE_TYPE_ID_ATTR;
+    static const string GENE_HAVANA_ATTR;
     static const string TRANSCRIPT_ID_ATTR;
     static const string TRANSCRIPT_NAME_ATTR;
     static const string TRANSCRIPT_TYPE_ID_ATTR;
+    static const string TRANSCRIPT_HAVANA_ATTR;
     static const string EXON_ID_ATTR;
     
     /* source names */
@@ -324,6 +326,10 @@ public:
     /* get the id based on feature type, or empty string if it doesn't have an
      * id */
     const string& getTypeId() const;
+    
+    /* get the id based on feature type, or empty string if it doesn't have an
+     * id */
+    const string& getHavanaTypeId() const;
     
     /* get the name based on feature type, or empty string if it doesn't have an
      * id */

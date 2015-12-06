@@ -5,7 +5,7 @@
 #define geneMapper_hh
 #include "gxf.hh"
 #include "featureTree.hh"
-#include <map>
+#include <set>
 class TransMap;
 class PslMapping;
 struct psl;
@@ -21,15 +21,19 @@ class GeneMapper {
     bool fUseTargetForAutoGenes;  // don't map automatic genes
     bool fUseTargetForPseudoGenes;  // don't map pseudogenes
 
-    typedef map<string, bool> SeqIdMap; // used for outputting GFF3 ##sequence-region metadata
-    typedef pair<string, bool> SeqIdMapPair;
-    SeqIdMap fMappedSeqRegionsWritten;  // mapped sequence ids that have been written
+    typedef set<string> StringSet;
+    StringSet fMappedSeqRegionsWritten;  // mapped sequence ids that have been written
+
+    /* set of base ids (gene, transcript, havana) and gene names that have been
+     * mapped.  Used to prevent output of target genes types that are not being
+     * mapped (automatic genes), when type or source changes are already mapped */
+    StringSet fMappedIdsNames;
 
     /* check if a seqregion for seqid has been written, if so, return true,
      * otherwise record it and return false.  */
     bool checkRecordSeqRegionWritten(const string& seqid) {
         if (fMappedSeqRegionsWritten.find(seqid) == fMappedSeqRegionsWritten.end()) {
-            fMappedSeqRegionsWritten.insert(SeqIdMapPair(seqid, true));
+            fMappedSeqRegionsWritten.insert(seqid);
             return false;
         } else {
             return true;
@@ -38,6 +42,10 @@ class GeneMapper {
 
     bool isSrcSeqInMapping(const GxfFeature* feature) const;
     bool isSrcSeqInMapping(const FeatureNode* featureNode) const;
+    void recordMapped(const FeatureNode* featureNode);
+    void recordGeneMapped(const FeatureNode* geneTree);
+    bool checkMapped(const FeatureNode* featureNode);
+    bool checkGeneMapped(const FeatureNode* geneTree);
     ResultFeatureTrees processTranscript(const FeatureNode* transcriptTree,
                                     ostream* transcriptPslFh) const;
     ResultFeatureTreesVector processTranscripts(const FeatureNode* geneTree,

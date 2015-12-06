@@ -52,9 +52,11 @@ const string GxfFeature::PARENT_ATTR = "Parent";
 const string GxfFeature::GENE_ID_ATTR = "gene_id";
 const string GxfFeature::GENE_NAME_ATTR = "gene_name";
 const string GxfFeature::GENE_TYPE_ID_ATTR = "gene_type";
+const string GxfFeature::GENE_HAVANA_ATTR = "havana_gene";
 const string GxfFeature::TRANSCRIPT_ID_ATTR = "transcript_id";
 const string GxfFeature::TRANSCRIPT_NAME_ATTR = "transcript_name";
 const string GxfFeature::TRANSCRIPT_TYPE_ID_ATTR = "transcript_type";
+const string GxfFeature::TRANSCRIPT_HAVANA_ATTR = "havana_transcript";
 const string GxfFeature::EXON_ID_ATTR = "exon_id";
 
 const string GxfFeature::SOURCE_HAVANA = "HAVANA";
@@ -88,6 +90,18 @@ const string& GxfFeature::getTypeId() const {
         return getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR, emptyString);
     } else if (fType == GxfFeature::EXON) {
         return getAttrValue(GxfFeature::EXON_ID_ATTR, emptyString);
+    } else {
+        return emptyString;
+    }
+}
+
+/* get the havana id based on feature type, or empty string if it doesn't have an
+ * id */
+const string& GxfFeature::getHavanaTypeId() const {
+    if (fType == GxfFeature::GENE) {
+        return getAttrValue(GxfFeature::GENE_HAVANA_ATTR, emptyString);
+    } else if (fType == GxfFeature::TRANSCRIPT) {
+        return getAttrValue(GxfFeature::TRANSCRIPT_HAVANA_ATTR, emptyString);
     } else {
         return emptyString;
     }

@@ -139,3 +139,5 @@ ENSG00000279195.1	PRAMEF11	gene	protein_coding	ENSEMBL	chr1	12824942	12828663	-	
 ENST00000355096.3	PRAMEF11-201	transcript	protein_coding	ENSEMBL	chr1	12824942	12828663	-	chr1	12884800	12888523	-	partial	1	new		
 ENSG00000278566.1	OR4F29	gene	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
 ENST00000426406.2	OR4F29-001	transcript	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
+ENSG00000231880.2	RP11-76I23.7	gene	antisense	HAVANA	chr11	47577725	47578277	+	chr11	47599277	47599829	+	full_contig	1	overlap	protein_coding	
+ENST00000450908.2	RP11-76I23.7-001	transcript	antisense	HAVANA	chr11	47577725	47578277	+	chr11	47599277	47599829	+	full_contig	1	overlap	protein_coding	

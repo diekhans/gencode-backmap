@@ -84,6 +84,8 @@ ENSG00000239810.3	PRAMEF11	gene	protein_coding	HAVANA	chr1	12824605	12831410	-		
 ENST00000619922.1	PRAMEF11-001	transcript	protein_coding	HAVANA	chr1	12824605	12831410	-		0	0	.	partial	1	new		V19
 ENSG00000278566.1	OR4F29	gene	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
 ENST00000426406.2	OR4F29-001	transcript	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
+ENSG00000231880.2	RP11-76I23.7	gene	antisense	HAVANA	chr11	47577725	47578277	+	chr11	47599277	47599829	+	full_contig	1	overlap	protein_coding	
+ENST00000450908.2	RP11-76I23.7-001	transcript	antisense	HAVANA	chr11	47577725	47578277	+	chr11	47599277	47599829	+	full_contig	1	overlap	protein_coding	
 ENSG00000223972.4	DDX11L1	gene	pseudogene	HAVANA	chr1	11869	14412	+		0	0	.	pseudogene	0	na	pseudogene	V19
 ENST00000456328.2	DDX11L1-002	transcript	processed_transcript	HAVANA	chr1	11869	14409	+		0	0	.	pseudogene	0	na	processed_transcript	V19
 ENST00000515242.2	DDX11L1-201	transcript	transcribed_unprocessed_pseudogene	ENSEMBL	chr1	11872	14412	+		0	0	.	pseudogene	0	na	transcribed_unprocessed_pseudogene	V19
@@ -95,9 +97,6 @@ ENST00000541675.1	WASH7P-204	transcript	unprocessed_pseudogene	ENSEMBL	chr1	1436
 ENST00000423562.1	WASH7P-201	transcript	unprocessed_pseudogene	ENSEMBL	chr1	14363	29370	-		0	0	.	pseudogene	0	na	unprocessed_pseudogene	V19
 ENST00000488147.1	WASH7P-001	transcript	unprocessed_pseudogene	HAVANA	chr1	14404	29570	-		0	0	.	pseudogene	0	na	unprocessed_pseudogene	V19
 ENST00000538476.1	WASH7P-203	transcript	unprocessed_pseudogene	ENSEMBL	chr1	14411	29806	-		0	0	.	pseudogene	0	na	unprocessed_pseudogene	V19
-ENSG00000171943.7	SRGAP2C	gene	pseudogene	HAVANA	chr1	121107124	121129949	+		0	0	.	pseudogene	0	na	pseudogene	V19
-ENST00000367123.3	SRGAP2C-201	transcript	unprocessed_pseudogene	ENSEMBL	chr1	121107124	121129949	+		0	0	.	pseudogene	0	na	unprocessed_pseudogene	V19
-ENST00000304465.6	SRGAP2C-001	transcript	unprocessed_pseudogene	HAVANA	chr1	121107154	121129692	+		0	0	.	pseudogene	0	na	unprocessed_pseudogene	V19
 ENSG00000201699.1	RNU1-59P	gene	snRNA	ENSEMBL	chr1	144534038	144534199	+		0	0	.	automatic_gene	0	na	snRNA	V19
 ENST00000364829.1	RNU1-59P-201	transcript	snRNA	ENSEMBL	chr1	144534038	144534199	+		0	0	.	automatic_gene	0	na	snRNA	V19
 ENSG00000242771.1	TRBV5-2	gene	TR_V_pseudogene	HAVANA	chr7	142259059	142259331	-		0	0	.	pseudogene	0	na	TR_V_pseudogene	V19
