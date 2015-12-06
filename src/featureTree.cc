@@ -23,6 +23,26 @@ const string REMAP_TARGET_STATUS_ATTR = "remap_target_status";
 /* Attribute indicating target gene was substituted due to   */
 const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR = "remap_substituted_missing_target";
 
+/* ensembl non-coding gene biotypes to skip */
+static const char* automaticNonCodingGeneBiotypes[] = {
+    "miRNA", "misc_RNA", "Mt_rRNA", "Mt_tRNA", "ribozyme", "rRNA", "scaRNA",
+    "snoRNA", "snRNA", "sRNA", NULL
+};
+
+/* is ensembl small non-coding gene */
+bool FeatureNode::isAutomaticSmallNonCodingGene() const {
+    if (fFeature->fSource != "ENSEMBL") {
+        return false;
+    }
+    const string& bioType = fFeature->getTypeBiotype();
+    for (int i = 0; automaticNonCodingGeneBiotypes[i] != NULL; i++) {
+        if (bioType == automaticNonCodingGeneBiotypes[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /* set the remap number of mappings attribute on this node.  not recursive,
  * since it's only set on gene/transcript */
 void FeatureNode::setNumMappingsAttr() {

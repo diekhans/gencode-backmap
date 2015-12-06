@@ -20,7 +20,7 @@ static const char* mappingInfoHeaders[] = {
     "targetStatus", "targetBiotype", "targetSubst", NULL
 };
 
-/* is the source sequence for a feature in the mapping at all? */
+ /* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(const GxfFeature* feature) const {
     return fGenomeTransMap->haveQuerySeq(feature->fSeqid);
 }
@@ -568,9 +568,11 @@ void GeneMapper::mapGene(FeatureNode* srcGeneTree,
 /* determine if this is a gene type that should not be mapped, returning
  * the remap status */
 RemapStatus GeneMapper::getNoMapRemapStatus(const FeatureNode* geneTree) {
-    if (fUseTargetForAutoGenes && geneTree->isAutomatic()) {
+    if ((fUseTargetFlags & useTargetForAutoNonCoding)  && geneTree->isAutomaticSmallNonCodingGene()) {
+        return REMAP_STATUS_AUTO_SMALL_NCRNA;
+    } else if ((fUseTargetFlags & useTargetForAutoGenes)  && geneTree->isAutomatic()) {
         return REMAP_STATUS_AUTOMATIC_GENE;
-    } else if (fUseTargetForPseudoGenes && geneTree->isPseudogene()) {
+    } else if ((fUseTargetFlags && useTargetForPseudoGenes) && geneTree->isPseudogene()) {
         return REMAP_STATUS_PSEUDOGENE;
     } else {
         return REMAP_STATUS_NONE;
@@ -666,8 +668,7 @@ void GeneMapper::mapGxf(GxfParser *gxfParser,
         processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     }
 
-    if ((fUseTargetForAutoGenes or fUseTargetForPseudoGenes)
-        and (fTargetAnnotations != NULL)) {
+    if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {
         copyTargetGenes(mappedGxfFh, mappingInfoFh);
     }
 }

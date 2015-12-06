@@ -68,6 +68,9 @@ class FeatureNode {
         return (fFeature->fType == GxfFeature::GENE) or (fFeature->fType == GxfFeature::TRANSCRIPT);
     }
 
+    /* is ensembl small non-coding gene */
+    bool isAutomaticSmallNonCodingGene() const;
+
     /* is this an automatic annotation? */
     bool isAutomatic() const {
         return fFeature->fSource == GxfFeature::SOURCE_ENSEMBL;

@@ -11,7 +11,7 @@ testGencodeLiftOverChains = output/hg38ToHg19.gencode.over.chain
 
 all: test
 
-test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest gff3UcscSubstituteAuto\
+test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
 	mapInfoSumTests ucscLiftEditTest
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
@@ -32,6 +32,14 @@ gtfUcscTest: mkdirs ${testGencodeLiftOverChains}
 
 gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
+	diff -u expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	diff -u expected/$@.map-info output/$@.map-info
+
+gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
 	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3

@@ -15,8 +15,7 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& mappingAligns,
                            bool swapMap,
                            const string& substituteMissingTargetVersion,
-                           bool useTargetForAutoGenes,
-                           bool useTargetForPseudoGenes,
+                           unsigned useTargetFlags,
                            const string& mappedGxfFile,
                            const string& unmappedGxfFile,
                            const string& mappingInfoTsv,
@@ -29,8 +28,7 @@ static void gencodeBackmap(const string& inGxfFile,
     GxfWriter* unmappedGxfFh = GxfWriter::factory(unmappedGxfFile);
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
-    GeneMapper geneMapper(genomeTransMap, targetAnnotations, substituteMissingTargetVersion, useTargetForAutoGenes,
-                          useTargetForPseudoGenes);
+    GeneMapper geneMapper(genomeTransMap, targetAnnotations, substituteMissingTargetVersion, useTargetFlags);
     geneMapper.mapGxf(gxfParser, *mappedGxfFh, *unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete gxfParser;
     delete mappedGxfFh;
@@ -57,6 +55,8 @@ int main(int argc, char *argv[]) {
         "  --substituteMissingTargets=targetVersion - if target GxF is specified and no GENE maps to\n"
         "    the target locus, pass through the original target location.  Only a subset of the\n"
         "    biotypes are substituted. Argument is target GENCODE version that is stored as an attribute\n"
+        "  --useTargetForAutoSmallNonCoding - don't map automatic small non-coding transcripts, substituting\n"
+        "    the target if requested.\n"
         "  --useTargetForAutoGenes - don't map automatic-only genes, substituting\n"
         "    the target automatic genes, even if they are not in the source \n"
         "    If a target set is not specified, they are skipped.\n"
@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
         {"targetGxf", 1, NULL, 't'},
         {"transcriptPsls", 1, NULL, 'p'},
         {"substituteMissingTargets", 1, NULL, 'm'},
+        {"useTargetForAutoSmallNonCoding", 0, NULL, 'N'},
         {"useTargetForAutoGenes", 0, NULL, 'A'},
         {"useTargetForPseudoGenes", 0, NULL, 'P'},
         {"u", 0, NULL, 'n'},
@@ -87,8 +88,7 @@ int main(int argc, char *argv[]) {
     
     bool swapMap = false;
     bool help = false;
-    bool useTargetForAutoGenes = false;
-    bool useTargetForPseudoGenes = false;
+    unsigned useTargetFlags = 0;
     string targetGxf;
     string transcriptPsls;
     string substituteMissingTargetVersion;
@@ -108,10 +108,12 @@ int main(int argc, char *argv[]) {
             transcriptPsls = string(optarg);
         } else if (optc == 'm') {
             substituteMissingTargetVersion = string(optarg);
+        } else if (optc == 'N') {
+            useTargetFlags |= GeneMapper::useTargetForAutoNonCoding;
         } else if (optc == 'A') {
-            useTargetForAutoGenes = true;
+            useTargetFlags |= GeneMapper::useTargetForAutoGenes;
         } else if (optc == 'P') {
-            useTargetForPseudoGenes = true;
+            useTargetFlags |= GeneMapper::useTargetForPseudoGenes;
         } else {
             errAbort(toCharStr("invalid option %s"), argv[optind-1]);
         }
@@ -133,8 +135,8 @@ int main(int argc, char *argv[]) {
 
     try {
         gencodeBackmap(inGxfFile, mappingAligns, swapMap,
-                       substituteMissingTargetVersion, useTargetForAutoGenes,
-                       useTargetForPseudoGenes, mappedGxfFile, unmappedGxfFile,
+                       substituteMissingTargetVersion, useTargetFlags,
+                       mappedGxfFile, unmappedGxfFile,
         mappingInfoTsv, targetGxf, transcriptPsls);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;

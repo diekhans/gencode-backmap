@@ -14,12 +14,18 @@ class TargetAnnotations;
 
 /* class that maps a gene to the new assemble */
 class GeneMapper {
+    public:
+    // flags for use target instead of map
+    enum {
+        useTargetForAutoNonCoding = 0x01,
+        useTargetForAutoGenes = 0x02,
+        useTargetForPseudoGenes = 0x04
+    };
     private:
     const TransMap* fGenomeTransMap;  // genomic mapping
     const TargetAnnotations* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
     const string fSubstituteTargetVersion;  // pass through targets when gene new gene doesn't map
-    bool fUseTargetForAutoGenes;  // don't map automatic genes
-    bool fUseTargetForPseudoGenes;  // don't map pseudogenes
+    unsigned fUseTargetFlags;  // what targets to force.
 
     typedef set<string> StringSet;
     StringSet fMappedSeqRegionsWritten;  // mapped sequence ids that have been written
@@ -132,13 +138,11 @@ class GeneMapper {
     GeneMapper(const TransMap* genomeTransMap,
                const TargetAnnotations* targetAnnotations,
                const string& substituteTargetVersion,
-               bool useTargetForAutoGenes,
-               bool useTargetForPseudoGenes):
+               unsigned useTargetFlags):
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
         fSubstituteTargetVersion(substituteTargetVersion),
-        fUseTargetForAutoGenes(useTargetForAutoGenes),
-        fUseTargetForPseudoGenes(useTargetForPseudoGenes) {
+        fUseTargetFlags(useTargetFlags) {
     }
 
     /* Map a GFF3/GTF */

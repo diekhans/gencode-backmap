@@ -63,10 +63,12 @@ the mapping information file.  The attributes and their values are:
   - `gene_conflict` - Transcripts in the gene mapped to multiple locations.
   - `gene_size_change` - Transcripts caused gene's length to change by more than 50%.
      This is to detect mapping to processed pseudogenes and mapping across tandem gene duplications.
+  - `automatic_small_ncrna_gene` - Gene is a from a small, automatic (ENSEMBL source) non-coding RNA.  These
+     are take from the target annotations if `--useTargetForAutoGenes` is specified.
   - `automatic_gene` - Gene is a from an automatic process (ENSEMBL source).  These
-     are take from the target annotations `--useTargetForAutoGenes` is specified.
+     are take from the target annotations if `--useTargetForAutoGenes` is specified.
   - `pseudogene` - Pseuduogene annotations (excluding polymorphic).  These
-     are take from the target annotations `--useTargetForPseudoGenes` is specified.
+     are take from the target annotations if `--useTargetForPseudoGenes` is specified.
 - `remap_original_id` - Original ID attribute of the feature.  If a feature is split when mapped,
   new IDs are created, otherwise the original ID is used.
 - `remap_original_location` - Location of the feature in the source genome.
