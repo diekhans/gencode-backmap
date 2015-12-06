@@ -7,10 +7,9 @@ void TargetAnnotations::loadFeature(FeatureNode* featureNode) {
     assert(featureNode->isGeneOrTranscript());
     GxfFeature* feature = featureNode->fFeature;
     // record by id and name
-    string baseId = getBaseId(feature->getTypeId());
-    fIdFeatureMap[baseId].push_back(featureNode);
+    fIdFeatureMap[getBaseId(feature->getTypeId())].push_back(featureNode);
     if (feature->getTypeName() != "") {
-        fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
+        fNameFeatureMap[getBaseId(feature->getTypeName())].push_back(featureNode);
     }
     
     struct TargetLocationLink* locationLink =  static_cast<struct TargetLocationLink*>(needMem(sizeof(struct TargetLocationLink)));  // zeros memory

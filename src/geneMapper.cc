@@ -33,7 +33,7 @@ bool GeneMapper::isSrcSeqInMapping(const FeatureNode* featureNode) const {
 /* record gene or transcript as being mapped */
 void GeneMapper::recordMapped(const FeatureNode* featureNode) {
     fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getTypeId()));
-    fMappedIdsNames.insert(featureNode->fFeature->getTypeName());
+    fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getTypeName()));
     if (featureNode->fFeature->getHavanaTypeId() != "") {
         fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getHavanaTypeId()));
     }
@@ -52,7 +52,7 @@ bool GeneMapper::checkMapped(const FeatureNode* featureNode) {
     if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getTypeId())) != fMappedIdsNames.end()) {
         return true;
     }
-    if (fMappedIdsNames.find(featureNode->fFeature->getTypeName()) != fMappedIdsNames.end()) {
+    if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getTypeName())) != fMappedIdsNames.end()) {
         return true;
     }
     if (featureNode->fFeature->getHavanaTypeId() != "") {
@@ -572,7 +572,7 @@ RemapStatus GeneMapper::getNoMapRemapStatus(const FeatureNode* geneTree) {
         return REMAP_STATUS_AUTO_SMALL_NCRNA;
     } else if ((fUseTargetFlags & useTargetForAutoGenes)  && geneTree->isAutomatic()) {
         return REMAP_STATUS_AUTOMATIC_GENE;
-    } else if ((fUseTargetFlags && useTargetForPseudoGenes) && geneTree->isPseudogene()) {
+    } else if ((fUseTargetFlags & useTargetForPseudoGenes) && geneTree->isPseudogene()) {
         return REMAP_STATUS_PSEUDOGENE;
     } else {
         return REMAP_STATUS_NONE;
