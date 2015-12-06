@@ -65,7 +65,8 @@ const string GxfFeature::SOURCE_ENSEMBL = "ENSEMBL";
 
 /* Get format from file name, or error */
 GxfFormat gxfFormatFromFileName(const string& fileName) {
-    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")) {
+    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")
+        or (fileName == "/dev/null")) {
         return GFF3_FORMAT;
     } else if (stringEndsWith(fileName, ".gtf") or stringEndsWith(fileName, ".gtf.gz")) {
         return GTF_FORMAT;

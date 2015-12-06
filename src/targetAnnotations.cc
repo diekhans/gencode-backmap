@@ -115,6 +115,7 @@ TargetAnnotations::TargetAnnotations(const string& gxfFile):
     while ((gxfRecord = gxfParser->next()) != NULL) {
         processRecord(gxfParser, gxfRecord);
     }
+    delete gxfParser;
 }
 
 /* free the location map tree and data */
