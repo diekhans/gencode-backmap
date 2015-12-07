@@ -109,8 +109,8 @@ use GENCODE names:
 
 Map the annotation files:
 ```
-../gencode-backmap/bin/gencode-backmap --swapMap --substituteMissingTargets=V19 --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
-../gencode-backmap/bin/gencode-backmap --swapMap --substituteMissingTargets=V19 --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
 ```
 
 ### Installation
