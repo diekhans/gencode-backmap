@@ -8,8 +8,11 @@ void TargetAnnotations::loadFeature(FeatureNode* featureNode) {
     GxfFeature* feature = featureNode->fFeature;
     // record by id and name
     fIdFeatureMap[getBaseId(feature->getTypeId())].push_back(featureNode);
+    if (featureNode->fFeature->getHavanaTypeId() != "") {
+        fIdFeatureMap[getBaseId(featureNode->fFeature->getHavanaTypeId())].push_back(featureNode);
+    }
     if (feature->getTypeName() != "") {
-        fNameFeatureMap[getBaseId(feature->getTypeName())].push_back(featureNode);
+        fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
     }
     
     struct TargetLocationLink* locationLink =  static_cast<struct TargetLocationLink*>(needMem(sizeof(struct TargetLocationLink)));  // zeros memory

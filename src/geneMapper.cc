@@ -33,7 +33,8 @@ bool GeneMapper::isSrcSeqInMapping(const FeatureNode* featureNode) const {
 /* record gene or transcript as being mapped */
 void GeneMapper::recordMapped(const FeatureNode* featureNode) {
     fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getTypeId()));
-    fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getTypeName()));
+    // N.B. gene names with `.' are not always a version
+    fMappedIdsNames.insert(featureNode->fFeature->getTypeName());
     if (featureNode->fFeature->getHavanaTypeId() != "") {
         fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getHavanaTypeId()));
     }
@@ -52,7 +53,7 @@ bool GeneMapper::checkMapped(const FeatureNode* featureNode) {
     if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getTypeId())) != fMappedIdsNames.end()) {
         return true;
     }
-    if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getTypeName())) != fMappedIdsNames.end()) {
+    if (fMappedIdsNames.find(featureNode->fFeature->getTypeName()) != fMappedIdsNames.end()) {
         return true;
     }
     if (featureNode->fFeature->getHavanaTypeId() != "") {

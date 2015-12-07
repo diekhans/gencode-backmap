@@ -141,3 +141,7 @@ ENSG00000278566.1	OR4F29	gene	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	
 ENST00000426406.2	OR4F29-001	transcript	protein_coding	HAVANA	chr1	450740	451678	-		0	0	.	full_contig	1	nonOverlap	protein_coding	V19
 ENSG00000231880.2	RP11-76I23.7	gene	antisense	HAVANA	chr11	47577725	47578277	+	chr11	47599277	47599829	+	full_contig	1	overlap	protein_coding	
 ENST00000450908.2	RP11-76I23.7-001	transcript	antisense	HAVANA	chr11	47577725	47578277	+	chr11	47599277	47599829	+	full_contig	1	overlap	protein_coding	
+ENSG00000223663.2	RP5-890O3.3	gene	processed_pseudogene	HAVANA	chr1	1378666	1379032	+	chr1	1314046	1314412	+	full_contig	1	overlap	pseudogene	
+ENST00000435351.2	RP5-890O3.3-001	transcript	processed_pseudogene	HAVANA	chr1	1378666	1379032	+	chr1	1314046	1314412	+	full_contig	1	overlap	processed_pseudogene	
+ENSG00000271650.1	AL031601.4	gene	processed_pseudogene	HAVANA	chr10	42209990	42210383	+	chr10	42705438	42705831	+	full_contig	1	new		
+ENST00000605702.1	AL031601.4-001	transcript	processed_pseudogene	HAVANA	chr10	42209990	42210383	+	chr10	42705438	42705831	+	full_contig	1	new		

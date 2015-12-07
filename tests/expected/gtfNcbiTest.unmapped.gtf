@@ -626,3 +626,7 @@ chr1	HAVANA	stop_codon	450740	450742	.	-	0	gene_id "ENSG00000278566.1"; transcri
 chr1	HAVANA	UTR	450740	450742	.	-	.	gene_id "ENSG00000278566.1"; transcript_id "ENST00000426406.2"; gene_type "protein_coding"; gene_status "KNOWN"; gene_name "OR4F29"; transcript_type "protein_coding"; transcript_status "KNOWN"; transcript_name "OR4F29-001"; level 2; protein_id "ENSP00000409316.1"; tag "basic"; tag "appris_principal_1"; tag "CCDS"; transcript_support_level "NA"; ccdsid "CCDS72675.1"; havana_gene "OTTHUMG00000002860.1"; havana_transcript "OTTHUMT00000007999.1"; remap_substituted_missing_target "V19";
 
 # gene goes from automatic  to manual, biotype change
+
+# didn't get mapped
+
+# miRNA only in V19, should be mapped through due to multiple AL031601.* version on other genes.

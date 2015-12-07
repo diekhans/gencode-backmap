@@ -129,3 +129,7 @@ ENSG00000210195.2	MT-TT	gene	Mt_tRNA	ENSEMBL	chrM	15888	15953	+		0	0	.	automatic
 ENST00000387460.2	MT-TT-201	transcript	Mt_tRNA	ENSEMBL	chrM	15888	15953	+		0	0	.	automatic_gene	0	na	Mt_tRNA	V19
 ENSG00000210196.2	MT-TP	gene	Mt_tRNA	ENSEMBL	chrM	15956	16023	-		0	0	.	automatic_gene	0	na	Mt_tRNA	V19
 ENST00000387461.2	MT-TP-201	transcript	Mt_tRNA	ENSEMBL	chrM	15956	16023	-		0	0	.	automatic_gene	0	na	Mt_tRNA	V19
+ENSG00000223663.2	RP5-890O3.3	gene	pseudogene	HAVANA	chr1	1314046	1314412	+		0	0	.	pseudogene	0	na	pseudogene	V19
+ENST00000435351.2	RP5-890O3.3-001	transcript	processed_pseudogene	HAVANA	chr1	1314046	1314412	+		0	0	.	pseudogene	0	na	processed_pseudogene	V19
+ENSG00000264398.1	AL031601.1	gene	miRNA	ENSEMBL	chr10	42730351	42730423	-		0	0	.	automatic_gene	0	na	miRNA	V19
+ENST00000580460.1	AL031601.1-201	transcript	miRNA	ENSEMBL	chr10	42730351	42730423	-		0	0	.	automatic_gene	0	na	miRNA	V19

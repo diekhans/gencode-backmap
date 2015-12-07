@@ -553,3 +553,10 @@ chr1	HAVANA	stop_codon	450740	450742	.	-	0	gene_id "ENSG00000278566.1"; transcri
 chr1	HAVANA	UTR	450740	450742	.	-	.	gene_id "ENSG00000278566.1"; transcript_id "ENST00000426406.2"; gene_type "protein_coding"; gene_status "KNOWN"; gene_name "OR4F29"; transcript_type "protein_coding"; transcript_status "KNOWN"; transcript_name "OR4F29-001"; level 2; protein_id "ENSP00000409316.1"; tag "basic"; tag "appris_principal_1"; tag "CCDS"; transcript_support_level "NA"; ccdsid "CCDS72675.1"; havana_gene "OTTHUMG00000002860.1"; havana_transcript "OTTHUMT00000007999.1"; remap_substituted_missing_target "V19";
 
 # gene goes from automatic  to manual, biotype change
+
+# didn't get mapped
+
+# miRNA only in V19, should be mapped through due to multiple AL031601.* version on other genes.
+chr10	HAVANA	gene	42209990	42210383	.	+	.	gene_id "ENSG00000271650.1"; gene_type "processed_pseudogene"; gene_status "KNOWN"; gene_name "AL031601.4"; level 1; tag "pseudo_consens"; havana_gene "OTTHUMG00000184666.1"; remap_status "deleted"; remap_num_mappings 0; remap_target_status "new";
+chr10	HAVANA	transcript	42209990	42210383	.	+	.	gene_id "ENSG00000271650.1"; transcript_id "ENST00000605702.1"; gene_type "processed_pseudogene"; gene_status "KNOWN"; gene_name "AL031601.4"; transcript_type "processed_pseudogene"; transcript_status "KNOWN"; transcript_name "AL031601.4-001"; level 1; ont "PGO:0000004"; tag "pseudo_consens"; tag "basic"; transcript_support_level "NA"; havana_gene "OTTHUMG00000184666.1"; havana_transcript "OTTHUMT00000469048.1"; remap_num_mappings 0; remap_status "deleted"; remap_target_status "new";
+chr10	HAVANA	exon	42209990	42210383	.	+	.	gene_id "ENSG00000271650.1"; transcript_id "ENST00000605702.1"; gene_type "processed_pseudogene"; gene_status "KNOWN"; gene_name "AL031601.4"; transcript_type "processed_pseudogene"; transcript_status "KNOWN"; transcript_name "AL031601.4-001"; exon_number 1; exon_id "ENSE00003580726.1"; level 1; ont "PGO:0000004"; tag "pseudo_consens"; tag "basic"; transcript_support_level "NA"; havana_gene "OTTHUMG00000184666.1"; havana_transcript "OTTHUMT00000469048.1"; remap_status "deleted";

@@ -8,12 +8,14 @@ lincRNA	gene_size_change	1	0.02
 lincRNA	partial	1	0.02
 miRNA	full_contig	2	0.04
 miRNA	no_seq_map	1	0.02
+processed_pseudogene	deleted	1	0.02
+processed_pseudogene	full_contig	1	0.02
 processed_transcript	full_contig	1	0.02
-protein_coding	full_contig	8	0.17
+protein_coding	full_contig	8	0.16
 protein_coding	full_fragment	1	0.02
 protein_coding	gene_size_change	2	0.04
 protein_coding	no_seq_map	1	0.02
-protein_coding	partial	7	0.15
+protein_coding	partial	7	0.14
 snRNA	full_contig	1	0.02
 snRNA	partial	1	0.02
 snoRNA	full_contig	1	0.02
@@ -21,4 +23,4 @@ transcribed_unprocessed_pseudogene	full_contig	1	0.02
 unprocessed_pseudogene	full_contig	4	0.08
 unprocessed_pseudogene	gene_size_change	1	0.02
 unprocessed_pseudogene	no_seq_map	1	0.02
-all	all	48	1.00
+all	all	50	1.00
