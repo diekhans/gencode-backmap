@@ -2,8 +2,44 @@
 #include <stdexcept>
 #include <iostream>
 
+/* add a feature to the location map */
+void AnnotationSet::addLocationMap(FeatureNode* featureNode) {
+    struct LocationLink* locationLink =  static_cast<struct LocationLink*>(needMem(sizeof(struct LocationLink)));  // zeros memory
+    locationLink->featureNode = featureNode;
+    genomeRangeTreeAddValList(fLocationMap, toCharStr(featureNode->fFeature->fSeqid),
+                              featureNode->fFeature->fStart, featureNode->fFeature->fEnd, locationLink);
+}
+
+/* build location map on first use */
+void AnnotationSet::buildLocationMap() {
+    assert(fLocationMap == NULL);
+    fLocationMap = genomeRangeTreeNew();
+    for (int iGene = 0; iGene < fGenes.size(); iGene++) {
+        addLocationMap(fGenes[iGene]);
+        for (size_t iTrans = 0; iTrans < fGenes[iGene]->fChildren.size(); iTrans++) {
+            addLocationMap(fGenes[iGene]->fChildren[iTrans]);
+        }
+    }
+}
+
+/* free the location map tree and data */
+void AnnotationSet::freeLocationMap() {
+    struct hashCookie chromCookie = hashFirst(fLocationMap->jkhash);
+    struct hashEl *chromEl;
+    while ((chromEl = hashNext(&chromCookie)) != NULL) {
+        struct range *ranges = genomeRangeTreeList(fLocationMap, chromEl->name);
+        for (struct range *r = ranges; r != NULL; r = r->next) {
+            struct LocationLink *tll, *tlls = static_cast<struct LocationLink*>(r->val);
+            while ((tll = static_cast<struct LocationLink*>(slPopHead(&tlls))) != NULL) {
+                free(tll);
+            }
+        }
+    }
+    genomeRangeTreeFree(&fLocationMap);
+}
+
 /* link a gene or transcript feature into the maps */
-void AnnotationSet::loadFeature(FeatureNode* featureNode) {
+void AnnotationSet::addFeature(FeatureNode* featureNode) {
     assert(featureNode->isGeneOrTranscript());
     GxfFeature* feature = featureNode->fFeature;
     // record by id and name
@@ -15,22 +51,21 @@ void AnnotationSet::loadFeature(FeatureNode* featureNode) {
         fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
     }
     
-    struct LocationLink* locationLink =  static_cast<struct LocationLink*>(needMem(sizeof(struct LocationLink)));  // zeros memory
-    locationLink->featureNode = featureNode;
-    genomeRangeTreeAddValList(fLocationMap, toCharStr(feature->fSeqid),
-                              feature->fStart, feature->fEnd, locationLink);
+    if (fLocationMap != NULL) {
+        addLocationMap(featureNode);
+    }
 }
 
 /* link a gene or transcript feature into the maps */
-void AnnotationSet::loadGene(FeatureNode* geneTree) {
+void AnnotationSet::addGene(FeatureNode* geneTree) {
     fGenes.push_back(geneTree);
-    loadFeature(geneTree);
+    addFeature(geneTree);
     for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
         FeatureNode* transcriptTree = geneTree->fChildren[i];
         if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
             throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
         }
-        loadFeature(transcriptTree);
+        addFeature(transcriptTree);
     }
 }
 
@@ -40,7 +75,7 @@ void AnnotationSet::processRecord(GxfParser *gxfParser,
     if (instanceOf(gxfRecord, GxfFeature)) {
         GxfFeature* geneFeature = dynamic_cast<GxfFeature*>(gxfRecord);
         FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
-        loadGene(geneTree);
+        addGene(geneTree);
     } else {
         delete gxfRecord;
     }
@@ -97,8 +132,11 @@ GxfFeature* AnnotationSet::getFeatureById(const string& id,
 
 /* find overlapping features */
 FeatureNodeVector AnnotationSet::findOverlappingFeatures(const string& seqid,
-                                                             int start,
-                                                             int end) {
+                                                         int start,
+                                                         int end) {
+    if (fLocationMap == NULL) {
+        buildLocationMap();
+    }
     FeatureNodeVector overlapping;
     struct range *over, *overs = genomeRangeTreeAllOverlapping(fLocationMap, toCharStr(seqid), start, end);
     for (over = overs; over != NULL; over = over->next) {
@@ -111,7 +149,7 @@ FeatureNodeVector AnnotationSet::findOverlappingFeatures(const string& seqid,
 
 /* constructor, load gene and transcript objects from a GxF */
 AnnotationSet::AnnotationSet(const string& gxfFile):
-    fLocationMap(genomeRangeTreeNew()) {
+    fLocationMap(NULL) {
     GxfParser* gxfParser = GxfParser::factory(gxfFile);
     GxfRecord* gxfRecord;
     while ((gxfRecord = gxfParser->next()) != NULL) {
@@ -120,25 +158,11 @@ AnnotationSet::AnnotationSet(const string& gxfFile):
     delete gxfParser;
 }
 
-/* free the location map tree and data */
-void AnnotationSet::freeLocationMap() {
-    struct hashCookie chromCookie = hashFirst(fLocationMap->jkhash);
-    struct hashEl *chromEl;
-    while ((chromEl = hashNext(&chromCookie)) != NULL) {
-        struct range *ranges = genomeRangeTreeList(fLocationMap, chromEl->name);
-        for (struct range *r = ranges; r != NULL; r = r->next) {
-            struct LocationLink *tll, *tlls = static_cast<struct LocationLink*>(r->val);
-            while ((tll = static_cast<struct LocationLink*>(slPopHead(&tlls))) != NULL) {
-                free(tll);
-            }
-        }
-    }
-    genomeRangeTreeFree(&fLocationMap);
-}
-
 /* destructor */
 AnnotationSet::~AnnotationSet() {
-    freeLocationMap();
+    if (fLocationMap != NULL) {
+        freeLocationMap();
+    }
     for (int i = 0; i <fGenes.size(); i++) {
         delete fGenes[i];
     }

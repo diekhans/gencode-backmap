@@ -41,10 +41,12 @@ class AnnotationSet {
     // map of location used to find mapping to other locis
     struct genomeRangeTree* fLocationMap;
     
-    void loadFeature(FeatureNode* featureNode);
-    void loadGene(FeatureNode* geneTree);
+    void addFeature(FeatureNode* featureNode);
+    void addGene(FeatureNode* geneTree);
     void processRecord(GxfParser *gxfParser,
                        GxfRecord* gxfRecord);
+    void addLocationMap(FeatureNode* featureNode);
+    void buildLocationMap();
     void freeLocationMap();
     FeatureNode* getFeatureNodeByKey(const string& key,
                                      const FeatureMap& featureMap,
