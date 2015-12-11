@@ -1,8 +1,9 @@
 ROOT = ..
 include ${ROOT}/config.mk
 
-targetGxfArg = --targetGxf=data/gencode.v19.annotations.gtf
+targetGxfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetSubstArg = --substituteMissingTargets=V19
+targetPatchArg = --targetPatches=data/altSeqPatchesP10.bed
 headerArg = --headerFile=data/header.txt
 
 valgrind = valgrind --leak-check=full --num-callers=50
@@ -41,8 +42,9 @@ gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
+# ncRNA and patch subsitution
 gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetPatchArg} ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3

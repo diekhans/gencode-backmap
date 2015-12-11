@@ -5,12 +5,14 @@
 #define geneMapper_hh
 #include "gxf.hh"
 #include "featureTree.hh"
+#include "typeOps.hh"
 #include <set>
 class TransMap;
 class PslMapping;
 struct psl;
 class PslCursor;
 class AnnotationSet;
+class BedMap;
 
 /* class that maps a gene to the new assemble */
 class GeneMapper {
@@ -25,28 +27,16 @@ class GeneMapper {
     const AnnotationSet* fSrcAnnotations; // source annotations
     const TransMap* fGenomeTransMap;  // genomic mapping
     const AnnotationSet* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
+    const BedMap* fTargetPatchMap; // location of patch regions in target genome
     const string fSubstituteTargetVersion;  // pass through targets when gene new gene doesn't map
     unsigned fUseTargetFlags;  // what targets to force.
 
-    typedef set<string> StringSet;
-    StringSet fMappedSeqRegionsWritten;  // mapped sequence ids that have been written
-
     /* set of base ids (gene, transcript, havana) and gene names that have been
      * mapped.  Used to prevent output of target genes types that are not being
-     * mapped (automatic genes), when type or source changes are already mapped */
+     * mapped (automatic genes), when type or source changes are already mapped.
+     * N.B. Can't use AnnotationSet to track this, due to PAR mappings needing
+     * to be mapped twice. */
     StringSet fMappedIdsNames;
-
-    /* check if a seqregion for target seqid has been written, if so, return
-     * true, otherwise record it and return false.  */
-    bool checkRecordTargetSeqRegionWritten(const string& seqid) {
-        if (fMappedSeqRegionsWritten.find(seqid) == fMappedSeqRegionsWritten.end()) {
-            fMappedSeqRegionsWritten.insert(seqid);
-            return false;
-        } else {
-            return true;
-        }
-    }
-
 
     bool isSrcSeqInMapping(const GxfFeature* feature) const;
     bool isSrcSeqInMapping(const FeatureNode* featureNode) const;
@@ -54,6 +44,7 @@ class GeneMapper {
     void recordGeneMapped(const FeatureNode* geneTree);
     bool checkMapped(const FeatureNode* featureNode);
     bool checkGeneMapped(const FeatureNode* geneTree);
+
     ResultFeatureTrees processTranscript(const FeatureNode* transcriptTree,
                                     ostream* transcriptPslFh) const;
     ResultFeatureTreesVector processTranscripts(const FeatureNode* geneTree,
@@ -85,18 +76,10 @@ class GeneMapper {
                                           ResultFeatureTreesVector& mappedTranscripts) const;
     ResultFeatureTrees buildGeneFeature(const FeatureNode* srcGeneTree,
                                         ResultFeatureTreesVector& mappedTranscripts) const;
-    void outputSeqRegion(const string& seqId,
-                         int size,
-                         GxfWriter& gxfFh);
-    void outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
-                                     GxfWriter& mappedGxfFh);
-    void outputFeature(const FeatureNode* featureNode,
-                       GxfWriter& gxfFh) const;
-    void outputSubstituted(const FeatureNode* featureNode,
-                           GxfWriter& mappedGxfFh) const;
-    void outputFeatures(const ResultFeatureTrees& mappedGene,
-                        GxfWriter& mappedGxfFh,
-                        GxfWriter& unmappedGxfFh);
+    void saveMapped(ResultFeatureTrees& mappedGene,
+                    AnnotationSet& mappedSet) const;
+    void saveUnmapped(ResultFeatureTrees& mappedGene,
+                      AnnotationSet& unmappedSet) const;
     void outputInfoHeader(ostream& mappingInfoFh) const;
     const GxfFeature* getTargetAnnotation(const FeatureNode* featureNode) const;
     const FeatureNode* getTargetAnnotationNode(const FeatureNode* featureNode) const;
@@ -114,20 +97,20 @@ class GeneMapper {
     void processGeneLevelMapping(ResultFeatureTrees* mappedGene);
     void setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene);
     void mapGene(const FeatureNode* srcGeneTree,
-                 GxfWriter& mappedGxfFh,
-                 GxfWriter& unmappedGxfFh,
+                 AnnotationSet& mappedSet,
+                 AnnotationSet& unmappedSet,
                  ostream& mappingInfoFh,
                  ostream* transcriptPslFh);
     RemapStatus getNoMapRemapStatus(const FeatureNode* geneTree);
     bool shouldMapGeneType(const FeatureNode* geneTree);
     void copyTargetGene(const FeatureNode* targetGeneNode,
-                        GxfWriter& mappedGxfFh,
+                        AnnotationSet& mappedSet,
                         ostream& mappingInfoFh);
-    void copyTargetGenes(GxfWriter& mappedGxfFh,
+    void copyTargetGenes(AnnotationSet& mappedSet,
                          ostream& mappingInfoFh);
     void processGene(const FeatureNode* srcGeneTree,
-                     GxfWriter& mappedGxfFh,
-                     GxfWriter& unmappedGxfFh,
+                     AnnotationSet& mappedSet,
+                     AnnotationSet& unmappedSet,
                      ostream& mappingInfoFh,
                      ostream* transcriptPslFh);
     public:
@@ -135,11 +118,13 @@ class GeneMapper {
     GeneMapper(const AnnotationSet* srcAnnotations,
                const TransMap* genomeTransMap,
                const AnnotationSet* targetAnnotations,
+               const BedMap* targetPatchMap,
                const string& substituteTargetVersion,
                unsigned useTargetFlags):
         fSrcAnnotations(srcAnnotations),
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
+        fTargetPatchMap(targetPatchMap),
         fSubstituteTargetVersion(substituteTargetVersion),
         fUseTargetFlags(useTargetFlags) {
     }

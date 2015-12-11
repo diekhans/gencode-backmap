@@ -1,8 +1,8 @@
 /*
  * Bring in UCSC browser includes, dealing with C++ conflicts.  Just grab everything
  */
-#ifndef jkcommon_hh
-#define jkcommon_hh
+#ifndef jkinclude_hh
+#define jkinclude_hh
 extern "C" {
 #define min jkmin
 #define max jkmax
@@ -14,6 +14,7 @@ extern "C" {
 #include "genomeRangeTree.h"
 #include "chain.h"
 #include "dnautil.h"
+#include "basicBed.h"
 #undef min
 #undef max
 #undef hash

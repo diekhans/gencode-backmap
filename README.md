@@ -102,6 +102,10 @@ The following files are needed to map using the UCSC liftover alignments:
 - Current GENCODE primary assembly GFF3 and GTF files to map
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/gencode.v23.annotation.gff3.gz
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/gencode.v23.basic.annotation.gtf.gz
+- GRC patch BED file for GRCh37 from UCSC.  Download from
+  - http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz
+  and remove bin column with `zcat altSeqPatchesP10.txt.gz | cut -f 2- > altSeqPatchesP10.bed`
+ 
 
 GENCODE uses different sequence naming for unplaced chromosome sequences than
 UCSC.  Additionally, GENCODE annotates the GRCh37-lite chrM, while UCSC had
@@ -113,11 +117,11 @@ use GENCODE names:
 
 Map the annotation files:
 ```
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=header.txt --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=header.txt --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=altSeqPatchesP10.bed gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=altSeqPatchesP10.bed gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
 ```
 
-Where `header.txt` is the comments to add at the beginning of the output GFF3 or GTF files.
+Where `liftGxfHeader.txt` is the comments to add at the beginning of the output GFF3 or GTF files.
 This does not include GFF3 meta comment.
 
 ### Installation

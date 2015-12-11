@@ -9,25 +9,45 @@
 #include "pslOps.hh"
 using namespace std;
 
+
+class GenomeSizeMap: public map<const string, int> {
+    public:
+    /* add a size if we don't have it */
+    void add(const string& name,
+             int size) {
+        if (find(name) == end()) {
+            (*this)[name] = size;
+        }
+    }
+
+    /* do we have a sequence query sequence */
+    bool have(const string& name) const {
+        return find(name) != end();
+    }
+
+    /* get the size of a sequence */
+    int get(const string& name) const {
+        return at(name);
+    }
+};
+
 /*
  * transmap via alignment chains
  */
 class TransMap {
     private:
     struct genomeRangeTree* fMapAlns;  // mapping alingments
-    typedef map<const string, int> SizeMap;
-    
-    SizeMap fQuerySizes;   // query sequence sizes
-    SizeMap fTargetSizes;  // target sequence sizes
-    
+
+    public:
+    GenomeSizeMap fQuerySizes;   // query sequence sizes
+    GenomeSizeMap fTargetSizes;  // target sequence sizes
+   
+    private:
     void mapAlnsAdd(struct psl *mapPsl);
     struct psl* chainToPsl(struct chain *ch,
                            bool swapMap);
     void loadMapChains(const string& chainFile,
                        bool swapMap);
-    void addSeqSize(const string& seqName,
-                    int seqSize,
-                    SizeMap& sizeMap);
     void mapPslPair(struct psl *inPsl,
                     struct psl *mapPsl,
                     PslVector& allMappedPsls) const;
@@ -64,22 +84,22 @@ class TransMap {
 
     /* do we have a mapping query sequence */
     bool haveQuerySeq(const string& qName) const {
-        return fQuerySizes.find(qName) != fQuerySizes.end();
+        return fQuerySizes.have(qName);
     }
     
     /* do we have a mapping target sequence */
     bool haveTargetSeq(const string& tName) const {
-        return fTargetSizes.find(tName) != fTargetSizes.end();
+        return fTargetSizes.have(tName);
     }
     
     /* get the size of a mapping query sequence */
     int getQuerySeqSize(const string& qName) const {
-        return fQuerySizes.at(qName);
+        return fQuerySizes.get(qName);
     }
     
     /* get the size of a mapping target sequence */
     int getTargetSeqSize(const string& tName) const {
-        return fTargetSizes.at(tName);
+        return fTargetSizes.get(tName);
     }
     
     /* Map a single input PSL and return a list of resulting mappings.  Keep

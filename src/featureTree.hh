@@ -63,10 +63,37 @@ class FeatureNode {
         }
     }
 
+    /* is this a gene? */
+    bool isGene() const {
+        return (fFeature->fType == GxfFeature::GENE);
+    }
+
+    /* is this a transcript? */
+    bool isTranscript() const {
+        return (fFeature->fType == GxfFeature::TRANSCRIPT);
+    }
+
+    /* is this an exon? */
+    bool isExon() const {
+        return (fFeature->fType == GxfFeature::EXON);
+    }
+
     /* is this a gene or transcript */
     bool isGeneOrTranscript() const {
-        return (fFeature->fType == GxfFeature::GENE) or (fFeature->fType == GxfFeature::TRANSCRIPT);
+        return isGene() or isTranscript();
     }
+
+    /* get transcript size of exons */
+    int getTranscriptExonSize() const;
+
+    /* count overlapping bases */
+    int getOverlapAmount(const FeatureNode* other) const;
+
+    /* get exon similarity */
+    float getExonSimilarity(const FeatureNode* trans2) const;
+
+    /* get the maximum transcript similarity for a gene */
+    float getMaxTranscriptSimilarity(const FeatureNode* gene2) const;
 
     /* is ensembl small non-coding gene */
     bool isAutomaticSmallNonCodingGene() const;

@@ -5,6 +5,7 @@
 #define typeOps_hh
 #include <string>
 #include <vector>
+#include <set>
 #include "jkinclude.hh"
 using namespace std;
 
@@ -27,6 +28,9 @@ using namespace std;
 
 /* vector of integers */
 typedef vector<int> IntVector;
+
+/* set of strings */
+typedef set<string> StringSet;
 
 /* whitespace characters */
 extern const string whitespace;

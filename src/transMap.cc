@@ -26,20 +26,11 @@ bool TransMap::isChainMappingAlign(const string& fileName) {
     
 }
 
-/* add a query or target size if it doesn't already exist */
-void TransMap::addSeqSize(const string& seqName,
-                          int seqSize,
-                          SizeMap& sizeMap) {
-    if (sizeMap.find(seqName) == sizeMap.end()) {
-        sizeMap[seqName] = seqSize;
-    }
-}
-
 /* add a map align object to the genomeRangeTree */
 void TransMap::mapAlnsAdd(struct psl *mapPsl) {
     genomeRangeTreeAddVal(fMapAlns, mapPsl->qName, mapPsl->qStart, mapPsl->qEnd, mapPsl, slCatReversed);
-    addSeqSize(mapPsl->qName, mapPsl->qSize, fQuerySizes);
-    addSeqSize(mapPsl->tName, mapPsl->tSize, fTargetSizes);
+    fQuerySizes.add(mapPsl->qName, mapPsl->qSize);
+    fTargetSizes.add(mapPsl->tName, mapPsl->tSize);
 }
 
 /* convert a chain to a psl, ignoring match counts, etc */

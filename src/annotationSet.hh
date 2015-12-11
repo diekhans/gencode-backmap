@@ -10,19 +10,20 @@
 #include <stdexcept>
 #include "featureTree.hh"
 struct genomeRangeTree;
+class GenomeSizeMap;
 
-/* stored in range tree to link target location to
- * tree. */
-struct LocationLink {
-    struct LocationLink *next;
-    FeatureNode* featureNode;
-};
- 
 /*
  * Locations in target genome of old transcripts, by base id
  */
 class AnnotationSet {
     private:
+    /* stored in range tree to link target location to
+     * tree. */
+    struct LocationLink {
+        struct LocationLink *next;
+        FeatureNode* featureNode;
+    };
+ 
        
     // map of gene or transcripts to features. Keep up to two for PAR
     typedef map<const string, FeatureNodeVector> FeatureMap;
@@ -37,12 +38,17 @@ class AnnotationSet {
 
     // list of all gene features found
     FeatureNodeVector fGenes;
-    
-    // map of location used to find mapping to other locis
+
+    // map of location to feature
     struct genomeRangeTree* fLocationMap;
+
+    // mapped sequence ids that have been written
+    StringSet fSeqRegionsWritten;
+
+    // optional table of chromosome sequence sizes
+    const GenomeSizeMap* fGenomeSizes;
     
     void addFeature(FeatureNode* featureNode);
-    void addGene(FeatureNode* geneTree);
     void processRecord(GxfParser *gxfParser,
                        GxfRecord* gxfRecord);
     void addLocationMap(FeatureNode* featureNode);
@@ -52,12 +58,40 @@ class AnnotationSet {
                                      const FeatureMap& featureMap,
                                      const string& seqIdForParCheck) const;
 
+    /* check if a seqregion for seqid has been written, if so, return true,
+     * otherwise record it and return false.  */
+    bool checkRecordSeqRegionWritten(const string& seqid) {
+        if (fSeqRegionsWritten.find(seqid) == fSeqRegionsWritten.end()) {
+            fSeqRegionsWritten.insert(seqid);
+            return false;
+        } else {
+            return true;
+        }
+    }
+    void outputSeqRegion(const string& seqId,
+                         int size,
+                         GxfWriter& gxfFh);
+    void outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
+                                     GxfWriter& mappedGxfFh);
+    void outputFeature(const FeatureNode* featureNode,
+                       GxfWriter& gxfFh) const;
+
     public:
     /* constructor, load gene and transcript objects from a GxF */
-    AnnotationSet(const string& gxfFile);
+    AnnotationSet(const string& gxfFile,
+                  const GenomeSizeMap* genomeSizes=NULL);
+
+    /* constructor, empty set */
+    AnnotationSet(const GenomeSizeMap* genomeSizes=NULL):
+        fLocationMap(NULL),
+        fGenomeSizes(genomeSizes) {
+    }
 
     /* destructor */
     ~AnnotationSet();
+
+    /* add a gene the maps */
+    void addGene(FeatureNode* geneTree);
 
     /* get a target gene or transcript node with same base id or NULL.
      * special handling for PARs. Getting node is used if you need whole tree. */
@@ -78,11 +112,18 @@ class AnnotationSet {
     FeatureNodeVector findOverlappingFeatures(const string& seqid,
                                              int start,
                                              int end);
+    
+    /* find overlapping genes with minimum similarity at the transcript level */
+    FeatureNodeVector findOverlappingGenes(const FeatureNode* geneTree,
+                                           float minSimilarity);
 
     /* get list of all gene features */
     const FeatureNodeVector& getGenes() const {
         return fGenes;
     }
+
+    /* output genes */
+    void write(GxfWriter& gxfFh);
 };
 
 #endif

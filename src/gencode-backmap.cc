@@ -9,6 +9,7 @@
 #include "transMap.hh"
 #include "geneMapper.hh"
 #include "annotationSet.hh"
+#include "bedMap.hh"
 
 /* map to different assembly */
 static void gencodeBackmap(const string& inGxfFile,
@@ -21,10 +22,12 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& unmappedGxfFile,
                            const string& mappingInfoTsv,
                            const string& targetGxf,
+                           const string& targetPatchBed,
                            const string& transcriptPsls) {
     TransMap* genomeTransMap = TransMap::factoryFromFile(mappingAligns, swapMap);
     AnnotationSet srcAnnotations(inGxfFile);
     AnnotationSet* targetAnnotations = (targetGxf.size() > 0) ? new AnnotationSet(targetGxf) : NULL;
+    BedMap* targetPatchMap = (targetPatchBed.size() > 0) ? new BedMap(targetPatchBed) : NULL;
     GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile);
     GxfWriter* unmappedGxfFh = GxfWriter::factory(unmappedGxfFile);
     if (headerFile.size() > 0) {
@@ -33,11 +36,12 @@ static void gencodeBackmap(const string& inGxfFile,
     }
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
-    GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, substituteMissingTargetVersion, useTargetFlags);
+    GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, targetPatchMap, substituteMissingTargetVersion, useTargetFlags);
     geneMapper.mapGxf(*mappedGxfFh, *unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete mappedGxfFh;
     delete unmappedGxfFh;
     delete genomeTransMap;
+    delete targetPatchMap;
     delete targetAnnotations;
     delete transcriptPslFh;
 }
@@ -84,6 +88,7 @@ int main(int argc, char *argv[]) {
         {"help", 0, NULL, 'h'},
         {"swapMap", 0, NULL, 's'},
         {"targetGxf", 1, NULL, 't'}, 
+        {"targetPatches", 1, NULL, 'T'}, 
         {"headerFile", 1, NULL, 'H'},
         {"transcriptPsls", 1, NULL, 'p'},
         {"substituteMissingTargets", 1, NULL, 'm'},
@@ -99,6 +104,7 @@ int main(int argc, char *argv[]) {
     bool help = false;
     unsigned useTargetFlags = 0;
     string targetGxf;
+    string targetPatchBed;
     string headerFile;
     string transcriptPsls;
     string substituteMissingTargetVersion;
@@ -114,6 +120,8 @@ int main(int argc, char *argv[]) {
             swapMap = true;
         } else if (optc == 't') {
             targetGxf = string(optarg);
+        } else if (optc == 'T') {
+            targetPatchBed = string(optarg);
         } else if (optc == 'H') {
             headerFile = string(optarg);
         } else if (optc == 'p') {
@@ -149,7 +157,7 @@ int main(int argc, char *argv[]) {
         gencodeBackmap(inGxfFile, mappingAligns, swapMap,
                        substituteMissingTargetVersion, useTargetFlags,
                        headerFile, mappedGxfFile, unmappedGxfFile,
-        mappingInfoTsv, targetGxf, transcriptPsls);
+                       mappingInfoTsv, targetGxf, targetPatchBed, transcriptPsls);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;
         return 1;

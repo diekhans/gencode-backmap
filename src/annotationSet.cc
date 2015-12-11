@@ -1,6 +1,7 @@
 #include "annotationSet.hh"
 #include <stdexcept>
 #include <iostream>
+#include "transMap.hh"
 
 /* add a feature to the location map */
 void AnnotationSet::addLocationMap(FeatureNode* featureNode) {
@@ -50,14 +51,14 @@ void AnnotationSet::addFeature(FeatureNode* featureNode) {
     if (feature->getTypeName() != "") {
         fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
     }
-    
     if (fLocationMap != NULL) {
         addLocationMap(featureNode);
     }
 }
 
-/* link a gene or transcript feature into the maps */
+/* add a gene the maps */
 void AnnotationSet::addGene(FeatureNode* geneTree) {
+    assert(geneTree->isGene());
     fGenes.push_back(geneTree);
     addFeature(geneTree);
     for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
@@ -84,8 +85,8 @@ void AnnotationSet::processRecord(GxfParser *gxfParser,
 
 /* get a target gene or transcript node from an index by name or id */
 FeatureNode* AnnotationSet::getFeatureNodeByKey(const string& key,
-                                                    const FeatureMap& featureMap,
-                                                    const string& seqIdForParCheck) const {
+                                                const FeatureMap& featureMap,
+                                                const string& seqIdForParCheck) const {
     FeatureMapConstIter it = featureMap.find(key);
     if (it == featureMap.end()) {
         return NULL;
@@ -147,9 +148,28 @@ FeatureNodeVector AnnotationSet::findOverlappingFeatures(const string& seqid,
     return overlapping;
 }
 
+/* find overlapping genes with minimum similarity at the transcript level */
+FeatureNodeVector AnnotationSet::findOverlappingGenes(const FeatureNode* geneTree,
+                                                      float minSimilarity) {
+    FeatureNodeVector overlappingFeatures 
+        = findOverlappingFeatures(geneTree->fFeature->fSeqid,
+                                  geneTree->fFeature->fStart,
+                                  geneTree->fFeature->fEnd);
+    FeatureNodeVector overlappingGenes;
+    for (int iFeat = 0; iFeat < overlappingFeatures.size(); iFeat++) {
+        if (overlappingFeatures[iFeat]->isGene()
+            && (geneTree->getMaxTranscriptSimilarity(overlappingFeatures[iFeat]) >= minSimilarity)) {
+            overlappingFeatures.push_back(overlappingFeatures[iFeat]);
+        }
+    }
+    return overlappingGenes;
+}
+
 /* constructor, load gene and transcript objects from a GxF */
-AnnotationSet::AnnotationSet(const string& gxfFile):
-    fLocationMap(NULL) {
+AnnotationSet::AnnotationSet(const string& gxfFile,
+                             const GenomeSizeMap* genomeSizes):
+    fLocationMap(NULL),
+    fGenomeSizes(genomeSizes) {
     GxfParser* gxfParser = GxfParser::factory(gxfFile);
     GxfRecord* gxfRecord;
     while ((gxfRecord = gxfParser->next()) != NULL) {
@@ -167,4 +187,42 @@ AnnotationSet::~AnnotationSet() {
         delete fGenes[i];
     }
 }
+
+/* write a sequence region record */
+void AnnotationSet::outputSeqRegion(const string& seqId,
+                                    int size,
+                                    GxfWriter& gxfFh) {
+    gxfFh.write(string("##sequence-region ") + seqId + " 1 " + toString(size));
+}
+
+/* output GFF3 mapped ##sequence-region if not already written */
+void AnnotationSet::outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
+                                                GxfWriter& gxfFh) {
+    if (gxfFh.getFormat() == GFF3_FORMAT) {
+        const string& seqId = geneTree->fFeature->fSeqid;
+        if (fGenomeSizes->have(seqId) and (not checkRecordSeqRegionWritten(seqId))) {
+            outputSeqRegion(seqId, fGenomeSizes->get(seqId), gxfFh);
+        }
+    }
+}
+
+/*
+ * recursive output of a GxF feature tree
+ */
+void AnnotationSet::outputFeature(const FeatureNode* featureNode,
+                                  GxfWriter& gxfFh) const {
+    gxfFh.write(featureNode->fFeature);
+    for (size_t i = 0; i < featureNode->fChildren.size(); i++) {
+        outputFeature(featureNode->fChildren[i], gxfFh);
+    }
+}
+
+/* output genes */
+void AnnotationSet::write(GxfWriter& gxfFh) {
+    for (int iGene = 0; iGene < fGenes.size(); iGene++) {
+        outputMappedSeqRegionIfNeed(fGenes[iGene], gxfFh);
+        outputFeature(fGenes[iGene], gxfFh);
+    }
+}
+
 

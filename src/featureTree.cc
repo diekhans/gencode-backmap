@@ -223,6 +223,49 @@ bool FeatureNode::allChildWithRemapStatus(unsigned remapStatusSet) const {
     return true;
 }
 
+/* get the size of a transcript, in exons */
+int FeatureNode::getTranscriptExonSize() const {
+    assert(isTranscript());
+    int size = 0;
+    for (int iExon = 0; iExon < fChildren.size(); iExon++) {
+        size += fChildren[iExon]->fFeature->size();
+    }
+    return size;
+}
+
+/* count overlapping bases */
+int FeatureNode::getOverlapAmount(const FeatureNode* other) const {
+    int maxStart = max(other->fFeature->fStart, fFeature->fStart);
+    int minEnd = min(other->fFeature->fEnd, fFeature->fEnd);
+    return (maxStart <= minEnd) ? (minEnd-maxStart)+1 : 0;
+}
+
+/* get exon similarity */
+float FeatureNode::getExonSimilarity(const FeatureNode* trans2) const {
+    assert(isTranscript());
+    assert(trans2->isTranscript());
+    int totalOverlap = 0;
+    for (int iExon1 = 0; iExon1 < fChildren.size(); iExon1++) {
+        for (int iExon2 = 0; iExon2 < trans2->fChildren.size(); iExon2++) {
+            totalOverlap = fChildren[iExon1]->getOverlapAmount(trans2->fChildren[iExon2]);
+        }
+    }
+    return float(2*totalOverlap)/float(getTranscriptExonSize() + trans2->getTranscriptExonSize());
+}
+
+/* get the maximum transcript similarity for a gene */
+float FeatureNode::getMaxTranscriptSimilarity(const FeatureNode* gene2) const {
+    assert(isExon());
+    assert(gene2->isExon());
+    float maxSimilarity = 0.0;
+    for (int iTrans1 = 0; (iTrans1 < fChildren.size()) && (maxSimilarity < 1.0); iTrans1++) {
+        for (int iTrans2 = 0; (iTrans2 < gene2->fChildren.size()) && (maxSimilarity < 1.0); iTrans2++) {
+            float similarity = fChildren[iTrans1]->getOverlapAmount(gene2->fChildren[iTrans2]);
+            maxSimilarity = max(similarity, maxSimilarity);
+        }
+    }
+    return maxSimilarity;
+}
 
 /* do any child belond to the specified status */
 bool ResultFeatureTrees::anyChildWithRemapStatus(unsigned remapStatusSet) const {

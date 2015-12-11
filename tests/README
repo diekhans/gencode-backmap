@@ -4,14 +4,19 @@ Test data
 - data/hg38ToHg19.over.chain
   Subset of chains needed to test mappings.  This was generated with:
 
-     gff3ToGenePred data/gencode.v22.annotation.gff3 test.gp
-     overlapSelect -inFmt=chain test.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz test.chain
+     gff3ToGenePred data/gencode.v22.annotations.gff3 testV22.gp
+     overlapSelect -inFmt=chain testV22.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz test.chain
 
      edit and replace chrM with this:
           # added by hand to use GRCh37 lite
           chain 16568 chrM 16569 + 0 16569 chrM 16569 + 0 16569 1
           16569
 
+- data/altSeqPatchesP10.bed
+  Patch regions on GRCh37
+      gtfToGenePred -ignoreGroupsWithoutExons data/gencode.v19.annotation.gtf testV19.gp
+      wget -nv http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz
+      zcat altSeqPatchesP10.txt.gz | cut -f 2- | overlapSelect -inFmt=bed testV19.gp /dev/stdin data/altSeqPatchesP10.bed
 
 
 - data/gencode.v22.annotation.gff3
