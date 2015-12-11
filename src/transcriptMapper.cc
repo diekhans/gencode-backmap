@@ -8,7 +8,7 @@
 #include "frame.hh"
 #include "featureTransMap.hh"
 #include "typeOps.hh"
-#include "targetAnnotations.hh"
+#include "annotationSet.hh"
 #include <stdexcept>
 #include <iostream>
 
@@ -102,7 +102,7 @@ ResultFeatureTrees TranscriptMapper::mapTranscriptFeature(const FeatureNode* tra
 /* constructor, targetAnnotations can be NULL */
 TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
                                    const FeatureNode* transcriptTree,
-                                   const TargetAnnotations* targetAnnotations,
+                                   const AnnotationSet* targetAnnotations,
                                    bool srcSeqInMapping,
                                    ostream* transcriptPslFh):
     fGenomeTransMap(genomeTransMap), 

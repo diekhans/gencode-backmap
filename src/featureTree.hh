@@ -154,7 +154,7 @@ class ResultFeatureTrees {
 
 
     public:
-    const FeatureNode* src;
+    const FeatureNode* src;  /// not owned
     FeatureNode* mapped;
     FeatureNode* unmapped;
     FeatureNode* target;    // substituted from target
@@ -168,7 +168,6 @@ class ResultFeatureTrees {
 
     /* free data all */
     void free() {
-        delete src;
         delete mapped;
         delete unmapped;
         delete target;

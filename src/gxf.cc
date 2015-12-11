@@ -330,6 +330,7 @@ class Gff3Writer: public GxfWriter {
     /* constructor */
     Gff3Writer(const string& fileName):
         GxfWriter(fileName) {
+        write("##gff-version 3");
     }
 
     /* get the format being parser */
@@ -422,6 +423,15 @@ GxfWriter *GxfWriter::factory(const string& fileName,
         return new Gff3Writer(fileName);
     } else {
         return new GtfWriter(fileName);
+    }
+}
+
+/* copy a file to output, normally used for a header */
+void GxfWriter::copyFile(const string& inFile) {
+    FIOStream inFh(inFile);
+    string line;
+    while (inFh.readLine(line)) {
+        write(line);
     }
 }
 

@@ -3,11 +3,14 @@ include ${ROOT}/config.mk
 
 targetGxfArg = --targetGxf=data/gencode.v19.annotations.gtf
 targetSubstArg = --substituteMissingTargets=V19
+headerArg = --headerFile=data/header.txt
 
 valgrind = valgrind --leak-check=full --num-callers=50
 
 testUcscLiftOverChains = data/hg38ToHg19.over.chain
 testGencodeLiftOverChains = output/hg38ToHg19.gencode.over.chain
+
+diff = diff -u
 
 all: test
 
@@ -15,36 +18,36 @@ test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest gff3UcscSubstituteAuto g
 	mapInfoSumTests ucscLiftEditTest
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
-	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
-	diff -u expected/$@.unmapped.gff3 output/$@.unmapped.gff3
-	diff -u expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
 
 gtfUcscTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
-	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
-	diff -u expected/$@.unmapped.gtf output/$@.unmapped.gtf
-	diff -u expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
+	${diff} expected/$@.unmapped.gtf output/$@.unmapped.gtf
+	${diff} expected/$@.map-info output/$@.map-info
 
 gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
-	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
-	diff -u expected/$@.unmapped.gff3 output/$@.unmapped.gff3
-	diff -u expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
 
 gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
-	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
-	diff -u expected/$@.unmapped.gff3 output/$@.unmapped.gff3
-	diff -u expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
 
 # edit to fix names and chrM (don't depend on  mkdirs so it doesn't rebuild unless needed)
 ${testGencodeLiftOverChains}: ${testUcscLiftOverChains}
@@ -52,20 +55,20 @@ ${testGencodeLiftOverChains}: ${testUcscLiftOverChains}
 	../bin/ucscLiftEdit ${testUcscLiftOverChains} data/GCF_000001405.28.assembly.txt data/GCF_000001405.25.assembly.txt ${testGencodeLiftOverChains}
 
 gff3NcbiTest: mkdirs
-	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gff3 data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
-	diff -u expected/$@.mapped.gff3 output/$@.mapped.gff3
-	diff -u expected/$@.unmapped.gff3 output/$@.unmapped.gff3
-	diff -u expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
 
 gtfNcbiTest: mkdirs
-	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
+	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
 	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
-	diff -u expected/$@.mapped.gtf output/$@.mapped.gtf
-	diff -u expected/$@.unmapped.gtf output/$@.unmapped.gtf
-	diff -u expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
+	${diff} expected/$@.unmapped.gtf output/$@.unmapped.gtf
+	${diff} expected/$@.map-info output/$@.map-info
 
 # liftover has more wierd cases, so use for tests
 mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTransBiottypeTest \
@@ -78,47 +81,47 @@ mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTrans
 
 mapInfoSumGeneAllTest: mkdirs
 	../bin/mapInfoSummary --mappingStatusGroup gene expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumGeneBiotypeTest: mkdirs
 	../bin/mapInfoSummary --mappingStatusGroup --biotypeGroup=biotype gene expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumTransBiottypeTest: mkdirs
 	../bin/mapInfoSummary --mappingStatusGroup --biotypeGroup=biotype transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumTransBiocatTest: mkdirs
 	../bin/mapInfoSummary --mappingStatusGroup --biotypeGroup=biocat transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumTransBiocatMultimapTest: mkdirs
 	../bin/mapInfoSummary --biotypeGroup=biocat --multimapGroup transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumTransMatrixGenomicSizeTest: mkdirs
 	../bin/mapInfoSummary --mappingStatusGroup  --matrixColumnKey=genomicSize transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumTransBiocatMatrixMapStatusTest: mkdirs
 	../bin/mapInfoSummary --matrixColumnKey=mappingStatus --biotypeGroup=biocat transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumTransBiocatMatRowFreqMapStatusTest: mkdirs
 	../bin/mapInfoSummary --rowFrequencies --matrixColumnKey=mappingStatus --biotypeGroup=biocat transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumTransBiocatMatColFreqMapStatusTest: mkdirs
 	../bin/mapInfoSummary --columnFrequencies --matrixColumnKey=mappingStatus --biotypeGroup=biocat transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 mapInfoSumSubTargetTest: mkdirs
 	../bin/mapInfoSummary --targetStatusGroup --substituteTargetGroup transcript expected/gff3UcscTest.map-info output/$@.sum
-	diff -u expected/$@.sum output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
 
 ucscLiftEditTest: mkdirs
 	../bin/ucscLiftEdit ${testUcscLiftOverChains} data/GCF_000001405.28.assembly.txt data/GCF_000001405.25.assembly.txt output/$@.chain
-	diff -u expected/$@.chain output/$@.chain
+	${diff} expected/$@.chain output/$@.chain
 
 ##
 # memory leak checks

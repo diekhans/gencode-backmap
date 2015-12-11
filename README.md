@@ -37,8 +37,12 @@ Mapping is done on a per-gene mapping using the following steps:
   overlap the target gene, it is also rejected.
   - If a gene did not map or was rejected and a version of the gene with the
     same biotype exists in the target annotations, use the existing gene.
-- Optionally, automatic genes and pseudogenes.  This avoids complex mappings of
-  small RNAs imported from other database (e.g. mirRNAs).
+- Small, automatic-only genes are optionally not mapped, with the target
+  annotation being passed through This avoids complex mappings of small RNAs
+  imported from other database (e.g. mirRNAs).
+- Target genes with no corresponding mappings and that overlap patched regions
+  in the target genome may optionally be passed through.  This address a fair
+  number of problem cases.  This was a common problem on GRCh37 chrX.
 
 Pairing of source and target genes is somewhat complex due to instability of
 some gene identifiers between assemblies.  If a matching base gene id (less
@@ -109,9 +113,12 @@ use GENCODE names:
 
 Map the annotation files:
 ```
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=header.txt --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=header.txt --targetGxf=gencode.v19.annotation.gtf.gz gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
 ```
+
+Where `header.txt` is the comments to add at the beginning of the output GFF3 or GTF files.
+This does not include GFF3 meta comment.
 
 ### Installation
 

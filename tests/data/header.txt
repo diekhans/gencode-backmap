@@ -1,0 +1,5 @@
+#description: evidence-based annotation of the human genome (GRCh37, mapped from GRCh38), version 22lift37 (Ensembl 79)
+#provider: GENCODE
+#contact: gencode@sanger.ac.uk
+#format: gff3
+#date: 2015-03-06

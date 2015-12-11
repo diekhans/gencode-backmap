@@ -6,7 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include "transcriptMapper.hh"
-#include "targetAnnotations.hh"
+#include "annotationSet.hh"
 
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.50;
@@ -340,14 +340,20 @@ ResultFeatureTrees GeneMapper::buildGeneFeature(const FeatureNode* srcGeneTree,
     return mappedGene;
 }
 
+/* write a sequence region record */
+void GeneMapper::outputSeqRegion(const string& seqId,
+                                 int size,
+                                 GxfWriter& gxfFh) {
+    gxfFh.write(string("##sequence-region ") + seqId + " 1 " + toString(size));
+}
+
 /* output GFF3 mapped ##sequence-region if not already written */
 void GeneMapper::outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
                                              GxfWriter& mappedGxfFh) {
     if (mappedGxfFh.getFormat() == GFF3_FORMAT) {
-        const string& mappedSeqId = geneTree->fFeature->fSeqid;
-        if (not checkRecordSeqRegionWritten(mappedSeqId)) {
-            mappedGxfFh.write(string("##sequence-region ") + mappedSeqId + " 1 "
-                              + toString(fGenomeTransMap->getTargetSeqSize(mappedSeqId)));
+        const string& seqId = geneTree->fFeature->fSeqid;
+        if (not checkRecordTargetSeqRegionWritten(seqId)) {
+            outputSeqRegion(seqId, fGenomeTransMap->getTargetSeqSize(seqId), mappedGxfFh);
         }
     }
 }
@@ -541,8 +547,7 @@ void GeneMapper::setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene) {
 /*
  * map and output one gene's annotations
  */
-void GeneMapper::mapGene(FeatureNode* srcGeneTree,
-                         GxfFeature* geneFeature,
+void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          GxfWriter& mappedGxfFh,
                          GxfWriter& unmappedGxfFh,
                          ostream& mappingInfoFh,
@@ -622,53 +627,26 @@ void GeneMapper::copyTargetGenes(GxfWriter& mappedGxfFh,
 /*
  * map and output one gene's annotations
  */
-void GeneMapper::processGene(GxfParser *gxfParser,
-                             GxfFeature* geneFeature,
+void GeneMapper::processGene(const FeatureNode* srcGeneTree,
                              GxfWriter& mappedGxfFh,
                              GxfWriter& unmappedGxfFh,
                              ostream& mappingInfoFh,
                              ostream* transcriptPslFh) {
-    FeatureNode* srcGeneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
     if (shouldMapGeneType(srcGeneTree)) {
-        mapGene(srcGeneTree, geneFeature, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
-    } else  {
-        delete srcGeneTree;
-    }
-}
-
-/* process a record, this may consume additional feature records  */
-void GeneMapper::processRecord(GxfParser *gxfParser,
-                               GxfRecord* gxfRecord,
-                               GxfWriter& mappedGxfFh,
-                               GxfWriter& unmappedGxfFh,
-                               ostream& mappingInfoFh,
-                               ostream* transcriptPslFh) {
-    if (instanceOf(gxfRecord, GxfFeature)) {
-        processGene(gxfParser, dynamic_cast<GxfFeature*>(gxfRecord), mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
-    } else if ((gxfParser->getFormat() == GFF3_FORMAT) and (gxfRecord->toString().find("##sequence-region") == 0)) {
-        // mapped ##sequence-region records are created based on sequences written
-        unmappedGxfFh.write(gxfRecord);
-        delete gxfRecord;
-    } else {
-        // write all others as-is
-        mappedGxfFh.write(gxfRecord->toString());
-        unmappedGxfFh.write(gxfRecord->toString());
-        delete gxfRecord;
+        mapGene(srcGeneTree, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     }
 }
 
 /* Map a GFF3/GTF */
-void GeneMapper::mapGxf(GxfParser *gxfParser,
-                        GxfWriter& mappedGxfFh,
+void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
                         GxfWriter& unmappedGxfFh,
                         ostream& mappingInfoFh,
                         ostream* transcriptPslFh) {
+    const FeatureNodeVector& srcGenes = fSrcAnnotations->getGenes();
     outputInfoHeader(mappingInfoFh);
-    GxfRecord* gxfRecord;
-    while ((gxfRecord = gxfParser->next()) != NULL) {
-        processRecord(gxfParser, gxfRecord, mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
+    for (int i = 0; i < srcGenes.size(); i++) {
+        processGene(srcGenes[i], mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     }
-
     if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {
         copyTargetGenes(mappedGxfFh, mappingInfoFh);
     }

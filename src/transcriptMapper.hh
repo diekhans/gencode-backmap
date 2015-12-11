@@ -7,7 +7,7 @@ class TransMap;
 class PslMapping;
 class FeatureTransMap;
 class GxfFeature;
-class TargetAnnotations;
+class AnnotationSet;
 #include "featureTree.hh"
 #include "gxf.hh"
 #include "transMap.hh"
@@ -45,7 +45,7 @@ class TranscriptMapper {
     /* constructor, targetAnnotations can be NULL */
     TranscriptMapper(const TransMap* genomeTransMap,
                      const FeatureNode* transcriptTree,
-                     const TargetAnnotations* targetAnnotations,
+                     const AnnotationSet* targetAnnotations,
                      bool srcSeqInMapping,
                      ostream* transcriptPslFh);
 

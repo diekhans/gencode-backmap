@@ -2,8 +2,8 @@
  * map of location of target gene and transcripts. used in selecting
  * from multiple mappings
  */
-#ifndef targetAnnotations_hh
-#define targetAnnotations_hh
+#ifndef annotationSet_hh
+#define annotationSet_hh
 
 #include "gxf.hh"
 #include <map>
@@ -13,15 +13,15 @@ struct genomeRangeTree;
 
 /* stored in range tree to link target location to
  * tree. */
-struct TargetLocationLink {
-    struct TargetLocationLink *next;
+struct LocationLink {
+    struct LocationLink *next;
     FeatureNode* featureNode;
 };
  
 /*
  * Locations in target genome of old transcripts, by base id
  */
-class TargetAnnotations {
+class AnnotationSet {
     private:
        
     // map of gene or transcripts to features. Keep up to two for PAR
@@ -52,10 +52,10 @@ class TargetAnnotations {
 
     public:
     /* constructor, load gene and transcript objects from a GxF */
-    TargetAnnotations(const string& gxfFile);
+    AnnotationSet(const string& gxfFile);
 
     /* destructor */
-    ~TargetAnnotations();
+    ~AnnotationSet();
 
     /* get a target gene or transcript node with same base id or NULL.
      * special handling for PARs. Getting node is used if you need whole tree. */

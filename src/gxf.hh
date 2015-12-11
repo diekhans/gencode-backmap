@@ -453,6 +453,9 @@ class GxfWriter {
     static GxfWriter *factory(const string& fileName,
                               GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
 
+    /* copy a file to output, normally used for a header */
+    void copyFile(const string& inFile);
+
     /* write one GxF record. */
     void write(const GxfRecord* gxfRecord);
 

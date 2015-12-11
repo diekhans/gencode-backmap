@@ -1,9 +1,9 @@
-#include "targetAnnotations.hh"
+#include "annotationSet.hh"
 #include <stdexcept>
 #include <iostream>
 
 /* link a gene or transcript feature into the maps */
-void TargetAnnotations::loadFeature(FeatureNode* featureNode) {
+void AnnotationSet::loadFeature(FeatureNode* featureNode) {
     assert(featureNode->isGeneOrTranscript());
     GxfFeature* feature = featureNode->fFeature;
     // record by id and name
@@ -15,14 +15,14 @@ void TargetAnnotations::loadFeature(FeatureNode* featureNode) {
         fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
     }
     
-    struct TargetLocationLink* locationLink =  static_cast<struct TargetLocationLink*>(needMem(sizeof(struct TargetLocationLink)));  // zeros memory
+    struct LocationLink* locationLink =  static_cast<struct LocationLink*>(needMem(sizeof(struct LocationLink)));  // zeros memory
     locationLink->featureNode = featureNode;
     genomeRangeTreeAddValList(fLocationMap, toCharStr(feature->fSeqid),
                               feature->fStart, feature->fEnd, locationLink);
 }
 
 /* link a gene or transcript feature into the maps */
-void TargetAnnotations::loadGene(FeatureNode* geneTree) {
+void AnnotationSet::loadGene(FeatureNode* geneTree) {
     fGenes.push_back(geneTree);
     loadFeature(geneTree);
     for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
@@ -35,7 +35,7 @@ void TargetAnnotations::loadGene(FeatureNode* geneTree) {
 }
 
 /* process a record, loading into table or discarding */
-void TargetAnnotations::processRecord(GxfParser *gxfParser,
+void AnnotationSet::processRecord(GxfParser *gxfParser,
                                       GxfRecord* gxfRecord) {
     if (instanceOf(gxfRecord, GxfFeature)) {
         GxfFeature* geneFeature = dynamic_cast<GxfFeature*>(gxfRecord);
@@ -48,7 +48,7 @@ void TargetAnnotations::processRecord(GxfParser *gxfParser,
 
 
 /* get a target gene or transcript node from an index by name or id */
-FeatureNode* TargetAnnotations::getFeatureNodeByKey(const string& key,
+FeatureNode* AnnotationSet::getFeatureNodeByKey(const string& key,
                                                     const FeatureMap& featureMap,
                                                     const string& seqIdForParCheck) const {
     FeatureMapConstIter it = featureMap.find(key);
@@ -71,21 +71,21 @@ FeatureNode* TargetAnnotations::getFeatureNodeByKey(const string& key,
 
 /* get a target gene or transcript node with same base id or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
-FeatureNode* TargetAnnotations::getFeatureNodeById(const string& id,
+FeatureNode* AnnotationSet::getFeatureNodeById(const string& id,
                                                    const string& seqIdForParCheck) const {
     return getFeatureNodeByKey(getBaseId(id), fIdFeatureMap, seqIdForParCheck);
 }
 
 /* get a target gene or transcript node with same name or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
-FeatureNode* TargetAnnotations::getFeatureNodeByName(const string& name,
+FeatureNode* AnnotationSet::getFeatureNodeByName(const string& name,
                                                      const string& seqIdForParCheck) const {
     return getFeatureNodeByKey(name, fNameFeatureMap, seqIdForParCheck);
 }
 
 /* get a target gene or transcript with same base or NULL.
  * special handling for PARs/ */
-GxfFeature* TargetAnnotations::getFeatureById(const string& id,
+GxfFeature* AnnotationSet::getFeatureById(const string& id,
                                               const string& seqIdForParCheck) const {
     FeatureNode* featureNode = getFeatureNodeById(id, seqIdForParCheck);
     if (featureNode == NULL) {
@@ -96,13 +96,13 @@ GxfFeature* TargetAnnotations::getFeatureById(const string& id,
 }
 
 /* find overlapping features */
-FeatureNodeVector TargetAnnotations::findOverlappingFeatures(const string& seqid,
+FeatureNodeVector AnnotationSet::findOverlappingFeatures(const string& seqid,
                                                              int start,
                                                              int end) {
     FeatureNodeVector overlapping;
     struct range *over, *overs = genomeRangeTreeAllOverlapping(fLocationMap, toCharStr(seqid), start, end);
     for (over = overs; over != NULL; over = over->next) {
-        for (struct TargetLocationLink* tll = static_cast<struct TargetLocationLink*>(over->val); tll != NULL; tll = tll->next) {
+        for (struct LocationLink* tll = static_cast<struct LocationLink*>(over->val); tll != NULL; tll = tll->next) {
             overlapping.push_back(tll->featureNode);
         }
     }
@@ -110,7 +110,7 @@ FeatureNodeVector TargetAnnotations::findOverlappingFeatures(const string& seqid
 }
 
 /* constructor, load gene and transcript objects from a GxF */
-TargetAnnotations::TargetAnnotations(const string& gxfFile):
+AnnotationSet::AnnotationSet(const string& gxfFile):
     fLocationMap(genomeRangeTreeNew()) {
     GxfParser* gxfParser = GxfParser::factory(gxfFile);
     GxfRecord* gxfRecord;
@@ -121,14 +121,14 @@ TargetAnnotations::TargetAnnotations(const string& gxfFile):
 }
 
 /* free the location map tree and data */
-void TargetAnnotations::freeLocationMap() {
+void AnnotationSet::freeLocationMap() {
     struct hashCookie chromCookie = hashFirst(fLocationMap->jkhash);
     struct hashEl *chromEl;
     while ((chromEl = hashNext(&chromCookie)) != NULL) {
         struct range *ranges = genomeRangeTreeList(fLocationMap, chromEl->name);
         for (struct range *r = ranges; r != NULL; r = r->next) {
-            struct TargetLocationLink *tll, *tlls = static_cast<struct TargetLocationLink*>(r->val);
-            while ((tll = static_cast<struct TargetLocationLink*>(slPopHead(&tlls))) != NULL) {
+            struct LocationLink *tll, *tlls = static_cast<struct LocationLink*>(r->val);
+            while ((tll = static_cast<struct LocationLink*>(slPopHead(&tlls))) != NULL) {
                 free(tll);
             }
         }
@@ -137,7 +137,7 @@ void TargetAnnotations::freeLocationMap() {
 }
 
 /* destructor */
-TargetAnnotations::~TargetAnnotations() {
+AnnotationSet::~AnnotationSet() {
     freeLocationMap();
     for (int i = 0; i <fGenes.size(); i++) {
         delete fGenes[i];
