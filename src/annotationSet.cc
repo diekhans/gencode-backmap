@@ -188,6 +188,7 @@ AnnotationSet::~AnnotationSet() {
     }
 }
 
+
 /* write a sequence region record */
 void AnnotationSet::outputSeqRegion(const string& seqId,
                                     int size,

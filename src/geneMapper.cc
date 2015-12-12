@@ -597,19 +597,6 @@ void GeneMapper::copyTargetGenes(AnnotationSet& mappedSet,
     }
 }
 
-/*
- * map and output one gene's annotations
- */
-void GeneMapper::processGene(const FeatureNode* srcGeneTree,
-                             AnnotationSet& mappedSet,
-                             AnnotationSet& unmappedSet,
-                             ostream& mappingInfoFh,
-                             ostream* transcriptPslFh) {
-    if (shouldMapGeneType(srcGeneTree)) {
-        mapGene(srcGeneTree, mappedSet, unmappedSet, mappingInfoFh, transcriptPslFh);
-    }
-}
-
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
                         GxfWriter& unmappedGxfFh,
@@ -621,7 +608,9 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     const FeatureNodeVector& srcGenes = fSrcAnnotations->getGenes();
     outputInfoHeader(mappingInfoFh);
     for (int i = 0; i < srcGenes.size(); i++) {
-        processGene(srcGenes[i], mappedSet, unmappedSet, mappingInfoFh, transcriptPslFh);
+        if (shouldMapGeneType(srcGenes[i])) {
+            mapGene(srcGenes[i], mappedSet, unmappedSet, mappingInfoFh, transcriptPslFh);
+        }
     }
     if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {
         copyTargetGenes(mappedSet, mappingInfoFh);

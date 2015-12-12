@@ -108,11 +108,6 @@ class GeneMapper {
                         ostream& mappingInfoFh);
     void copyTargetGenes(AnnotationSet& mappedSet,
                          ostream& mappingInfoFh);
-    void processGene(const FeatureNode* srcGeneTree,
-                     AnnotationSet& mappedSet,
-                     AnnotationSet& unmappedSet,
-                     ostream& mappingInfoFh,
-                     ostream* transcriptPslFh);
     public:
     /* Constructor */
     GeneMapper(const AnnotationSet* srcAnnotations,
