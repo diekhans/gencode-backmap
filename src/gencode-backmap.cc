@@ -65,6 +65,8 @@ int main(int argc, char *argv[]) {
         "  --substituteMissingTargets=targetVersion - if target GxF is specified and no GENE maps to\n"
         "    the target locus, pass through the original target location.  Only a subset of the\n"
         "    biotypes are substituted. Argument is target GENCODE version that is stored as an attribute\n"
+        "  --targetPatches=targetPatchRegionBed Target genes with no corresponding mappings and that overlap\n"
+        "    thee patched regions in the target genome will be passed through.\n"
         "  --useTargetForAutoSmallNonCoding - don't map automatic small non-coding transcripts, substituting\n"
         "    the target if requested.\n"
         "  --useTargetForAutoGenes - don't map automatic-only genes, substituting\n"
@@ -122,6 +124,7 @@ int main(int argc, char *argv[]) {
             targetGxf = string(optarg);
         } else if (optc == 'T') {
             targetPatchBed = string(optarg);
+            useTargetFlags |= GeneMapper::useTargetForPatchRegions;
         } else if (optc == 'H') {
             headerFile = string(optarg);
         } else if (optc == 'p') {

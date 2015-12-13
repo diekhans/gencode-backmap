@@ -20,8 +20,9 @@ class GeneMapper {
     // flags for use target instead of map
     enum {
         useTargetForAutoNonCoding = 0x01,
-        useTargetForAutoGenes = 0x02,
-        useTargetForPseudoGenes = 0x04
+        useTargetForAutoGenes     = 0x02,
+        useTargetForPseudoGenes   = 0x04,
+        useTargetForPatchRegions  = 0x08
     };
     private:
     const AnnotationSet* fSrcAnnotations; // source annotations
@@ -42,11 +43,11 @@ class GeneMapper {
     bool isSrcSeqInMapping(const FeatureNode* featureNode) const;
     void recordMapped(const FeatureNode* featureNode);
     void recordGeneMapped(const FeatureNode* geneTree);
-    bool checkMapped(const FeatureNode* featureNode);
-    bool checkGeneMapped(const FeatureNode* geneTree);
+    bool checkMapped(const FeatureNode* featureNode) const;
+    bool checkGeneMapped(const FeatureNode* geneTree) const ;
 
     ResultFeatureTrees processTranscript(const FeatureNode* transcriptTree,
-                                    ostream* transcriptPslFh) const;
+                                         ostream* transcriptPslFh) const;
     ResultFeatureTreesVector processTranscripts(const FeatureNode* geneTree,
                                            ostream* transcriptPslFh) const;
     FeatureNode* findMatchingBoundingNode(const FeatureNodeVector& features,
@@ -101,8 +102,13 @@ class GeneMapper {
                  AnnotationSet& unmappedSet,
                  ostream& mappingInfoFh,
                  ostream* transcriptPslFh);
-    RemapStatus getNoMapRemapStatus(const FeatureNode* geneTree);
-    bool shouldMapGeneType(const FeatureNode* geneTree);
+    RemapStatus getNoMapRemapStatus(const FeatureNode* geneTree) const;
+    bool shouldMapGeneType(const FeatureNode* geneTree) const;
+    bool inTargetPatchRegion(const FeatureNode* targetGene);
+    bool checkTargetOverlappingMapped(const FeatureNode* targetGene,
+                                      AnnotationSet& mappedSet);
+    bool shouldIncludeTargetGene(const FeatureNode* geneTree,
+                                 AnnotationSet& mappedSet);
     void copyTargetGene(const FeatureNode* targetGeneNode,
                         AnnotationSet& mappedSet,
                         ostream& mappingInfoFh);

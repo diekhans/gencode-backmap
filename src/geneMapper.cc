@@ -2,6 +2,7 @@
 #include "featureMapper.hh"
 #include "jkinclude.hh"
 #include "gxf.hh"
+#include "bedMap.hh"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -49,7 +50,7 @@ void GeneMapper::recordGeneMapped(const FeatureNode* geneTree) {
 }
 
 /* check if gene or transcript have been mapped */
-bool GeneMapper::checkMapped(const FeatureNode* featureNode) {
+bool GeneMapper::checkMapped(const FeatureNode* featureNode) const {
     if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getTypeId())) != fMappedIdsNames.end()) {
         return true;
     }
@@ -65,7 +66,7 @@ bool GeneMapper::checkMapped(const FeatureNode* featureNode) {
 }
 
 /* check if gene or it's transcript have been mapped */
-bool GeneMapper::checkGeneMapped(const FeatureNode* geneTree) {
+bool GeneMapper::checkGeneMapped(const FeatureNode* geneTree) const {
     if (checkMapped(geneTree)) {
         return true;
     }
@@ -546,8 +547,8 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
 
 /* determine if this is a gene type that should not be mapped, returning
  * the remap status */
-RemapStatus GeneMapper::getNoMapRemapStatus(const FeatureNode* geneTree) {
-    if ((fUseTargetFlags & useTargetForAutoNonCoding)  && geneTree->isAutomaticSmallNonCodingGene()) {
+RemapStatus GeneMapper::getNoMapRemapStatus(const FeatureNode* geneTree) const {
+    if ((fUseTargetFlags & useTargetForAutoNonCoding) && geneTree->isAutomaticSmallNonCodingGene()) {
         return REMAP_STATUS_AUTO_SMALL_NCRNA;
     } else if ((fUseTargetFlags & useTargetForAutoGenes)  && geneTree->isAutomatic()) {
         return REMAP_STATUS_AUTOMATIC_GENE;
@@ -561,8 +562,41 @@ RemapStatus GeneMapper::getNoMapRemapStatus(const FeatureNode* geneTree) {
 /*
  * check if a gene type should be mapped or targets of this type substituted.
  */
-bool GeneMapper::shouldMapGeneType(const FeatureNode* geneTree) {
+bool GeneMapper::shouldMapGeneType(const FeatureNode* geneTree) const {
     return getNoMapRemapStatus(geneTree) == REMAP_STATUS_NONE;
+}
+
+/* is target gene in patch region? */
+bool GeneMapper::inTargetPatchRegion(const FeatureNode* targetGene) {
+    return fTargetPatchMap->anyOverlap(targetGene->fFeature->fSeqid,
+                                       targetGene->fFeature->fStart,
+                                       targetGene->fFeature->fEnd);
+}
+
+/* check to see if the target overlaps a mapped gene with sufficient similarity to
+ * be considered the same annotation..  */
+bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
+                                              AnnotationSet& mappedSet) {
+    static const float minSimilarity = 0.5;
+    FeatureNodeVector overlapping = mappedSet.findOverlappingGenes(targetGene, minSimilarity);
+    return overlapping.size() > 0;
+}
+
+/*
+ * Check if a target gene should be copied.
+ */
+bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
+                                         AnnotationSet& mappedSet)  {
+    if (not shouldMapGeneType(targetGene)) {
+        // biotypes not excluding from mapped, checkGeneMapped hands
+        // case where biotype has changed
+        return isSrcSeqInMapping(targetGene) and not checkGeneMapped(targetGene);
+    }
+    if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
+        return checkTargetOverlappingMapped(targetGene, mappedSet);
+    }
+    
+    return false;
 }
 
 /*
@@ -590,8 +624,7 @@ void GeneMapper::copyTargetGenes(AnnotationSet& mappedSet,
                                  ostream& mappingInfoFh) {
     const FeatureNodeVector& genes = fTargetAnnotations->getGenes();
     for (int iGene = 0; iGene < genes.size(); iGene++) {
-        if ((not shouldMapGeneType(genes[iGene])) and isSrcSeqInMapping(genes[iGene])
-            and not checkGeneMapped(genes[iGene])) {
+        if (shouldIncludeTargetGene(genes[iGene], mappedSet)) {
             copyTargetGene(genes[iGene], mappedSet, mappingInfoFh);
         }
     }
