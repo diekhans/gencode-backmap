@@ -593,7 +593,8 @@ bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
         return isSrcSeqInMapping(targetGene) and not checkGeneMapped(targetGene);
     }
     if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
-        return checkTargetOverlappingMapped(targetGene, mappedSet);
+        // don't use if there is a mapped with significant overlap
+        return not checkTargetOverlappingMapped(targetGene, mappedSet);
     }
     
     return false;

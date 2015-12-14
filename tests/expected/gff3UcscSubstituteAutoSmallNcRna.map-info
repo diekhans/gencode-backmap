@@ -121,6 +121,9 @@ ENSG00000223663.2	RP5-890O3.3	gene	processed_pseudogene	HAVANA	chr1	1378666	1379
 ENST00000435351.2	RP5-890O3.3-001	transcript	processed_pseudogene	HAVANA	chr1	1378666	1379032	+	chr1	1314046	1314412	+	full_contig	1	overlap	processed_pseudogene	
 ENSG00000271650.1	AL031601.4	gene	processed_pseudogene	HAVANA	chr10	42209990	42210383	+		0	0	.	deleted	0	new		
 ENST00000605702.1	AL031601.4-001	transcript	processed_pseudogene	HAVANA	chr10	42209990	42210383	+		0	0	.	deleted	0	new		
+ENSG00000171943.7	SRGAP2C	gene	pseudogene	HAVANA	chr1	121107124	121129949	+		0	0	.	none	0	na	pseudogene	V19
+ENST00000367123.3	SRGAP2C-201	transcript	unprocessed_pseudogene	ENSEMBL	chr1	121107124	121129949	+		0	0	.	none	0	na	unprocessed_pseudogene	V19
+ENST00000304465.6	SRGAP2C-001	transcript	unprocessed_pseudogene	HAVANA	chr1	121107154	121129692	+		0	0	.	none	0	na	unprocessed_pseudogene	V19
 ENSG00000201699.1	RNU1-59P	gene	snRNA	ENSEMBL	chr1	144534038	144534199	+		0	0	.	automatic_small_ncrna_gene	0	na	snRNA	V19
 ENST00000364829.1	RNU1-59P-201	transcript	snRNA	ENSEMBL	chr1	144534038	144534199	+		0	0	.	automatic_small_ncrna_gene	0	na	snRNA	V19
 ENSG00000212216.1	RNU6-816P	gene	snRNA	ENSEMBL	chr22	16276398	16276504	-		0	0	.	automatic_small_ncrna_gene	0	na	snRNA	V19

@@ -255,8 +255,8 @@ float FeatureNode::getExonSimilarity(const FeatureNode* trans2) const {
 
 /* get the maximum transcript similarity for a gene */
 float FeatureNode::getMaxTranscriptSimilarity(const FeatureNode* gene2) const {
-    assert(isExon());
-    assert(gene2->isExon());
+    assert(isGene());
+    assert(gene2->isGene());
     float maxSimilarity = 0.0;
     for (int iTrans1 = 0; (iTrans1 < fChildren.size()) && (maxSimilarity < 1.0); iTrans1++) {
         for (int iTrans2 = 0; (iTrans2 < gene2->fChildren.size()) && (maxSimilarity < 1.0); iTrans2++) {

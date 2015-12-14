@@ -159,7 +159,7 @@ FeatureNodeVector AnnotationSet::findOverlappingGenes(const FeatureNode* geneTre
     for (int iFeat = 0; iFeat < overlappingFeatures.size(); iFeat++) {
         if (overlappingFeatures[iFeat]->isGene()
             && (geneTree->getMaxTranscriptSimilarity(overlappingFeatures[iFeat]) >= minSimilarity)) {
-            overlappingFeatures.push_back(overlappingFeatures[iFeat]);
+            overlappingGenes.push_back(overlappingFeatures[iFeat]);
         }
     }
     return overlappingGenes;
