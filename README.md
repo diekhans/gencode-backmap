@@ -139,10 +139,21 @@ This does not include GFF3 meta comment.
 - Obtain and compile the libraries and command line utilities for the kent library:
   - http://genome-source.cse.ucsc.edu/gitweb/?p=kent.git;a=blob;f=src/product/README.building.source
 
-
 - Edit `config.mk` to set the following variables
   - `KENTDIR` - point to kent/src directory
   - `SAMTABIXDIR` - if browser library is compiled with samtabix support, this
     is used to find the library.
 - Compile code with `make` and turn tests with `make test`
 - There is no install step, use directly from the bin directory
+
+
+### Version numbering
+- The file `src/version.h.in` contains the version number.  It should be
+  update when doing a new release.  The git sha1 hash of the commit is also added
+  to this file. Be sure to do a make clean before doing a final build to get
+  this file rebuild before a release.
+
+- A tag is created in the form v1.0_rel on master.  Due to the limited number
+  of users of the code, release branches are not created.
+
+

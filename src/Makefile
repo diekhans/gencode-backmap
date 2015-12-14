@@ -1,8 +1,6 @@
 ROOT = ..
 include ${ROOT}/config.mk
 
-
-
 SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc pslOps.cc frame.cc pslMapping.cc transMap.cc \
 	featureTree.cc remapStatus.cc  annotationSet.cc featureTransMap.cc \
 	featureMapper.cc transcriptMapper.cc geneMapper.cc bedMap.cc gencode-backmap.cc
@@ -22,8 +20,14 @@ ${OBJDIR}/%.o: %.cc
 	${CXX} ${CXXFLAGS} -c -MM -MT $@ $< >$*.depend
 	${CXX} ${CXXFLAGS} -c -o $@ $<
 
+${OBJDIR}/gencode-backmap.o: gencode-backmap.cc version.h
+
+version.h: version.h.in
+	sed -e "s/@VERSION_HASH@/$$(git rev-parse HEAD)/" $< >$@.tmp
+	mv -f $@.tmp $@
+
 clean:
-	rm -f ${OBJS} ${PROG} ${DEPENDS}
+	rm -f ${OBJS} ${PROG} ${DEPENDS} version.h
 savebak:
 	savebak -r ${hgwdev} gencode-backmap Makefile *.cc *.hh ../tests/data
 

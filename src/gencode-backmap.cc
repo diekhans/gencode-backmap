@@ -10,6 +10,7 @@
 #include "geneMapper.hh"
 #include "annotationSet.hh"
 #include "bedMap.hh"
+#include "./version.h"
 
 /* map to different assembly */
 static void gencodeBackmap(const string& inGxfFile,
@@ -84,7 +85,9 @@ int main(int argc, char *argv[]) {
         "  mappingAligns - Alignments between the two genomes.  The \n"
         "  mappedGxf - GxF file of mapped features on target genome\n"
         "  unmappedGxf - GxF file of unmapped features on source genome\n"
-        "  mappingInfoTsv - TSV file with information about each gene and transcript mapping\n";
+        "  mappingInfoTsv - TSV file with information about each gene and transcript mapping\n"
+        "\n"
+        "Version: %s (%s)\n";
 
     const struct option long_options[] = {
         {"help", 0, NULL, 'h'},
@@ -143,12 +146,14 @@ int main(int argc, char *argv[]) {
     }    
     if (help) {
         // don't check any other options with help
-        cerr << usage << endl;
+        fprintf(stderr, toCharStr(usage), argv[0], toCharStr(VERSION), toCharStr(VERSION_HASH));
         return 1;
     }
 
     if ((argc - optind) != 5) {
-        errAbort(toCharStr("wrong # args: " + usage), argv[0]);
+        fprintf(stderr, "wrong # args: ");
+        fprintf(stderr, toCharStr(usage), argv[0], toCharStr(VERSION), toCharStr(VERSION_HASH));
+        return 1;
     }
     string inGxfFile = argv[optind];
     string mappingAligns = argv[optind+1];
