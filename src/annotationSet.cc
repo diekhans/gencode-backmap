@@ -48,7 +48,9 @@ void AnnotationSet::addFeature(FeatureNode* featureNode) {
     if (featureNode->fFeature->getHavanaTypeId() != "") {
         fIdFeatureMap[getBaseId(featureNode->fFeature->getHavanaTypeId())].push_back(featureNode);
     }
-    if (feature->getTypeName() != "") {
+    // save gene/transcript name, although not on small non-coding, as they are
+    // not unique.
+    if ((feature->getTypeName() != "") && (not featureNode->isAutomaticSmallNonCodingGene())) {
         fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
     }
     if (fLocationMap != NULL) {
