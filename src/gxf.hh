@@ -212,6 +212,15 @@ class AttrVals: public AttrValVector {
             (*this)[idx] = new AttrVal(attrVal);
         }
     }
+
+    /* remove an attribute by name, if it exists */
+    void remove(const string& attrName) {
+        int idx = findIdx(attrName);
+        if (idx >= 0) {
+            delete (*this)[idx];
+            erase(begin()+idx);
+        }
+    }
 };
 
 /*

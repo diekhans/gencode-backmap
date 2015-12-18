@@ -252,10 +252,23 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     return false;
 }
 
+/* clone a target gene and remove 'transcript_*'' attributes that an old bug
+ * put on gene records.
+ */
+FeatureNode* GeneMapper::cloneTargetGene(const FeatureNode* srcGene) const {
+    FeatureNode* targetGene = getTargetAnnotationNode(srcGene)->clone();
+    AttrVals& attrVals = targetGene->fFeature->getAttrs();
+    attrVals.remove("transcript_id");
+    attrVals.remove("transcript_type");
+    attrVals.remove("transcript_name");
+    attrVals.remove("transcript_status");
+    return targetGene;
+}
+
 /* copy target gene to use instead of a mapping  */
 void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) const {
-    const FeatureNode* targetGene = getTargetAnnotationNode(mappedGene->src);
-    mappedGene->target = targetGene->clone();
+    mappedGene->target = cloneTargetGene(mappedGene->src);
+
     // Set flag in both trees
     mappedGene->target->rsetSubstitutedMissingTargetAttr(fSubstituteTargetVersion);
     if (mappedGene->mapped != NULL) {

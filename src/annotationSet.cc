@@ -115,7 +115,7 @@ FeatureNode* AnnotationSet::getFeatureNodeById(const string& id,
 /* get a target gene or transcript node with same name or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
 FeatureNode* AnnotationSet::getFeatureNodeByName(const string& name,
-                                                     const string& seqIdForParCheck) const {
+                                                 const string& seqIdForParCheck) const {
     return getFeatureNodeByKey(name, fNameFeatureMap, seqIdForParCheck);
 }
 

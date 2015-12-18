@@ -67,6 +67,7 @@ class GeneMapper {
 
     void setNumGeneMappings(FeatureNode* mappedGeneTree) const;
     bool shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const;
+    FeatureNode* cloneTargetGene(const FeatureNode* srcGene) const;
     void substituteTarget(ResultFeatureTrees* mappedGene) const;
     void updateMappedGeneBounds(const FeatureNode* mappedTranscript,
                                 string& seqid, string& strand,
