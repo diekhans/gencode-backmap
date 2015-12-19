@@ -4,7 +4,7 @@ Test data
 - data/hg38ToHg19.over.chain
   Subset of chains needed to test mappings.  This was generated with:
 
-     gff3ToGenePred data/gencode.v22.annotations.gff3 testV22.gp
+     gff3ToGenePred data/gencode.v22.annotation.gff3 testV22.gp
      overlapSelect -inFmt=chain testV22.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz test.chain
 
      edit and replace chrM with this:

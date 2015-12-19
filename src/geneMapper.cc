@@ -247,9 +247,10 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     if (not isSrcSeqInMapping(targetGene->fFeature)) {
         return false;  // sequence not being mapped (moved chroms)
     }
-    // FIXME: allow for pseudogene compatiblity
-    return (targetGene->fFeature->getTypeBiotype() == mappedGene->src->fFeature->getTypeBiotype());
-    return false;
+    // allow for pseudogene biotype compatiblity between less and more
+    // specific pseudogene biotypes
+    return ((targetGene->fFeature->getTypeBiotype() == mappedGene->src->fFeature->getTypeBiotype())
+            or (targetGene->isPseudogene() == mappedGene->src->isPseudogene()));
 }
 
 /* clone a target gene and remove 'transcript_*'' attributes that an old bug
@@ -542,6 +543,9 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          AnnotationSet& unmappedSet,
                          ostream& mappingInfoFh,
                          ostream* transcriptPslFh) {
+    if (srcGeneTree->fFeature->getTypeName() == "PARG") { // FIXME
+        cerr << "mapGene " << srcGeneTree->fFeature->getTypeName() <<endl;
+    }
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
     ResultFeatureTrees mappedGene = buildGeneFeature(srcGeneTree, mappedTranscripts);
     setGeneLevelMappingAttributes(&mappedGene);
@@ -600,6 +604,9 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
  */
 bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
+    if (targetGene->fFeature->getTypeName() == "PARG") { // FIXME
+        cerr << "shouldIncludeTargetGene " << targetGene->fFeature->getTypeName() <<endl;
+    }
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped hands
         // case where biotype has changed

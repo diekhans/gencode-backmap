@@ -260,7 +260,7 @@ float FeatureNode::getMaxTranscriptSimilarity(const FeatureNode* gene2) const {
     float maxSimilarity = 0.0;
     for (int iTrans1 = 0; (iTrans1 < fChildren.size()) && (maxSimilarity < 1.0); iTrans1++) {
         for (int iTrans2 = 0; (iTrans2 < gene2->fChildren.size()) && (maxSimilarity < 1.0); iTrans2++) {
-            float similarity = fChildren[iTrans1]->getOverlapAmount(gene2->fChildren[iTrans2]);
+            float similarity = fChildren[iTrans1]->getExonSimilarity(gene2->fChildren[iTrans2]);
             maxSimilarity = max(similarity, maxSimilarity);
         }
     }
