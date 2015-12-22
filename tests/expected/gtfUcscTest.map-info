@@ -155,3 +155,10 @@ ENST00000611974.3	PARG-008	transcript	processed_transcript	HAVANA	chr10	49857295
 ENST00000497481.1	PARG-004	transcript	processed_transcript	HAVANA	chr10	49865321	49867434	-		0	0	.	gene_size_change	1	overlap	processed_transcript	
 ENSG00000230166.1	RP11-526K21.2	gene	processed_pseudogene	HAVANA	chr10	49909613	49909942	+	chr10	51117659	51117988	+	full_contig	1	overlap	pseudogene	
 ENST00000413846.1	RP11-526K21.2-001	transcript	processed_pseudogene	HAVANA	chr10	49909613	49909942	+	chr10	51117659	51117988	+	full_contig	1	overlap	processed_pseudogene	
+ENSG00000178645.11	C10orf53	gene	protein_coding	HAVANA	chr10	49679651	49710261	+	chr10	50887697	50918307	+	full_contig	1	overlap	protein_coding	
+ENST00000374113.3	C10orf53-001	transcript	protein_coding	HAVANA	chr10	49679651	49696044	+	chr10	50887697	50904090	+	full_contig	1	overlap	protein_coding	
+ENST00000374111.6	C10orf53-002	transcript	protein_coding	HAVANA	chr10	49679686	49695107	+	chr10	50887732	50903153	+	full_contig	1	overlap	protein_coding	
+ENST00000374112.6	C10orf53-003	transcript	protein_coding	HAVANA	chr10	49679686	49710261	+	chr10	50887732	50918307	+	full_contig	1	overlap	protein_coding	
+ENST00000535836.1	C10orf53-201	transcript	protein_coding	ENSEMBL	chr10	49679686	49710261	+	chr10	50887732	50918307	+	full_contig	1	overlap	protein_coding	
+ENSG00000070748.16	CHAT	gene	protein_coding	HAVANA	chr10	49609095	49665104	+	chr10	50817141	50873150	+	full_contig	1	overlap	protein_coding	
+ENST00000339797.4	CHAT-007	transcript	protein_coding	HAVANA	chr10	49609095	49665104	+	chr10	50817141	50873150	+	full_contig	1	new		

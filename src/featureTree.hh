@@ -47,6 +47,12 @@ class FeatureNode {
     TargetStatus fTargetStatus;
     int fNumMappings;    // Number of location feature was mapped too.  Not set for all node types.
 
+    private:
+    int getTranscriptExonSize() const;
+    int getOverlapAmount(const FeatureNode* other) const;
+    int countExonOverlap(const FeatureNode* exon1,
+                         const FeatureNode* trans2) const;
+
     public:
     FeatureNode(GxfFeature* feature):
         fFeature(feature),
@@ -82,12 +88,6 @@ class FeatureNode {
     bool isGeneOrTranscript() const {
         return isGene() or isTranscript();
     }
-
-    /* get transcript size of exons */
-    int getTranscriptExonSize() const;
-
-    /* count overlapping bases */
-    int getOverlapAmount(const FeatureNode* other) const;
 
     /* get exon similarity */
     float getExonSimilarity(const FeatureNode* trans2) const;

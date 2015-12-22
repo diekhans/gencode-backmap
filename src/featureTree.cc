@@ -228,7 +228,9 @@ int FeatureNode::getTranscriptExonSize() const {
     assert(isTranscript());
     int size = 0;
     for (int iExon = 0; iExon < fChildren.size(); iExon++) {
-        size += fChildren[iExon]->fFeature->size();
+        if (fChildren[iExon]->isExon()) {
+            size += fChildren[iExon]->fFeature->size();
+        }
     }
     return size;
 }
@@ -240,14 +242,27 @@ int FeatureNode::getOverlapAmount(const FeatureNode* other) const {
     return (maxStart <= minEnd) ? (minEnd-maxStart)+1 : 0;
 }
 
+/* count exon overlap with exons of another transcript */
+int FeatureNode::countExonOverlap(const FeatureNode* exon1,
+                                  const FeatureNode* trans2) const {
+    int totalOverlap = 0;
+    for (int iFeat2 = 0; iFeat2 < trans2->fChildren.size(); iFeat2++) {
+        if (trans2->fChildren[iFeat2]->isExon()) {
+            const FeatureNode* exon2 = trans2->fChildren[iFeat2];
+            totalOverlap += exon1->getOverlapAmount(exon2);
+        }
+    }
+    return totalOverlap;
+}
+
 /* get exon similarity */
 float FeatureNode::getExonSimilarity(const FeatureNode* trans2) const {
     assert(isTranscript());
     assert(trans2->isTranscript());
     int totalOverlap = 0;
-    for (int iExon1 = 0; iExon1 < fChildren.size(); iExon1++) {
-        for (int iExon2 = 0; iExon2 < trans2->fChildren.size(); iExon2++) {
-            totalOverlap = fChildren[iExon1]->getOverlapAmount(trans2->fChildren[iExon2]);
+    for (int iFeat1 = 0; iFeat1 < fChildren.size(); iFeat1++) {
+        if (fChildren[iFeat1]->isExon()) {
+            totalOverlap += countExonOverlap(fChildren[iFeat1], trans2);
         }
     }
     return float(2*totalOverlap)/float(getTranscriptExonSize() + trans2->getTranscriptExonSize());

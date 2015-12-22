@@ -543,9 +543,6 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          AnnotationSet& unmappedSet,
                          ostream& mappingInfoFh,
                          ostream* transcriptPslFh) {
-    if (srcGeneTree->fFeature->getTypeName() == "PARG") { // FIXME
-        cerr << "mapGene " << srcGeneTree->fFeature->getTypeName() <<endl;
-    }
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
     ResultFeatureTrees mappedGene = buildGeneFeature(srcGeneTree, mappedTranscripts);
     setGeneLevelMappingAttributes(&mappedGene);
@@ -604,17 +601,15 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
  */
 bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
-    if (targetGene->fFeature->getTypeName() == "PARG") { // FIXME
-        cerr << "shouldIncludeTargetGene " << targetGene->fFeature->getTypeName() <<endl;
-    }
     if (not shouldMapGeneType(targetGene)) {
-        // biotypes not excluding from mapped, checkGeneMapped hands
+        // biotypes not excluding from mapped, checkGeneMapped handles
         // case where biotype has changed
         return isSrcSeqInMapping(targetGene) and not checkGeneMapped(targetGene);
     }
     if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
         // don't use if there is a mapped with significant overlap
-        return not checkTargetOverlappingMapped(targetGene, mappedSet);
+        return (not checkGeneMapped(targetGene))
+            and (not checkTargetOverlappingMapped(targetGene, mappedSet));
     }
     
     return false;
