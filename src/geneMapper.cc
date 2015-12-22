@@ -33,11 +33,11 @@ bool GeneMapper::isSrcSeqInMapping(const FeatureNode* featureNode) const {
 
 /* record gene or transcript as being mapped */
 void GeneMapper::recordMapped(const FeatureNode* featureNode) {
-    fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getTypeId()));
+    fMappedIdsNames.insert(getBaseId(featureNode->getTypeId()));
     // N.B. gene names with `.' are not always a version
-    fMappedIdsNames.insert(featureNode->fFeature->getTypeName());
-    if (featureNode->fFeature->getHavanaTypeId() != "") {
-        fMappedIdsNames.insert(getBaseId(featureNode->fFeature->getHavanaTypeId()));
+    fMappedIdsNames.insert(featureNode->getTypeName());
+    if (featureNode->getHavanaTypeId() != "") {
+        fMappedIdsNames.insert(getBaseId(featureNode->getHavanaTypeId()));
     }
 }
 
@@ -51,14 +51,14 @@ void GeneMapper::recordGeneMapped(const FeatureNode* geneTree) {
 
 /* check if gene or transcript have been mapped */
 bool GeneMapper::checkMapped(const FeatureNode* featureNode) const {
-    if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getTypeId())) != fMappedIdsNames.end()) {
+    if (fMappedIdsNames.find(getBaseId(featureNode->getTypeId())) != fMappedIdsNames.end()) {
         return true;
     }
-    if (fMappedIdsNames.find(featureNode->fFeature->getTypeName()) != fMappedIdsNames.end()) {
+    if (fMappedIdsNames.find(featureNode->getTypeName()) != fMappedIdsNames.end()) {
         return true;
     }
-    if (featureNode->fFeature->getHavanaTypeId() != "") {
-        if (fMappedIdsNames.find(getBaseId(featureNode->fFeature->getHavanaTypeId())) != fMappedIdsNames.end()) {
+    if (featureNode->getHavanaTypeId() != "") {
+        if (fMappedIdsNames.find(getBaseId(featureNode->getHavanaTypeId())) != fMappedIdsNames.end()) {
             return true;
         }
     }
@@ -109,7 +109,7 @@ FeatureNode* GeneMapper::findMatchingBoundingNode(const FeatureNodeVector& featu
     assert(feature->isGeneOrTranscript());
     for (int i = 0; i < features.size(); i++)  {
         assert(features[i]->isGeneOrTranscript());
-        if (features[i]->fFeature->getTypeId() == feature->fFeature->getTypeId()) {
+        if (features[i]->getTypeId() == feature->getTypeId()) {
             return features[i];  // found match!
         }
     }
@@ -249,7 +249,7 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     }
     // allow for pseudogene biotype compatiblity between less and more
     // specific pseudogene biotypes
-    return ((targetGene->fFeature->getTypeBiotype() == mappedGene->src->fFeature->getTypeBiotype())
+    return ((targetGene->getTypeBiotype() == mappedGene->src->getTypeBiotype())
             or (targetGene->isPseudogene() == mappedGene->src->isPseudogene()));
 }
 
@@ -404,14 +404,14 @@ const FeatureNode* GeneMapper::getTargetAnnotationNode(const FeatureNode* featur
         return NULL;
     }
     // try id, havana id, then name
-    const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(featureNode->fFeature->getTypeId(),
+    const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(featureNode->getTypeId(),
                                                                            featureNode->fFeature->fSeqid);
-    if ((targetNode == NULL) and (featureNode->fFeature->getHavanaTypeId() != "")) {
-        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->fFeature->getHavanaTypeId(),
+    if ((targetNode == NULL) and (featureNode->getHavanaTypeId() != "")) {
+        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->getHavanaTypeId(),
                                                               featureNode->fFeature->fSeqid);
     }
     if (targetNode == NULL) {
-        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->fFeature->getTypeName(),
+        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->getTypeName(),
                                                               featureNode->fFeature->fSeqid);
     }
     return targetNode;
@@ -555,7 +555,9 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
     outputInfo(&mappedGene, mappingInfoFh);  // MUST do before saveGene, as it moved to output sets
     saveMapped(mappedGene, mappedSet);
     saveUnmapped(mappedGene, unmappedSet);
-    recordGeneMapped(mappedGene.src);
+    if (mappedGene.mapped != NULL) {
+        recordGeneMapped(mappedGene.src);
+    }
     mappedGene.free();
 }
 

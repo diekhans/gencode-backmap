@@ -34,7 +34,7 @@ bool FeatureNode::isAutomaticSmallNonCodingGene() const {
     if (fFeature->fSource != "ENSEMBL") {
         return false;
     }
-    const string& bioType = fFeature->getTypeBiotype();
+    const string& bioType = getTypeBiotype();
     for (int i = 0; automaticNonCodingGeneBiotypes[i] != NULL; i++) {
         if (bioType == automaticNonCodingGeneBiotypes[i]) {
             return true;

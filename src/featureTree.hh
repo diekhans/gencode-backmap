@@ -89,6 +89,30 @@ class FeatureNode {
         return isGene() or isTranscript();
     }
 
+    /* get the id based on feature type, or empty string if it doesn't have an
+     * id */
+    const string& getTypeId() const {
+        return fFeature->getTypeId();
+    }
+    
+    /* get the id based on feature type, or empty string if it doesn't have an
+     * id */
+    const string& getHavanaTypeId() const {
+        return fFeature->getHavanaTypeId();
+    }
+    
+    /* get the name based on feature type, or empty string if it doesn't have an
+     * id */
+    const string& getTypeName() const {
+        return fFeature->getTypeName();
+    }
+    
+    /* get the biotype based on feature type, or empty string if it doesn't have an
+     * id */
+    const string& getTypeBiotype() const {
+        return fFeature->getTypeBiotype();
+    }
+    
     /* get exon similarity */
     float getExonSimilarity(const FeatureNode* trans2) const;
 

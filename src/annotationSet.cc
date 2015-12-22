@@ -45,8 +45,8 @@ void AnnotationSet::addFeature(FeatureNode* featureNode) {
     GxfFeature* feature = featureNode->fFeature;
     // record by id and name
     fIdFeatureMap[getBaseId(feature->getTypeId())].push_back(featureNode);
-    if (featureNode->fFeature->getHavanaTypeId() != "") {
-        fIdFeatureMap[getBaseId(featureNode->fFeature->getHavanaTypeId())].push_back(featureNode);
+    if (featureNode->getHavanaTypeId() != "") {
+        fIdFeatureMap[getBaseId(featureNode->getHavanaTypeId())].push_back(featureNode);
     }
     // save gene/transcript name, although not on small non-coding, as they are
     // not unique.
