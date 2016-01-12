@@ -162,3 +162,13 @@ ENST00000374112.6	C10orf53-003	transcript	protein_coding	HAVANA	chr10	49679686	4
 ENST00000535836.1	C10orf53-201	transcript	protein_coding	ENSEMBL	chr10	49679686	49710261	+	chr10	50887732	50918307	+	full_contig	1	overlap	protein_coding	
 ENSG00000070748.16	CHAT	gene	protein_coding	HAVANA	chr10	49609095	49665104	+	chr10	50817141	50873150	+	full_contig	1	overlap	protein_coding	
 ENST00000339797.4	CHAT-007	transcript	protein_coding	HAVANA	chr10	49609095	49665104	+	chr10	50817141	50873150	+	full_contig	1	new		
+ENSG00000269713.6	NBPF9	gene	protein_coding	HAVANA	chr1	149054027	149103561	-		0	0	.	gene_conflict	5	overlap	protein_coding	
+ENST00000615421.3	NBPF9-002	transcript	protein_coding	HAVANA	chr1	149054027	149103539	-		0	0	.	gene_conflict	4	nonOverlap	processed_transcript	
+ENST00000613595.3	NBPF9-203	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	3	overlap	protein_coding	
+ENST00000584027.7	NBPF9-202	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	4	overlap	protein_coding	
+ENST00000613969.3	NBPF9-204	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	3	new		
+ENST00000621074.3	NBPF9-205	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	3	new		
+ENST00000621645.3	NBPF9-007	transcript	protein_coding	HAVANA	chr1	149054138	149103561	-		0	0	.	gene_conflict	5	nonOverlap	processed_transcript	
+ENST00000610300.3	NBPF9-008	transcript	protein_coding	HAVANA	chr1	149055630	149082311	-		0	0	.	gene_conflict	2	overlap	processed_transcript	
+ENST00000483630.4	NBPF9-201	transcript	protein_coding	ENSEMBL	chr1	149055630	149075866	-		0	0	.	gene_conflict	3	nonOverlap	processed_transcript	
+ENST00000611593.1	NBPF9-006	transcript	retained_intron	HAVANA	chr1	149059763	149066634	-		0	0	.	gene_conflict	4	overlap	processed_transcript	

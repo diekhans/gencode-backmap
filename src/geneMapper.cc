@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include "transcriptMapper.hh"
 #include "annotationSet.hh"
+#include "globals.hh"
+
 
 /* fraction of gene expansion that causes a rejection */
 const float geneExpansionThreshold = 0.50;
@@ -233,15 +235,26 @@ void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
 /* should we substitute target version of gene?  */
 bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const {
     // requested and a mis-mapped gene or the right biotype to a mapped sequence
-    if (not ((fSubstituteTargetVersion.size() > 0)
-             and ((mappedGene->getTargetStatus() == TARGET_STATUS_NONOVERLAP)
-                  or (mappedGene->getTargetStatus() == TARGET_STATUS_LOST)))) {
-        return false; // not substituting or not right target status
+    if (fSubstituteTargetVersion.size() == 0) {
+        return false; // not substituting
+    }
+    if (not ((mappedGene->getTargetStatus() == TARGET_STATUS_NONOVERLAP)
+             or (mappedGene->getTargetStatus() == TARGET_STATUS_LOST))) {
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: false: " << mappedGene->src->getTypeId()
+                 << " wrong target status: " << targetStatusToStr(mappedGene->getTargetStatus())
+                 << endl;
+        }
+        return false; // not right target status
     }
     const FeatureNode* targetGene = getTargetAnnotationNode(mappedGene->src);
     if (targetGene == NULL) {
         // this should not have happened, but it does because of a transcript id
         // ENST00000426406 incorrectly being moved to a different gene
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: false: " << mappedGene->src->getTypeId()
+                 << " missing target gene due to gene id rename" << endl;
+        }
         return false;
     }
     if (not isSrcSeqInMapping(targetGene->fFeature)) {
@@ -249,8 +262,22 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     }
     // allow for pseudogene biotype compatiblity between less and more
     // specific pseudogene biotypes
-    return ((targetGene->getTypeBiotype() == mappedGene->src->getTypeBiotype())
-            or (targetGene->isPseudogene() == mappedGene->src->isPseudogene()));
+    if ((targetGene->getTypeBiotype() == mappedGene->src->getTypeBiotype())
+        or (targetGene->isPseudogene() == mappedGene->src->isPseudogene())) {
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: true: mapped: " << mappedGene->src->getTypeId()
+                 << " substitute target: " << targetGene->getTypeId() << endl;
+        }
+        return true;
+    } else {
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: false: " << mappedGene->src->getTypeId()
+                 << " gene biotype change: target: " << targetGene->getTypeBiotype()
+                 << " mapped: " << mappedGene->src->getTypeBiotype()
+                 << endl;
+        }
+        return false;
+    }
 }
 
 /* clone a target gene and remove 'transcript_*'' attributes that an old bug
@@ -351,6 +378,11 @@ ResultFeatureTrees GeneMapper::buildGeneFeature(const FeatureNode* srcGeneTree,
     if ((targetStatus == TARGET_STATUS_LOST) && hasTargetStatusNonOverlap(&mappedGene)) {
         // lost because at least one transcript doesn't overlap the target
         mappedGene.rsetTargetStatus(TARGET_STATUS_NONOVERLAP); // gene and transcripts
+    }
+    if (gVerbose) {
+        cerr << "buildGeneFeature: "  << srcGeneTree->getTypeId()
+             << " " << remapStatusToStr(mappedGene.getRemapStatus())
+             << " " << targetStatusToStr(mappedGene.getTargetStatus()) << endl;
     }
     return mappedGene;
 }
@@ -543,6 +575,9 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          AnnotationSet& unmappedSet,
                          ostream& mappingInfoFh,
                          ostream* transcriptPslFh) {
+    if (gVerbose) {
+        cerr << endl << "mapGene: " << srcGeneTree->getTypeId() << endl;
+    }
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
     ResultFeatureTrees mappedGene = buildGeneFeature(srcGeneTree, mappedTranscripts);
     setGeneLevelMappingAttributes(&mappedGene);
@@ -603,18 +638,34 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
  */
 bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
+        if (gVerbose) {
+            cerr << "shouldIncludeTargetGene: " << targetGene->getTypeId()
+                 << "  " << targetGene->getTypeBiotype() << endl;
+        }
+    bool shouldInclude = false;
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles
         // case where biotype has changed
+        if (gVerbose) {
+            cerr << "    shouldIncludeTargetGene: isSrcSeqInMapping:" << isSrcSeqInMapping(targetGene)
+                 << " already mapped: " << checkGeneMapped(targetGene) << endl;
+        }
         return isSrcSeqInMapping(targetGene) and not checkGeneMapped(targetGene);
     }
     if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
+        if (gVerbose) {
+            cerr << "    shouldIncludeTargetGene: in patched region: already mapped: " << checkGeneMapped(targetGene)
+                 << " overlaps mapping: " << checkTargetOverlappingMapped(targetGene, mappedSet) << endl;
+        }
         // don't use if there is a mapped with significant overlap
         return (not checkGeneMapped(targetGene))
             and (not checkTargetOverlappingMapped(targetGene, mappedSet));
     }
     
-    return false;
+    if (gVerbose) {
+        cerr << "    shouldIncludeTargetGene: " << shouldInclude  << endl;
+    }
+    return shouldInclude;
 }
 
 /*

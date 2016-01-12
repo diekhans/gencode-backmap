@@ -1,6 +1,6 @@
-biocat	full_contig	full_fragment	gene_size_change	no_seq_map	partial	total
-pseudo	9	0	1	1	0	11
-coding	39	1	8	1	10	59
-nonCoding	25	0	3	1	4	33
-problem	5	0	1	0	0	6
-all	78	1	13	3	14	109
+biocat	full_contig	full_fragment	gene_conflict	gene_size_change	no_seq_map	partial	total
+pseudo	9	0	0	1	1	0	11
+coding	39	1	8	8	1	10	67
+nonCoding	25	0	0	3	1	4	33
+problem	5	0	1	1	0	0	7
+all	78	1	9	13	3	14	118

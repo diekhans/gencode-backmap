@@ -1,5 +1,5 @@
-biocat	full_contig	full_fragment	gene_size_change	no_seq_map	partial	total
-pseudo	0.82	0.00	0.09	0.09	0.00	1.00
-coding	0.66	0.02	0.14	0.02	0.17	1.00
-nonCoding	0.76	0.00	0.09	0.03	0.12	1.00
-problem	0.83	0.00	0.17	0.00	0.00	1.00
+biocat	full_contig	full_fragment	gene_conflict	gene_size_change	no_seq_map	partial	total
+pseudo	0.82	0.00	0.00	0.09	0.09	0.00	1.00
+coding	0.58	0.01	0.12	0.12	0.01	0.15	1.00
+nonCoding	0.76	0.00	0.00	0.09	0.03	0.12	1.00
+problem	0.71	0.00	0.14	0.14	0.00	0.00	1.00

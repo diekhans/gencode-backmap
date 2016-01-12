@@ -138,6 +138,19 @@ ENST00000374112.6	C10orf53-003	transcript	protein_coding	HAVANA	chr10	49679686	4
 ENST00000535836.1	C10orf53-201	transcript	protein_coding	ENSEMBL	chr10	49679686	49710261	+	chr10	50887732	50918307	+	full_contig	1	overlap	protein_coding	
 ENSG00000070748.16	CHAT	gene	protein_coding	HAVANA	chr10	49609095	49665104	+	chr10	50817141	50873150	+	full_contig	1	overlap	protein_coding	
 ENST00000339797.4	CHAT-007	transcript	protein_coding	HAVANA	chr10	49609095	49665104	+	chr10	50817141	50873150	+	full_contig	1	new		
+ENSG00000269713.6	NBPF9	gene	protein_coding	HAVANA	chr1	149054027	149103561	-		0	0	.	gene_conflict	5	overlap	protein_coding	
+ENST00000615421.3	NBPF9-002	transcript	protein_coding	HAVANA	chr1	149054027	149103539	-		0	0	.	gene_conflict	4	nonOverlap	processed_transcript	
+ENST00000613595.3	NBPF9-203	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	3	overlap	protein_coding	
+ENST00000584027.7	NBPF9-202	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	4	overlap	protein_coding	
+ENST00000613969.3	NBPF9-204	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	3	new		
+ENST00000621074.3	NBPF9-205	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-		0	0	.	gene_conflict	3	new		
+ENST00000621645.3	NBPF9-007	transcript	protein_coding	HAVANA	chr1	149054138	149103561	-		0	0	.	gene_conflict	5	nonOverlap	processed_transcript	
+ENST00000610300.3	NBPF9-008	transcript	protein_coding	HAVANA	chr1	149055630	149082311	-		0	0	.	gene_conflict	2	overlap	processed_transcript	
+ENST00000483630.4	NBPF9-201	transcript	protein_coding	ENSEMBL	chr1	149055630	149075866	-		0	0	.	gene_conflict	3	nonOverlap	processed_transcript	
+ENST00000611593.1	NBPF9-006	transcript	retained_intron	HAVANA	chr1	149059763	149066634	-		0	0	.	gene_conflict	4	overlap	processed_transcript	
+ENSG00000171943.7	SRGAP2C	gene	pseudogene	HAVANA	chr1	121107124	121129949	+		0	0	.	none	0	na	pseudogene	V19
+ENST00000367123.3	SRGAP2C-201	transcript	unprocessed_pseudogene	ENSEMBL	chr1	121107124	121129949	+		0	0	.	none	0	na	unprocessed_pseudogene	V19
+ENST00000304465.6	SRGAP2C-001	transcript	unprocessed_pseudogene	HAVANA	chr1	121107154	121129692	+		0	0	.	none	0	na	unprocessed_pseudogene	V19
 ENSG00000201699.1	RNU1-59P	gene	snRNA	ENSEMBL	chr1	144534038	144534199	+		0	0	.	automatic_small_ncrna_gene	0	na	snRNA	V19
 ENST00000364829.1	RNU1-59P-201	transcript	snRNA	ENSEMBL	chr1	144534038	144534199	+		0	0	.	automatic_small_ncrna_gene	0	na	snRNA	V19
 ENSG00000212216.1	RNU6-816P	gene	snRNA	ENSEMBL	chr22	16276398	16276504	-		0	0	.	automatic_small_ncrna_gene	0	na	snRNA	V19
@@ -158,3 +171,22 @@ ENSG00000210196.2	MT-TP	gene	Mt_tRNA	ENSEMBL	chrM	15956	16023	-		0	0	.	automatic
 ENST00000387461.2	MT-TP-201	transcript	Mt_tRNA	ENSEMBL	chrM	15956	16023	-		0	0	.	automatic_small_ncrna_gene	0	na	Mt_tRNA	V19
 ENSG00000264398.1	AL031601.1	gene	miRNA	ENSEMBL	chr10	42730351	42730423	-		0	0	.	automatic_small_ncrna_gene	0	na	miRNA	V19
 ENST00000580460.1	AL031601.1-201	transcript	miRNA	ENSEMBL	chr10	42730351	42730423	-		0	0	.	automatic_small_ncrna_gene	0	na	miRNA	V19
+ENSG00000227345.4	PARG	gene	protein_coding	HAVANA	chr10	51026325	51130715	-		0	0	.	none	0	na	protein_coding	V19
+ENST00000402038.3	PARG-001	transcript	protein_coding	HAVANA	chr10	51026325	51130715	-		0	0	.	none	0	na	protein_coding	V19
+ENST00000492350.1	PARG-003	transcript	processed_transcript	HAVANA	chr10	51040849	51041320	-		0	0	.	none	0	na	processed_transcript	V19
+ENST00000497481.1	PARG-004	transcript	processed_transcript	HAVANA	chr10	51073367	51075480	-		0	0	.	none	0	na	processed_transcript	V19
+ENSG00000168614.13	NBPF9	gene	protein_coding	HAVANA	chr1	144811744	144830413	+		0	0	.	none	0	na	protein_coding	V19
+ENST00000338347.4	NBPF9-202	transcript	protein_coding	ENSEMBL	chr1	144811744	144830301	+		0	0	.	none	0	na	protein_coding	V19
+ENST00000440491.2	NBPF9-203	transcript	protein_coding	ENSEMBL	chr1	144811744	144830301	+		0	0	.	none	0	na	protein_coding	V19
+ENST00000483630.1	NBPF9-003	transcript	processed_transcript	HAVANA	chr1	144811748	144815261	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000468645.1	NBPF9-002	transcript	processed_transcript	HAVANA	chr1	144811748	144830302	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000496755.1	NBPF9-004	transcript	processed_transcript	HAVANA	chr1	144811748	144830302	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000491652.1	NBPF9-005	transcript	processed_transcript	HAVANA	chr1	144811748	144830302	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000375552.4	NBPF9-001	transcript	protein_coding	HAVANA	chr1	144811748	144830413	+		0	0	.	none	0	na	protein_coding	V19
+ENST00000281815.8	NBPF9-201	transcript	protein_coding	ENSEMBL	chr1	144811943	144830300	+		0	0	.	none	0	na	protein_coding	V19
+ENST00000465793.1	NBPF9-009	transcript	processed_transcript	HAVANA	chr1	144814560	144816049	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000471873.1	NBPF9-010	transcript	processed_transcript	HAVANA	chr1	144814683	144816795	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000484811.1	NBPF9-011	transcript	processed_transcript	HAVANA	chr1	144815811	144816677	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000472811.1	NBPF9-008	transcript	processed_transcript	HAVANA	chr1	144815944	144818310	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000488888.1	NBPF9-006	transcript	processed_transcript	HAVANA	chr1	144820976	144827865	+		0	0	.	none	0	na	processed_transcript	V19
+ENST00000473761.1	NBPF9-007	transcript	processed_transcript	HAVANA	chr1	144822562	144830301	+		0	0	.	none	0	na	processed_transcript	V19

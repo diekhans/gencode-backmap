@@ -10,7 +10,12 @@
 #include "geneMapper.hh"
 #include "annotationSet.hh"
 #include "bedMap.hh"
+#include "globals.hh"
 #include "./version.h"
+
+/* verbose tracing enabled */
+bool gVerbose = false;
+
 
 /* map to different assembly */
 static void gencodeBackmap(const string& inGxfFile,
@@ -55,6 +60,7 @@ int main(int argc, char *argv[]) {
         "about their organization.\n\n"
         "Options:\n"
         "  --help - print this message and exit\n"
+        "  --verbose - verbose tracing to stderr\n"
         "  --swapMap - swap the query and target sides of the mapping alignments\n"
         "  --targetGxf=gxfFile - GFF3 or GTF of gene annotations on target genome.\n"
         "    If specified, require mappings to location of previous version of\n"
@@ -91,6 +97,7 @@ int main(int argc, char *argv[]) {
 
     const struct option long_options[] = {
         {"help", 0, NULL, 'h'},
+        {"verbose", 0, NULL, 'v'},
         {"swapMap", 0, NULL, 's'},
         {"targetGxf", 1, NULL, 't'}, 
         {"targetPatches", 1, NULL, 'T'}, 
@@ -121,6 +128,8 @@ int main(int argc, char *argv[]) {
         } else if (optc == 'h') {
             help = true;
             break;  // check no more
+        } else if (optc == 'v') {
+            gVerbose = true;
         } else if (optc == 's') {
             swapMap = true;
         } else if (optc == 't') {
