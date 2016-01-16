@@ -52,6 +52,9 @@ class FeatureNode {
     int getOverlapAmount(const FeatureNode* other) const;
     int countExonOverlap(const FeatureNode* exon1,
                          const FeatureNode* trans2) const;
+    float getMaxTranscriptSimilarity(const FeatureNode* gene2,
+                                     const FeatureNode* trans1,
+                                     bool manualOnlyTranscripts) const;
 
     public:
     FeatureNode(GxfFeature* feature):
@@ -117,7 +120,8 @@ class FeatureNode {
     float getExonSimilarity(const FeatureNode* trans2) const;
 
     /* get the maximum transcript similarity for a gene */
-    float getMaxTranscriptSimilarity(const FeatureNode* gene2) const;
+    float getMaxTranscriptSimilarity(const FeatureNode* gene2,
+                                     bool manualOnlyTranscripts=false) const;
 
     /* is ensembl small non-coding gene */
     bool isAutomaticSmallNonCodingGene() const;

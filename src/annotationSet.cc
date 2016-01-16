@@ -150,17 +150,27 @@ FeatureNodeVector AnnotationSet::findOverlappingFeatures(const string& seqid,
     return overlapping;
 }
 
+/* is a feature an overlapping gene passing the specified criteria */
+bool AnnotationSet::isOverlappingGene(const FeatureNode* geneTree,
+                                      const FeatureNode* overlappingFeature,
+                                      float minSimilarity,
+                                      bool manualOnlyTranscripts) {
+    return overlappingFeature->isGene()
+        and (geneTree->getMaxTranscriptSimilarity(overlappingFeature,
+                                                  manualOnlyTranscripts) >= minSimilarity);
+}
+
 /* find overlapping genes with minimum similarity at the transcript level */
 FeatureNodeVector AnnotationSet::findOverlappingGenes(const FeatureNode* geneTree,
-                                                      float minSimilarity) {
+                                                      float minSimilarity,
+                                                      bool manualOnlyTranscripts) {
     FeatureNodeVector overlappingFeatures 
         = findOverlappingFeatures(geneTree->fFeature->fSeqid,
                                   geneTree->fFeature->fStart,
                                   geneTree->fFeature->fEnd);
     FeatureNodeVector overlappingGenes;
     for (int iFeat = 0; iFeat < overlappingFeatures.size(); iFeat++) {
-        if (overlappingFeatures[iFeat]->isGene()
-            && (geneTree->getMaxTranscriptSimilarity(overlappingFeatures[iFeat]) >= minSimilarity)) {
+        if (isOverlappingGene(geneTree, overlappingFeatures[iFeat], minSimilarity, manualOnlyTranscripts)) {
             overlappingGenes.push_back(overlappingFeatures[iFeat]);
         }
     }

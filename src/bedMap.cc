@@ -5,7 +5,7 @@
 /* constructor */
 BedMap::BedMap(const string& bedFile):
     fLocationMap(genomeRangeTreeNew()) {
-    struct bed* allRecs = bedLoadNAll(toCharStr(bedFile), 4);
+    struct bed* allRecs = bedLoadNAll(toCharStr(bedFile), 3);
     struct bed* rec;
     while ((rec = static_cast<struct bed*>(slPopHead(&allRecs))) != NULL) {
         genomeRangeTreeAddValList(fLocationMap, rec->chrom, rec->chromStart, rec->chromEnd, rec);

@@ -16,7 +16,7 @@ diff = diff -u
 all: test
 
 test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
-	mapInfoSumTests ucscLiftEditTest
+	gff3UcscSubstituteManOverlap mapInfoSumTests ucscLiftEditTest
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
@@ -50,6 +50,15 @@ gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+
+gff3UcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --on --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
 
 # edit to fix names and chrM (don't depend on  mkdirs so it doesn't rebuild unless needed)
 ${testGencodeLiftOverChains}: ${testUcscLiftOverChains}

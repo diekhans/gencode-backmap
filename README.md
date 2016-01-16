@@ -37,12 +37,13 @@ Mapping is done on a per-gene mapping using the following steps:
   overlap the target gene, it is also rejected.
   - If a gene did not map or was rejected and a version of the gene with the
     same biotype exists in the target annotations, use the existing gene.
-- Small, automatic-only genes are optionally not mapped, with the target
-  annotation being passed through This avoids complex mappings of small RNAs
-  imported from other database (e.g. mirRNAs).
+- Small, automatic-only or all automatic genes are optionally not mapped, with
+  the target annotation being passed through This avoids complex mappings of
+  small RNAs imported from other database (e.g. mirRNAs).
 - Target genes with no corresponding mappings and that overlap patched regions
-  in the target genome may optionally be passed through.  This address a fair
-  number of problem cases.  This was a common problem on GRCh37 chrX.
+  or regions with GRC indecent reports in the target genome may optionally be
+  passed through.  This address a fair number of problem cases.  This was a
+  common problem on GRCh37 chrX.
 
 Pairing of source and target genes is somewhat complex due to instability of
 some gene identifiers between assemblies.  If a matching base gene id (less
@@ -83,7 +84,7 @@ the mapping information file.  The attributes and their values are:
   - `overlap` - Gene or transcript overlaps previous version of annotation on target genome.
   - `nonOverlap` - Gene or transcript exists in target, however source mapping is to a different location.
     This is often mappings to a gene family members or pseudogenes.
-- `remap_substituted_missing_target` - target gene annotate was subsituted 
+- `remap_substituted_missing_target` - target gene annotate was substituted
 
 ### Usage
 
@@ -104,8 +105,14 @@ The following files are needed to map using the UCSC liftover alignments:
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/gencode.v23.basic.annotation.gtf.gz
 - GRC patch BED file for GRCh37 from UCSC.  Download from
   - http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz
-  and remove bin column with `zcat altSeqPatchesP10.txt.gz | cut -f 2- > altSeqPatchesP10.bed`
- 
+- GRC incident table from UCSC browser:
+  - http://genomewiki.ucsc.edu/images/6/67/Hg19.grcIncidentDb.bb
+
+Remove bin column from patches and convert BigBed to bed and combine
+
+   `zcat altSeqPatchesP10.txt.gz | cut -f 2- > altSeqPatchesP10.bed`
+   bigBedToBed Hg19.grcIncidentDb.bb Hg19.grcIncidentDb.bed
+   cat altSeqPatchesP10.bed Hg19.grcIncidentDb.bed >problemRegions.bed
 
 GENCODE uses different sequence naming for unplaced chromosome sequences than
 UCSC.  Additionally, GENCODE annotates the GRCh37-lite chrM, while UCSC had
@@ -117,8 +124,8 @@ use GENCODE names:
 
 Map the annotation files:
 ```
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=altSeqPatchesP10.bed gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=altSeqPatchesP10.bed gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
 ```
 
 Where `liftGxfHeader.txt` is the comments to add at the beginning of the output GFF3 or GTF files.

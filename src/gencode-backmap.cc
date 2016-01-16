@@ -23,6 +23,7 @@ static void gencodeBackmap(const string& inGxfFile,
                            bool swapMap,
                            const string& substituteMissingTargetVersion,
                            unsigned useTargetFlags,
+                           bool onlyManualForTargetSubstituteOverlap,
                            const string& headerFile,
                            const string& mappedGxfFile,
                            const string& unmappedGxfFile,
@@ -42,7 +43,8 @@ static void gencodeBackmap(const string& inGxfFile,
     }
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
-    GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, targetPatchMap, substituteMissingTargetVersion, useTargetFlags);
+    GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, targetPatchMap, substituteMissingTargetVersion, useTargetFlags,
+                          onlyManualForTargetSubstituteOverlap);
     geneMapper.mapGxf(*mappedGxfFh, *unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete mappedGxfFh;
     delete unmappedGxfFh;
@@ -84,6 +86,9 @@ int main(int argc, char *argv[]) {
         "    the target genes, even if they are not in the source.\n"
         "    If a target set is not specified, they are skipped.\n"
         "    This does not work well in practice, left in for experimentation.\n"
+        "  --onlyManualForTargetSubstituteOverlap - when checking for overlap of\n"
+        "    target with mapped before substituting a target gene, only consider\n"
+        "    manual transcripts.\n"
         "Arguments:\n"
         "  inGxf - Input GENCODE GFF3 or GTF file. The format is identified\n"
         "          by a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
@@ -107,6 +112,7 @@ int main(int argc, char *argv[]) {
         {"useTargetForAutoSmallNonCoding", 0, NULL, 'N'},
         {"useTargetForAutoGenes", 0, NULL, 'A'},
         {"useTargetForPseudoGenes", 0, NULL, 'P'},
+        {"onlyManualForTargetSubstituteOverlap", 0, NULL, 'O'},
         {"u", 0, NULL, 'n'},
         {NULL, 0, NULL, 0}
     };
@@ -120,6 +126,7 @@ int main(int argc, char *argv[]) {
     string headerFile;
     string transcriptPsls;
     string substituteMissingTargetVersion;
+    bool onlyManualForTargetSubstituteOverlap = false;
     opterr = 0;  // we print error message
     while (true) {
         int optc = getopt_long(argc, argv, short_options, long_options, NULL);
@@ -143,6 +150,8 @@ int main(int argc, char *argv[]) {
             transcriptPsls = string(optarg);
         } else if (optc == 'm') {
             substituteMissingTargetVersion = string(optarg);
+        } else if (optc == 'O') {
+            onlyManualForTargetSubstituteOverlap = true;
         } else if (optc == 'N') {
             useTargetFlags |= GeneMapper::useTargetForAutoNonCoding;
         } else if (optc == 'A') {
@@ -173,6 +182,7 @@ int main(int argc, char *argv[]) {
     try {
         gencodeBackmap(inGxfFile, mappingAligns, swapMap,
                        substituteMissingTargetVersion, useTargetFlags,
+                       onlyManualForTargetSubstituteOverlap,
                        headerFile, mappedGxfFile, unmappedGxfFile,
                        mappingInfoTsv, targetGxf, targetPatchBed, transcriptPsls);
     } catch (const exception& ex) {

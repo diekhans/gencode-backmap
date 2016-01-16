@@ -31,6 +31,7 @@ class GeneMapper {
     const BedMap* fTargetPatchMap; // location of patch regions in target genome
     const string fSubstituteTargetVersion;  // pass through targets when gene new gene doesn't map
     unsigned fUseTargetFlags;  // what targets to force.
+    bool fOnlyManualForTargetSubstituteOverlap;  // only check manual transcripts when checking target/map overlap
 
     /* set of base ids (gene, transcript, havana) and gene names that have been
      * mapped.  Used to prevent output of target genes types that are not being
@@ -122,13 +123,15 @@ class GeneMapper {
                const AnnotationSet* targetAnnotations,
                const BedMap* targetPatchMap,
                const string& substituteTargetVersion,
-               unsigned useTargetFlags):
+               unsigned useTargetFlags,
+               bool onlyManualForTargetSubstituteOverlap):
         fSrcAnnotations(srcAnnotations),
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
         fTargetPatchMap(targetPatchMap),
         fSubstituteTargetVersion(substituteTargetVersion),
-        fUseTargetFlags(useTargetFlags) {
+        fUseTargetFlags(useTargetFlags),
+        fOnlyManualForTargetSubstituteOverlap(onlyManualForTargetSubstituteOverlap) {
     }
 
     /* Map a GFF3/GTF */

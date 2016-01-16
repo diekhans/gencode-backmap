@@ -164,6 +164,10 @@ void GeneMapper::forceToUnmapped(ResultFeatureTrees* mappedGene) const {
  * mapped entries.  Used when we discover conflicts at the gene level. */
 void GeneMapper::forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
                                                  RemapStatus remapStatus) const {
+    if (gVerbose) {
+        cerr << "forceToUnmappedDueToRemapStatus " << mappedGene->src->getTypeId()
+             << " " << remapStatusToStr(remapStatus) << endl;
+    }
     forceToUnmapped(mappedGene);
     mappedGene->rsetRemapStatus(remapStatus);
     mappedGene->rsetRemapStatusAttr();
@@ -173,6 +177,10 @@ void GeneMapper::forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
  * mapped entries.  Used when target status indicates a bad mapping */
 void GeneMapper::forceToUnmappedDueToTargetStatus(ResultFeatureTrees* mappedGene,
                                                   TargetStatus targetStatus) const {
+    if (gVerbose) {
+        cerr << "forceToUnmappedDueToTargetStatus " << mappedGene->src->getTypeId()
+             << " " << targetStatusToStr(targetStatus) << endl;
+    }
     forceToUnmapped(mappedGene);
     mappedGene->setTargetStatus(targetStatus);
     mappedGene->rsetTargetStatusAttr();
@@ -234,18 +242,9 @@ void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
 
 /* should we substitute target version of gene?  */
 bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const {
-    // requested and a mis-mapped gene or the right biotype to a mapped sequence
+    // mis-mapped gene or the right biotype to a mapped sequence
     if (fSubstituteTargetVersion.size() == 0) {
         return false; // not substituting
-    }
-    if (not ((mappedGene->getTargetStatus() == TARGET_STATUS_NONOVERLAP)
-             or (mappedGene->getTargetStatus() == TARGET_STATUS_LOST))) {
-        if (gVerbose) {
-            cerr << "shouldSubstituteTarget: false: " << mappedGene->src->getTypeId()
-                 << " wrong target status: " << targetStatusToStr(mappedGene->getTargetStatus())
-                 << endl;
-        }
-        return false; // not right target status
     }
     const FeatureNode* targetGene = getTargetAnnotationNode(mappedGene->src);
     if (targetGene == NULL) {
@@ -584,7 +583,7 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
     processGeneLevelMapping(&mappedGene);
 
     // must be done after forcing status above
-    if (shouldSubstituteTarget(&mappedGene)) {
+    if ((mappedGene.mapped == NULL) and shouldSubstituteTarget(&mappedGene)) {
         substituteTarget(&mappedGene);
     }
     outputInfo(&mappedGene, mappingInfoFh);  // MUST do before saveGene, as it moved to output sets
@@ -629,7 +628,8 @@ bool GeneMapper::inTargetPatchRegion(const FeatureNode* targetGene) {
 bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
                                               AnnotationSet& mappedSet) {
     static const float minSimilarity = 0.5;
-    FeatureNodeVector overlapping = mappedSet.findOverlappingGenes(targetGene, minSimilarity);
+    FeatureNodeVector overlapping = mappedSet.findOverlappingGenes(targetGene, minSimilarity,
+                                                                   fOnlyManualForTargetSubstituteOverlap);
     return overlapping.size() > 0;
 }
 
@@ -638,10 +638,10 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
  */
 bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
-        if (gVerbose) {
-            cerr << "shouldIncludeTargetGene: " << targetGene->getTypeId()
-                 << "  " << targetGene->getTypeBiotype() << endl;
-        }
+    if (gVerbose) {
+        cerr << "shouldIncludeTargetGene: " << targetGene->getTypeId()
+             << "  " << targetGene->getTypeBiotype() << endl;
+    }
     bool shouldInclude = false;
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles

@@ -54,6 +54,11 @@ class AnnotationSet {
     void addLocationMap(FeatureNode* featureNode);
     void buildLocationMap();
     void freeLocationMap();
+    bool isOverlappingGene(const FeatureNode* geneTree,
+                           const FeatureNode* overlappingFeature,
+                           float minSimilarity,
+                           bool manualOnlyTranscripts);
+
     FeatureNode* getFeatureNodeByKey(const string& key,
                                      const FeatureMap& featureMap,
                                      const string& seqIdForParCheck) const;
@@ -115,7 +120,8 @@ class AnnotationSet {
     
     /* find overlapping genes with minimum similarity at the transcript level */
     FeatureNodeVector findOverlappingGenes(const FeatureNode* geneTree,
-                                           float minSimilarity);
+                                           float minSimilarity,
+                                           bool manualOnlyTranscripts);
 
     /* get list of all gene features */
     const FeatureNodeVector& getGenes() const {

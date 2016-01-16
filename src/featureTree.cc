@@ -268,15 +268,32 @@ float FeatureNode::getExonSimilarity(const FeatureNode* trans2) const {
     return float(2*totalOverlap)/float(getTranscriptExonSize() + trans2->getTranscriptExonSize());
 }
 
+/* get the maximum transcript similarity for a gene and a transcript  */
+float FeatureNode::getMaxTranscriptSimilarity(const FeatureNode* gene2,
+                                              const FeatureNode* trans1,
+                                              bool manualOnlyTranscripts) const {
+    float maxSimilarity = 0.0;
+    for (int iTrans2 = 0; (iTrans2 < gene2->fChildren.size()) && (maxSimilarity < 1.0); iTrans2++) {
+        const FeatureNode* trans2 = gene2->fChildren[iTrans2];
+        if ((not manualOnlyTranscripts) or (not trans2->isAutomatic())) {
+            float similarity = trans1->getExonSimilarity(trans2);
+            maxSimilarity = max(similarity, maxSimilarity);
+       }
+    }
+    return maxSimilarity;
+}
+
 /* get the maximum transcript similarity for a gene */
-float FeatureNode::getMaxTranscriptSimilarity(const FeatureNode* gene2) const {
+float FeatureNode::getMaxTranscriptSimilarity(const FeatureNode* gene2,
+                                              bool manualOnlyTranscripts) const {
     assert(isGene());
     assert(gene2->isGene());
     float maxSimilarity = 0.0;
     for (int iTrans1 = 0; (iTrans1 < fChildren.size()) && (maxSimilarity < 1.0); iTrans1++) {
-        for (int iTrans2 = 0; (iTrans2 < gene2->fChildren.size()) && (maxSimilarity < 1.0); iTrans2++) {
-            float similarity = fChildren[iTrans1]->getExonSimilarity(gene2->fChildren[iTrans2]);
-            maxSimilarity = max(similarity, maxSimilarity);
+        const FeatureNode* trans1 = fChildren[iTrans1];
+        if ((not manualOnlyTranscripts) or (not trans1->isAutomatic())) {
+            maxSimilarity = max(maxSimilarity,
+                                getMaxTranscriptSimilarity(gene2, trans1, manualOnlyTranscripts));
         }
     }
     return maxSimilarity;
