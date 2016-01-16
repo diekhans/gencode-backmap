@@ -574,9 +574,6 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          AnnotationSet& unmappedSet,
                          ostream& mappingInfoFh,
                          ostream* transcriptPslFh) {
-    if (gVerbose) {
-        cerr << endl << "mapGene: " << srcGeneTree->getTypeId() << endl;
-    }
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
     ResultFeatureTrees mappedGene = buildGeneFeature(srcGeneTree, mappedTranscripts);
     setGeneLevelMappingAttributes(&mappedGene);
@@ -642,7 +639,6 @@ bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
         cerr << "shouldIncludeTargetGene: " << targetGene->getTypeId()
              << "  " << targetGene->getTypeBiotype() << endl;
     }
-    bool shouldInclude = false;
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles
         // case where biotype has changed
@@ -661,11 +657,7 @@ bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
         return (not checkGeneMapped(targetGene))
             and (not checkTargetOverlappingMapped(targetGene, mappedSet));
     }
-    
-    if (gVerbose) {
-        cerr << "    shouldIncludeTargetGene: " << shouldInclude  << endl;
-    }
-    return shouldInclude;
+    return false;
 }
 
 /*
@@ -710,6 +702,12 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     const FeatureNodeVector& srcGenes = fSrcAnnotations->getGenes();
     outputInfoHeader(mappingInfoFh);
     for (int i = 0; i < srcGenes.size(); i++) {
+        if (gVerbose) {
+            cerr << endl << "mapGxf: " << srcGenes[i]->getTypeId() << " " << srcGenes[i]->getTypeName()
+                 << " shouldMap: " << shouldMapGeneType(srcGenes[i])
+                 << " " << srcGenes[i]->getTypeId() << " " << srcGenes[i]->fFeature->fSource
+                 << endl;
+        }
         if (shouldMapGeneType(srcGenes[i])) {
             mapGene(srcGenes[i], mappedSet, unmappedSet, mappingInfoFh, transcriptPslFh);
         }
