@@ -516,7 +516,6 @@ void GeneMapper::outputTranscriptInfo(const ResultFeatureTrees* mappedGene,
                                       ostream& mappingInfoFh) const {
     ResultFeatureTrees transcript(srcTranscript);
     // find corresponding transcripts in each tree
-    // FIXME: maybe we should keep them!!
     if (mappedGene->mapped != NULL) {
         transcript.mapped = findMatchingBoundingNode(mappedGene->mapped->fChildren, srcTranscript);
     }
@@ -637,7 +636,10 @@ bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
     if (gVerbose) {
         cerr << "shouldIncludeTargetGene: " << targetGene->getTypeId()
-             << "  " << targetGene->getTypeBiotype() << endl;
+             << "  " << targetGene->getTypeBiotype()
+             << "  noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene))
+             << "  shouldMapGeneType: " << shouldMapGeneType(targetGene)
+             << endl;
     }
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles
@@ -705,6 +707,7 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
         if (gVerbose) {
             cerr << endl << "mapGxf: " << srcGenes[i]->getTypeId() << " " << srcGenes[i]->getTypeName()
                  << " shouldMap: " << shouldMapGeneType(srcGenes[i])
+                 << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(srcGenes[i]))
                  << " " << srcGenes[i]->getTypeId() << " " << srcGenes[i]->fFeature->fSource
                  << endl;
         }
