@@ -203,8 +203,7 @@ void FeatureMapper::updateParent(FeatureNode* parentFeature,
     const AttrVal* parentAttr = childFeature->fFeature->getAttrs().find(GxfFeature::PARENT_ATTR);
     if (parentAttr != NULL) {
         childFeature->fFeature->getAttrs().update(AttrVal(parentAttr->getName(),
-                                                          parentFeature->fFeature->getAttrValue(GxfFeature::ID_ATTR),
-                                                          parentAttr->isQuoted()));
+                                                          parentFeature->fFeature->getAttrValue(GxfFeature::ID_ATTR)));
     }
 }
 

@@ -81,7 +81,6 @@ class AttrVal {
     private:
     const string fName;
     StringVector fVals;
-    const bool fQuoted;
 
     static void checkName(const string& name) {
         if (stringEmpty(name)) {
@@ -95,15 +94,15 @@ class AttrVal {
     }
 
     public:
-    AttrVal(const string& name, const string& val, bool quoted=false):
-        fName(name), fQuoted(quoted) {
+    AttrVal(const string& name, const string& val):
+        fName(name) {
         checkName(name);
         checkVal(val);
         fVals.push_back(val);
     }
 
-    AttrVal(const string& name, const StringVector& vals, bool quoted=false):
-        fName(name), fVals(vals), fQuoted(quoted) {
+    AttrVal(const string& name, const StringVector& vals):
+        fName(name), fVals(vals) {
         checkName(name);
         for (int i = 0; i < vals.size(); i++) {
             checkVal(vals[i]);
@@ -118,7 +117,7 @@ class AttrVal {
     
     /* copy constructor */
     AttrVal(const AttrVal& src):
-        fName(src.fName), fVals(src.fVals), fQuoted(src.fQuoted) {
+        fName(src.fName), fVals(src.fVals) {
     }
 
     const string& getName() const {
@@ -129,9 +128,6 @@ class AttrVal {
     }
     const StringVector& getVals() const {
         return fVals;
-    }
-    bool isQuoted() const {
-        return fQuoted;
     }
 };
 

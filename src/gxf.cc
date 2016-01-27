@@ -11,6 +11,7 @@ static bool isQuoted(const string& s) {
     return ((s.size() > 1) and (s[0] == '"') and (s[s.size()-1] == '"'));
 }
 
+
 /* is a value a integrate or float */
 static bool isNumeric(const string& s) {
     int dotCount = 0;
@@ -147,7 +148,7 @@ class Gff3Parser: public GxfParser {
         string name = attrStr.substr(0,i);
         string value = attrStr.substr(i+1);
         StringVector values = stringSplit(stripQuotes(value), ',');
-        AttrVal* attrVal = new AttrVal(name, values[0], isQuoted(value));
+        AttrVal* attrVal = new AttrVal(name, values[0]);
         attrVals.push_back(attrVal);
         for (int i = 1; i < values.size(); i++) {
             attrVal->addVal(values[i]);
@@ -200,7 +201,7 @@ class GtfParser: public GxfParser {
         if (idx >= 0) {
             attrVals[idx]->addVal(stripQuotes(value));
         } else {
-            attrVals.push_back(new AttrVal(name, stripQuotes(value), isQuoted(value)));
+            attrVals.push_back(new AttrVal(name, stripQuotes(value)));
         }
     }
 
@@ -297,20 +298,13 @@ class Gff3Writer: public GxfWriter {
     public:
     /* format an attribute */
     static string formatAttr(const AttrVal* attrVal) {
-        // n.b. this is not general, doesn't handle embedded quotes
         string strAttr = attrVal->getName() + "=";
-        if (attrVal->isQuoted()) {
-            strAttr += "\"";
-        }
         for (int i = 0; i < attrVal->getVals().size(); i++) {
             if (i > 0) {
                 strAttr += ",";
             }
             strAttr += attrVal->getVals()[i];
 
-        }
-        if (attrVal->isQuoted()) {
-            strAttr += "\"";
         }
         return strAttr;
     }
@@ -347,6 +341,7 @@ class Gff3Writer: public GxfWriter {
 /* Write for GTF */
 class GtfWriter: public GxfWriter {
     public:
+
     /* format an attribute */
     static string formatAttr(const string& name,
                              const string& val) {
