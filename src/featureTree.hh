@@ -465,6 +465,14 @@ class GeneTree {
                                GxfRecordVector& queuedRecords);
     static FeatureNode* loadGene(GxfParser *gxfParser,
                                  GxfFeature* geneFeature);
+    static void removeTransAttrsOnGenes(FeatureNode* geneTreeRoot);
+    static void linkWithFeatureId(FeatureNode* parentNode,
+                                  FeatureNode* featureNode,
+                                  int iChild);
+    static void linkGtfTree(FeatureNode* parentNode,
+                            FeatureNode* featureNode,
+                            int iChild);
+    static void fixGtfAnnotations(FeatureNode* geneTreeRoot);
     public:
     /* factory */
     static FeatureNode* geneTreeFactory(GxfParser *gxfParser,

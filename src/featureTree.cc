@@ -114,7 +114,7 @@ FeatureNode* GeneTree::findGff3Parent(FeatureNode* geneTreeLeaf,
 }
 
 /*
- * Process a FF3 record for a gene, which uses the explicit tree.
+ * Process a GFF3 record for a gene, which uses the explicit tree.
  * Return the new leaf node.
  */
 FeatureNode* GeneTree::loadGff3GeneRecord(GxfFeature* feature,
@@ -408,6 +408,61 @@ bool GeneTree::loadGeneRecord(GxfParser *gxfParser,
 }
 
 /*
+ * Remove transcript attributes that were accidentally left on genes
+ * in some gencode versions.
+ */
+void GeneTree::removeTransAttrsOnGenes(FeatureNode* geneTreeRoot) {
+    AttrVals& attrs = geneTreeRoot->fFeature->getAttrs();
+    attrs.remove(GxfFeature::TRANSCRIPT_ID_ATTR);
+    attrs.remove(GxfFeature::TRANSCRIPT_TYPE_ATTR);
+    attrs.remove(GxfFeature::TRANSCRIPT_STATUS_ATTR);
+    attrs.remove(GxfFeature::TRANSCRIPT_NAME_ATTR);
+}
+
+/*
+ * Generate an ID attributes for a GTF node following GENCODE conventions
+ * and set Parent.
+ */
+void GeneTree::linkWithFeatureId(FeatureNode* parentNode,
+                                 FeatureNode* featureNode,
+                                 int iChild) {
+    GxfFeature* feature = featureNode->fFeature;
+    string id;
+    if ((feature->fType == GxfFeature::GENE) || (feature->fType == GxfFeature::TRANSCRIPT)) {
+        id = feature->getTypeId();
+    } else {
+        id = feature->fType + ":" + feature->getTypeId() + ":" + toString(iChild+1);
+    }
+
+    if (parentNode != NULL) {
+        feature->getAttrs().push(AttrVal(GxfFeature::PARENT_ATTR,
+                                         parentNode->fFeature->getAttrValue(GxfFeature::ID_ATTR)));
+    }
+    feature->getAttrs().push(AttrVal(GxfFeature::ID_ATTR, id));
+}
+
+/*
+ * Set GFF3-style ids for records from GTF. These are dropped if written back
+ * to GTF.
+ */
+void GeneTree::linkGtfTree(FeatureNode* parentNode,
+                           FeatureNode* featureNode,
+                           int iChild) {
+    linkWithFeatureId(parentNode, featureNode, iChild);
+    for (int iChild2 = 0; iChild2 < featureNode->fChildren.size(); iChild2++) {
+        linkGtfTree(featureNode, featureNode->fChildren[iChild2], iChild2);
+    }
+}
+
+/*
+ * Fix up various issues with GTF input.
+ */
+void GeneTree::fixGtfAnnotations(FeatureNode* geneTreeRoot) {
+    removeTransAttrsOnGenes(geneTreeRoot);
+    linkGtfTree(NULL, geneTreeRoot, 0);
+}
+
+/*
  * Load all records associated with a given gene.  Return non-feature and the
  * next gene to the queue to process.  This will causes comments in the middle
  * of genes to be moved to the end, but GENCODE doesn't put comments in genes.
@@ -427,6 +482,10 @@ FeatureNode* GeneTree::loadGene(GxfParser *gxfParser,
         }
     }
     queueRecords(gxfParser, queuedRecords);
+    if (gxfParser->getFormat() == GTF_FORMAT) {
+        fixGtfAnnotations(geneTreeRoot);
+    }
+
     return geneTreeRoot;
 }
 

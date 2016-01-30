@@ -198,6 +198,11 @@ class AttrVals: public AttrValVector {
         push_back(new AttrVal(attrVal));
     }
 
+    /* insert an attribute at the front */
+    void push(const AttrVal& attrVal) {
+        insert(begin(), new AttrVal(attrVal));
+    }
+
     /* add or replace an attribute */
     void update(const AttrVal& attrVal) {
         int idx = findIdx(attrVal.getName());
@@ -239,11 +244,13 @@ public:
     static const string PARENT_ATTR;
     static const string GENE_ID_ATTR;
     static const string GENE_NAME_ATTR;
-    static const string GENE_TYPE_ID_ATTR;
+    static const string GENE_TYPE_ATTR;
+    static const string GENE_STATUS_ATTR;
     static const string GENE_HAVANA_ATTR;
     static const string TRANSCRIPT_ID_ATTR;
     static const string TRANSCRIPT_NAME_ATTR;
-    static const string TRANSCRIPT_TYPE_ID_ATTR;
+    static const string TRANSCRIPT_TYPE_ATTR;
+    static const string TRANSCRIPT_STATUS_ATTR;
     static const string TRANSCRIPT_HAVANA_ATTR;
     static const string EXON_ID_ATTR;
     

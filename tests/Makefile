@@ -13,26 +13,35 @@ testGencodeLiftOverChains = output/hg38ToHg19.gencode.over.chain
 
 diff = diff -u
 
+# compare by genePred ensure that GTF and GFF3 produce the same results
+
 all: test
 
-test: gff3UcscTest gtfUcscTest gff3NcbiTest gtfNcbiTest gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
-	gff3UcscSubstituteManOverlap mapInfoSumTests ucscLiftEditTest
+test: gff3UcscTest gtfUcscTest cmpUcscTest \
+	gff3NcbiTest gtfNcbiTest \
+	gff3UcscSubstituteAutogff3UcscSubstituteAutoSmallNcRna \
+	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap cmpUcscSubstituteManOverlap \
+	mapInfoSumTests ucscLiftEditTest
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	gff3ToGenePred output/$@.mapped.gff3 /dev/stdout | sort > output/$@.mapped.gp
+	gff3ToGenePred output/$@.unmapped.gff3 /dev/stdout | sort > output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gtfUcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
-	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
-	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
+	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/stdout | sort > output/$@.mapped.gp
+	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/stdout | sort > output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.unmapped.gtf output/$@.unmapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
+
+cmpUcscTest: gff3UcscTest gtfUcscTest
+	diff output/gff3UcscTest.mapped.gp output/gtfUcscTest.mapped.gp
+	diff output/gff3UcscTest.unmapped.gp output/gtfUcscTest.unmapped.gp
 
 gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
@@ -53,11 +62,24 @@ gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
 
 gff3UcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --on --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	gff3ToGenePred output/$@.mapped.gff3 output/$@.mapped.gp
+	gff3ToGenePred output/$@.unmapped.gff3 output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+
+gtfUcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --on --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
+	gtfToGenePred -genePredExt output/$@.mapped.gtf /dev/stdout | sort > output/$@.mapped.gp
+	gtfToGenePred -genePredExt output/$@.unmapped.gtf /dev/stdout | sort > output/$@.unmapped.gp
+	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
+	${diff} expected/$@.unmapped.gtf output/$@.unmapped.gtf
+	${diff} expected/$@.map-info output/$@.map-info
+
+cmpUcscSubstituteManOverlap: gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap
+	diff output/gff3UcscSubstituteManOverlap.mapped.gp output/gtfUcscSubstituteManOverlap.mapped.gp
+	diff output/gff3UcscSubstituteManOverlap.unmapped.gp output/gtfUcscSubstituteManOverlap.unmapped.gp
+
 
 
 # edit to fix names and chrM (don't depend on  mkdirs so it doesn't rebuild unless needed)
@@ -75,8 +97,8 @@ gff3NcbiTest: mkdirs
 
 gtfNcbiTest: mkdirs
 	${gencode_backmap} --swapMap ${targetGxfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
-	gtfToGenePred -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
-	gtfToGenePred -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
+	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
+	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.unmapped.gtf output/$@.unmapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info

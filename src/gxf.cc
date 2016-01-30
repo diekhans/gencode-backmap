@@ -52,11 +52,13 @@ const string GxfFeature::ID_ATTR = "ID";
 const string GxfFeature::PARENT_ATTR = "Parent";
 const string GxfFeature::GENE_ID_ATTR = "gene_id";
 const string GxfFeature::GENE_NAME_ATTR = "gene_name";
-const string GxfFeature::GENE_TYPE_ID_ATTR = "gene_type";
+const string GxfFeature::GENE_TYPE_ATTR = "gene_type";
+const string GxfFeature::GENE_STATUS_ATTR = "gene_status";
 const string GxfFeature::GENE_HAVANA_ATTR = "havana_gene";
 const string GxfFeature::TRANSCRIPT_ID_ATTR = "transcript_id";
 const string GxfFeature::TRANSCRIPT_NAME_ATTR = "transcript_name";
-const string GxfFeature::TRANSCRIPT_TYPE_ID_ATTR = "transcript_type";
+const string GxfFeature::TRANSCRIPT_TYPE_ATTR = "transcript_type";
+const string GxfFeature::TRANSCRIPT_STATUS_ATTR = "transcript_status";
 const string GxfFeature::TRANSCRIPT_HAVANA_ATTR = "havana_transcript";
 const string GxfFeature::EXON_ID_ATTR = "exon_id";
 
@@ -126,9 +128,9 @@ const string& GxfFeature::getTypeName() const {
 const string& GxfFeature::getTypeBiotype() const {
     static const string emptyString;
     if (fType == GxfFeature::GENE) {
-        return getAttrValue(GxfFeature::GENE_TYPE_ID_ATTR, emptyString);
+        return getAttrValue(GxfFeature::GENE_TYPE_ATTR, emptyString);
     } else if (fType == GxfFeature::TRANSCRIPT) {
-        return getAttrValue(GxfFeature::TRANSCRIPT_TYPE_ID_ATTR, emptyString);
+        return getAttrValue(GxfFeature::TRANSCRIPT_TYPE_ATTR, emptyString);
     } else {
         return emptyString;
     }
@@ -370,14 +372,24 @@ class GtfWriter: public GxfWriter {
         return strAttr;
     }
 
+    /* should this attribute be included */
+    static bool includeAttr(const AttrVal* attrVal) {
+        // drop GFF3 linkage attributes
+        return not ((attrVal->getName() == GxfFeature::ID_ATTR)
+                    or (attrVal->getName() == GxfFeature::PARENT_ATTR)
+                    or (attrVal->getName() == "remap_original_id"));
+    }
+    
     /* format attribute */
     static string formatAttrs(const AttrVals& attrVals) {
         string strAttrs;
         for (int i = 0; i < attrVals.size(); i++) {
-            if (i > 0) {
-                strAttrs += " ";  // same formatting as GENCODE
+            if (includeAttr(attrVals[i])) {
+                if (strAttrs.size() > 0) {
+                    strAttrs += " ";  // same formatting as GENCODE
+                }
+                strAttrs += formatAttr(attrVals[i]);
             }
-            strAttrs += formatAttr(attrVals[i]);
         }
         return strAttrs;
     }
