@@ -92,7 +92,8 @@ int main(int argc, char *argv[]) {
         "Arguments:\n"
         "  inGxf - Input GENCODE GFF3 or GTF file. The format is identified\n"
         "          by a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
-        "          additional .gz extensionn\n"
+        "          additional .gz extensionn.  All GxF files types must be consistent;\n"
+        "          either all GFF3 or all GTF.\n"
         "  mappingAligns - Alignments between the two genomes.  The \n"
         "  mappedGxf - GxF file of mapped features on target genome\n"
         "  unmappedGxf - GxF file of unmapped features on source genome\n"
@@ -113,7 +114,6 @@ int main(int argc, char *argv[]) {
         {"useTargetForAutoGenes", 0, NULL, 'A'},
         {"useTargetForPseudoGenes", 0, NULL, 'P'},
         {"onlyManualForTargetSubstituteOverlap", 0, NULL, 'O'},
-        {"u", 0, NULL, 'n'},
         {NULL, 0, NULL, 0}
     };
     const char* short_options = "hst:p:m:n";
@@ -179,6 +179,14 @@ int main(int argc, char *argv[]) {
     string unmappedGxfFile = argv[optind+3];
     string mappingInfoTsv = argv[optind+4];
 
+    if (!((gxfFormatFromFileName(inGxfFile) == gxfFormatFromFileName(mappedGxfFile))
+          && (gxfFormatFromFileName(inGxfFile) == gxfFormatFromFileName(unmappedGxfFile))
+          && ((targetGxf.size() == 0)
+              || (gxfFormatFromFileName(inGxfFile) == gxfFormatFromFileName(targetGxf))))) {
+        fprintf(stderr, "Error: all input and output formats must be consistently GFF3 or GTF\n");
+        return 1;
+    }
+    
     try {
         gencodeBackmap(inGxfFile, mappingAligns, swapMap,
                        substituteMissingTargetVersion, useTargetFlags,

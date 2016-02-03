@@ -98,8 +98,9 @@ The following files are needed to map using the UCSC liftover alignments:
 - NCBI assembly report file for GRCh38.  Since only the primary assembly is
   map, it is not necessary to update this for new releases.
   - ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
-- GENCODE V19 primary annotations
+- GENCODE V19 primary annotations in GFF3 and GTF
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gtf.gz
+  - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gff3.gz
 - Current GENCODE primary assembly GFF3 and GTF files to map
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/gencode.v23.annotation.gff3.gz
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/gencode.v23.basic.annotation.gtf.gz

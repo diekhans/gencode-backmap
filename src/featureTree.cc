@@ -420,46 +420,10 @@ void GeneTree::removeTransAttrsOnGenes(FeatureNode* geneTreeRoot) {
 }
 
 /*
- * Generate an ID attributes for a GTF node following GENCODE conventions
- * and set Parent.
- */
-void GeneTree::linkWithFeatureId(FeatureNode* parentNode,
-                                 FeatureNode* featureNode,
-                                 int iChild) {
-    GxfFeature* feature = featureNode->fFeature;
-    string id;
-    if ((feature->fType == GxfFeature::GENE) || (feature->fType == GxfFeature::TRANSCRIPT)) {
-        id = feature->getTypeId();
-    } else {
-        id = feature->fType + ":" + feature->getTypeId() + ":" + toString(iChild+1);
-    }
-
-    if (parentNode != NULL) {
-        feature->getAttrs().push(AttrVal(GxfFeature::PARENT_ATTR,
-                                         parentNode->fFeature->getAttrValue(GxfFeature::ID_ATTR)));
-    }
-    feature->getAttrs().push(AttrVal(GxfFeature::ID_ATTR, id));
-}
-
-/*
- * Set GFF3-style ids for records from GTF. These are dropped if written back
- * to GTF.
- */
-void GeneTree::linkGtfTree(FeatureNode* parentNode,
-                           FeatureNode* featureNode,
-                           int iChild) {
-    linkWithFeatureId(parentNode, featureNode, iChild);
-    for (int iChild2 = 0; iChild2 < featureNode->fChildren.size(); iChild2++) {
-        linkGtfTree(featureNode, featureNode->fChildren[iChild2], iChild2);
-    }
-}
-
-/*
  * Fix up various issues with GTF input.
  */
 void GeneTree::fixGtfAnnotations(FeatureNode* geneTreeRoot) {
     removeTransAttrsOnGenes(geneTreeRoot);
-    linkGtfTree(NULL, geneTreeRoot, 0);
 }
 
 /*

@@ -183,7 +183,7 @@ class Gff3Parser: public GxfParser {
     virtual GxfFeature* parseFeature(const StringVector& columns) {
         return new GxfFeature(columns[0], columns[1], columns[2],
                               stringToInt(columns[3]), stringToInt(columns[4]),
-                               columns[5], columns[6], columns[7], parseAttrs(columns[8]));
+                              columns[5], columns[6], columns[7], parseAttrs(columns[8]));
     }
 };
     
