@@ -263,11 +263,13 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     // specific pseudogene biotypes
     if ((targetGene->getTypeBiotype() == mappedGene->src->getTypeBiotype())
         or (targetGene->isPseudogene() == mappedGene->src->isPseudogene())) {
+        // must check to make sure it wasn't already mapped due to gene id/name pairing incorrectly changing
+        bool alreadyMapped = checkGeneMapped(targetGene);
         if (gVerbose) {
-            cerr << "shouldSubstituteTarget: true: mapped: " << mappedGene->src->getTypeId()
-                 << " substitute target: " << targetGene->getTypeId() << endl;
+            cerr << "shouldSubstituteTarget: " << !alreadyMapped << ": mapped: " << mappedGene->src->getTypeId()
+                 << " substitute target: " << targetGene->getTypeId() << " alreadyMapped: " << alreadyMapped << endl;
         }
-        return true;
+        return !alreadyMapped;
     } else {
         if (gVerbose) {
             cerr << "shouldSubstituteTarget: false: " << mappedGene->src->getTypeId()
@@ -388,12 +390,14 @@ ResultFeatureTrees GeneMapper::buildGeneFeature(const FeatureNode* srcGeneTree,
 
 /* save mapped gene features  */
 void GeneMapper::saveMapped(ResultFeatureTrees& mappedGene,
-                            AnnotationSet& mappedSet) const {
+                            AnnotationSet& mappedSet) {
     // either one of target or mapped is saved
     if (mappedGene.target != NULL) {
+        recordGeneMapped(mappedGene.target);
         mappedSet.addGene(mappedGene.target);
         mappedGene.target = NULL;
     } else if (mappedGene.mapped != NULL) {
+        recordGeneMapped(mappedGene.mapped);
         mappedSet.addGene(mappedGene.mapped);
         mappedGene.mapped = NULL;
     }
@@ -401,7 +405,7 @@ void GeneMapper::saveMapped(ResultFeatureTrees& mappedGene,
 
 /* save unmapped gene features  */
 void GeneMapper::saveUnmapped(ResultFeatureTrees& mappedGene,
-                              AnnotationSet& unmappedSet) const {
+                              AnnotationSet& unmappedSet) {
     if (mappedGene.unmapped) {
         unmappedSet.addGene(mappedGene.unmapped);
         mappedGene.unmapped = NULL;
@@ -585,9 +589,6 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
     outputInfo(&mappedGene, mappingInfoFh);  // MUST do before saveGene, as it moved to output sets
     saveMapped(mappedGene, mappedSet);
     saveUnmapped(mappedGene, unmappedSet);
-    if (mappedGene.mapped != NULL) {
-        recordGeneMapped(mappedGene.src);
-    }
     mappedGene.free();
 }
 
@@ -706,7 +707,7 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     for (int i = 0; i < srcGenes.size(); i++) {
         if (gVerbose) {
             cerr << endl << "mapGxf: " << srcGenes[i]->getTypeId() << " " << srcGenes[i]->getTypeName()
-                 << " shouldMap: " << shouldMapGeneType(srcGenes[i])
+                 << " shouldMapGeneType: " << shouldMapGeneType(srcGenes[i])
                  << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(srcGenes[i]))
                  << " " << srcGenes[i]->getTypeId() << " " << srcGenes[i]->fFeature->fSource
                  << endl;

@@ -13,10 +13,13 @@ Test data
           16569
 
 - data/altSeqPatchesP10.bed
-  Patch regions on GRCh37
+  Patch and incident regions on GRCh37
       gtfToGenePred -ignoreGroupsWithoutExons data/gencode.v19.annotation.gtf testV19.gp
       wget -nv http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz
-      zcat altSeqPatchesP10.txt.gz | cut -f 2- | overlapSelect -inFmt=bed testV19.gp /dev/stdin data/altSeqPatchesP10.bed
+      zcat altSeqPatchesP10.txt.gz | cut -f 2- > altSeqPatchesP10.bed
+      wget -nv http://genomewiki.ucsc.edu/images/6/67/Hg19.grcIncidentDb.bb
+      bigBedToBed Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > Hg19.grcIncidentDb.bed
+      (cat altSeqPatchesP10.bed Hg19.grcIncidentDb.bed) | overlapSelect -inFmt=bed testV19.gp /dev/stdin data/problemRegions.bed
 
 
 - data/gencode.v22.annotation.gff3

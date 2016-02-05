@@ -80,9 +80,9 @@ class GeneMapper {
     ResultFeatureTrees buildGeneFeature(const FeatureNode* srcGeneTree,
                                         ResultFeatureTreesVector& mappedTranscripts) const;
     void saveMapped(ResultFeatureTrees& mappedGene,
-                    AnnotationSet& mappedSet) const;
+                    AnnotationSet& mappedSet);
     void saveUnmapped(ResultFeatureTrees& mappedGene,
-                      AnnotationSet& unmappedSet) const;
+                      AnnotationSet& unmappedSet);
     void outputInfoHeader(ostream& mappingInfoFh) const;
     const GxfFeature* getTargetAnnotation(const FeatureNode* featureNode) const;
     const FeatureNode* getTargetAnnotationNode(const FeatureNode* featureNode) const;

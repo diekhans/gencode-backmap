@@ -4,7 +4,7 @@ include ${ROOT}/config.mk
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetGff3Arg = --targetGxf=data/gencode.v19.annotation.gff3
 targetSubstArg = --substituteMissingTargets=V19
-targetPatchArg = --targetPatches=data/altSeqPatchesP10.bed
+targetPatchArg = --targetPatches=data/problemRegions.bed
 headerArg = --headerFile=data/header.txt
 
 valgrind = valgrind --leak-check=full --num-callers=50
@@ -71,7 +71,7 @@ gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.map-info output/$@.map-info
 
 gff3UcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --on --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gencode_backmap} --swapMap --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	gff3ToGenePred output/$@.unmapped.gff3 stdout | ${normalizeGenePred} >output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3

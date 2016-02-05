@@ -125,8 +125,8 @@ use GENCODE names:
 
 Map the annotation files:
 ```
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gff3.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3  gencode.v23lift37.unmapped.gff3 gencode.v23lift37.map-info.tsv
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf  gencode.v23lift37.unmapped.gtf /dev/null
 ```
 
 Where `liftGxfHeader.txt` is the comments to add at the beginning of the output GFF3 or GTF files.
