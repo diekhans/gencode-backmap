@@ -67,9 +67,11 @@ class GeneMapper {
     bool hasExcessiveSizeChange(const ResultFeatureTrees* mappedGene) const;
 
     void setNumGeneMappings(FeatureNode* mappedGeneTree) const;
+    bool checkForPathologicalGeneRename(const ResultFeatureTrees* mappedGene,
+                                        const FeatureNode* targetGene) const;
     bool shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const;
     FeatureNode* cloneTargetGene(const FeatureNode* srcGene) const;
-    void substituteTarget(ResultFeatureTrees* mappedGene) const;
+    void substituteTarget(ResultFeatureTrees* mappedGene);
     void updateMappedGeneBounds(const FeatureNode* mappedTranscript,
                                 string& seqid, string& strand,
                                 int& start, int& end) const;

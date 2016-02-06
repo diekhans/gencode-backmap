@@ -33,7 +33,7 @@ bool GeneMapper::isSrcSeqInMapping(const FeatureNode* featureNode) const {
     return isSrcSeqInMapping(featureNode->fFeature);
 }
 
-/* record gene or transcript as being mapped */
+/* record gene or transcript as being mapped or substituted */
 void GeneMapper::recordMapped(const FeatureNode* featureNode) {
     fMappedIdsNames.insert(getBaseId(featureNode->getTypeId()));
     // N.B. gene names with `.' are not always a version
@@ -240,6 +240,19 @@ void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
     }
 }
 
+/*
+ * Check for pathological case: gene names have been moved to different ids
+ * and mapped gene ids doesn't exist, so match was made on gene name.  This
+ * result in a gene_id being include twice. Tested for by CTC-559E9.12 and
+ * BNIP3P9 entries.  if target gene_id doesn't match source gene_id and target
+ * gene_id is in source mappings, we should not substitute the target.
+ */
+bool GeneMapper::checkForPathologicalGeneRename(const ResultFeatureTrees* mappedGene,
+                                                const FeatureNode* targetGene) const {
+    return (getBaseId(mappedGene->src->getTypeId()) != getBaseId(targetGene->getTypeId()))
+        and (fSrcAnnotations->getFeatureNodeById(targetGene->getTypeId(), targetGene->fFeature->fSeqid) != NULL);
+}
+
 /* should we substitute target version of gene?  */
 bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const {
     // mis-mapped gene or the right biotype to a mapped sequence
@@ -259,6 +272,16 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     if (not isSrcSeqInMapping(targetGene->fFeature)) {
         return false;  // sequence not being mapped (moved chroms)
     }
+
+    if (checkForPathologicalGeneRename(mappedGene, targetGene)) {
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: false: " << mappedGene->src->getTypeId()
+                 << "  " << mappedGene->src->getTypeName()
+                 << " pathological gene rename" << endl;
+        }
+        return false;
+    }
+    
     // allow for pseudogene biotype compatiblity between less and more
     // specific pseudogene biotypes
     if ((targetGene->getTypeBiotype() == mappedGene->src->getTypeBiotype())
@@ -295,7 +318,7 @@ FeatureNode* GeneMapper::cloneTargetGene(const FeatureNode* srcGene) const {
 }
 
 /* copy target gene to use instead of a mapping  */
-void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) const {
+void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) {
     mappedGene->target = cloneTargetGene(mappedGene->src);
 
     // Set flag in both trees
@@ -638,22 +661,22 @@ bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
     if (gVerbose) {
         cerr << "shouldIncludeTargetGene: " << targetGene->getTypeId()
              << "  " << targetGene->getTypeBiotype()
-             << "  noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene))
-             << "  shouldMapGeneType: " << shouldMapGeneType(targetGene)
+             << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene))
+             << " shouldMapGeneType: " << shouldMapGeneType(targetGene)
+             << " already mapped: " << checkGeneMapped(targetGene)
              << endl;
     }
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles
         // case where biotype has changed
         if (gVerbose) {
-            cerr << "    shouldIncludeTargetGene: isSrcSeqInMapping:" << isSrcSeqInMapping(targetGene)
-                 << " already mapped: " << checkGeneMapped(targetGene) << endl;
+            cerr << "    shouldIncludeTargetGene: isSrcSeqInMapping:" << isSrcSeqInMapping(targetGene) << endl;
         }
         return isSrcSeqInMapping(targetGene) and not checkGeneMapped(targetGene);
     }
     if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
         if (gVerbose) {
-            cerr << "    shouldIncludeTargetGene: in patched region: already mapped: " << checkGeneMapped(targetGene)
+            cerr << "    shouldIncludeTargetGene: in patched region: "
                  << " overlaps mapping: " << checkTargetOverlappingMapped(targetGene, mappedSet) << endl;
         }
         // don't use if there is a mapped with significant overlap

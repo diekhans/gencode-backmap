@@ -1,8 +1,8 @@
 biocat	mappingStatus	count	freq
-pseudo	full_contig	9	0.07
+pseudo	full_contig	11	0.09
 pseudo	gene_size_change	1	0.01
 pseudo	no_seq_map	1	0.01
-coding	full_contig	39	0.31
+coding	full_contig	39	0.30
 coding	full_fragment	1	0.01
 coding	gene_conflict	8	0.06
 coding	gene_size_change	8	0.06
@@ -15,4 +15,4 @@ nonCoding	partial	4	0.03
 problem	full_contig	5	0.04
 problem	gene_conflict	1	0.01
 problem	gene_size_change	1	0.01
-all	all	127	1.00
+all	all	129	1.00

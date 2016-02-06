@@ -10,10 +10,10 @@ lincRNA	partial	2	0.02
 miRNA	full_contig	3	0.02
 miRNA	no_seq_map	1	0.01
 nonsense_mediated_decay	gene_size_change	3	0.02
-processed_pseudogene	full_contig	3	0.02
+processed_pseudogene	full_contig	4	0.03
 processed_transcript	full_contig	3	0.02
 processed_transcript	gene_size_change	2	0.02
-protein_coding	full_contig	39	0.31
+protein_coding	full_contig	39	0.30
 protein_coding	full_fragment	1	0.01
 protein_coding	gene_conflict	8	0.06
 protein_coding	gene_size_change	5	0.04
@@ -26,7 +26,7 @@ snRNA	full_contig	1	0.01
 snRNA	partial	1	0.01
 snoRNA	full_contig	1	0.01
 transcribed_unprocessed_pseudogene	full_contig	1	0.01
-unprocessed_pseudogene	full_contig	4	0.03
+unprocessed_pseudogene	full_contig	5	0.04
 unprocessed_pseudogene	gene_size_change	1	0.01
 unprocessed_pseudogene	no_seq_map	1	0.01
-all	all	127	1.00
+all	all	129	1.00
