@@ -111,9 +111,11 @@ The following files are needed to map using the UCSC liftover alignments:
 
 Remove bin column from patches and convert BigBed to bed and combine
 
-   `zcat altSeqPatchesP10.txt.gz | cut -f 2- > altSeqPatchesP10.bed`
+```
+   zcat altSeqPatchesP10.txt.gz | cut -f 2- > altSeqPatchesP10.bed
    bigBedToBed Hg19.grcIncidentDb.bb Hg19.grcIncidentDb.bed
    cat altSeqPatchesP10.bed Hg19.grcIncidentDb.bed >problemRegions.bed
+```
 
 GENCODE uses different sequence naming for unplaced chromosome sequences than
 UCSC.  Additionally, GENCODE annotates the GRCh37-lite chrM, while UCSC had
