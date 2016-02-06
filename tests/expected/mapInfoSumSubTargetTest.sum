@@ -2,7 +2,7 @@ targetStatus	targetSubst	count	freq
 new	no	17	0.13
 new	yes	10	0.08
 nonOverlap	no	4	0.03
-nonOverlap	yes	11	0.09
-overlap	no	77	0.60
+nonOverlap	yes	11	0.08
+overlap	no	79	0.60
 overlap	yes	10	0.08
-all	all	129	1.00
+all	all	131	1.00

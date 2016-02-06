@@ -53,10 +53,9 @@ void GeneMapper::recordGeneMapped(const FeatureNode* geneTree) {
 
 /* check if gene or transcript have been mapped */
 bool GeneMapper::checkMapped(const FeatureNode* featureNode) const {
+    // N.B.  Don't use gene name, as some small non-coding genes has the same
+    // name for multiple instances
     if (fMappedIdsNames.find(getBaseId(featureNode->getTypeId())) != fMappedIdsNames.end()) {
-        return true;
-    }
-    if (fMappedIdsNames.find(featureNode->getTypeName()) != fMappedIdsNames.end()) {
         return true;
     }
     if (featureNode->getHavanaTypeId() != "") {

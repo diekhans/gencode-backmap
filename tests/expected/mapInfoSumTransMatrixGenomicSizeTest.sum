@@ -1,8 +1,8 @@
 mappingStatus	100	1000	10000	100000	1000000	total
-full_contig	9	13	40	24	0	86
+full_contig	9	15	40	24	0	88
 full_fragment	0	0	0	1	0	1
 gene_conflict	0	0	1	8	0	9
 gene_size_change	0	0	2	9	5	16
 no_seq_map	1	0	2	0	0	3
 partial	0	1	9	4	0	14
-all	10	14	54	46	5	129
+all	10	16	54	46	5	131

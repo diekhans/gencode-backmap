@@ -189,3 +189,7 @@ ENSG00000275540.1	CTC-559E9.12	gene	unprocessed_pseudogene	HAVANA	chr19	19740884
 ENST00000617163.1	CTC-559E9.12-001	transcript	unprocessed_pseudogene	HAVANA	chr19	19740884	19750127	+		0	0	.	full_contig	1	nonOverlap	processed_pseudogene	
 ENSG00000270325.1	BNIP3P9	gene	processed_pseudogene	HAVANA	chr19	19856975	19857527	+	chr19	19967784	19968336	+	full_contig	1	overlap	pseudogene	
 ENST00000603714.1	BNIP3P9-001	transcript	processed_pseudogene	HAVANA	chr19	19856975	19857527	+	chr19	19967784	19968336	+	full_contig	1	overlap	processed_pseudogene	
+ENSG00000252802.1	Y_RNA	gene	misc_RNA	ENSEMBL	chr1	26593940	26594041	-	chr1	26920431	26920532	-	full_contig	1	overlap	misc_RNA	
+ENST00000516993.1	Y_RNA.715-201	transcript	misc_RNA	ENSEMBL	chr1	26593940	26594041	-	chr1	26920431	26920532	-	full_contig	1	overlap	misc_RNA	
+ENSG00000207379.1	Y_RNA	gene	misc_RNA	ENSEMBL	chr1	93385711	93385817	+	chr1	93851268	93851374	+	full_contig	1	overlap	misc_RNA	
+ENST00000384649.1	Y_RNA.545-201	transcript	misc_RNA	ENSEMBL	chr1	93385711	93385817	+	chr1	93851268	93851374	+	full_contig	1	overlap	misc_RNA	
