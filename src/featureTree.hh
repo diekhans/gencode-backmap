@@ -466,7 +466,7 @@ class GeneTree {
     static FeatureNode* loadGene(GxfParser *gxfParser,
                                  GxfFeature* geneFeature);
     static void removeTransAttrsOnGenes(FeatureNode* geneTreeRoot);
-    static void fixGtfAnnotations(FeatureNode* geneTreeRoot);
+    static void fixGxfAnnotations(FeatureNode* geneTreeRoot);
     public:
     /* factory */
     static FeatureNode* geneTreeFactory(GxfParser *gxfParser,

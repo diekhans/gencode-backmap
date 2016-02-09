@@ -420,9 +420,9 @@ void GeneTree::removeTransAttrsOnGenes(FeatureNode* geneTreeRoot) {
 }
 
 /*
- * Fix up various issues with GTF input.
+ * Fix up various issues with GFF3/GTF input.
  */
-void GeneTree::fixGtfAnnotations(FeatureNode* geneTreeRoot) {
+void GeneTree::fixGxfAnnotations(FeatureNode* geneTreeRoot) {
     removeTransAttrsOnGenes(geneTreeRoot);
 }
 
@@ -446,9 +446,7 @@ FeatureNode* GeneTree::loadGene(GxfParser *gxfParser,
         }
     }
     queueRecords(gxfParser, queuedRecords);
-    if (gxfParser->getFormat() == GTF_FORMAT) {
-        fixGtfAnnotations(geneTreeRoot);
-    }
+    fixGxfAnnotations(geneTreeRoot);
 
     return geneTreeRoot;
 }
