@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include "transcriptMapper.hh"
 #include "annotationSet.hh"
+#include "featureTreePolish.hh"
 #include "globals.hh"
 
 
@@ -607,6 +608,9 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
     // must be done after forcing status above
     if ((mappedGene.mapped == NULL) and shouldSubstituteTarget(&mappedGene)) {
         substituteTarget(&mappedGene);
+    }
+    if (mappedGene.mapped != NULL) {
+        FeatureTreePolish::polishGene(mappedGene.mapped);
     }
     outputInfo(&mappedGene, mappingInfoFh);  // MUST do before saveGene, as it moved to output sets
     saveMapped(mappedGene, mappedSet);

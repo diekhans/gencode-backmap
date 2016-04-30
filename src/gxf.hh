@@ -253,6 +253,7 @@ public:
     static const string TRANSCRIPT_STATUS_ATTR;
     static const string TRANSCRIPT_HAVANA_ATTR;
     static const string EXON_ID_ATTR;
+    static const string EXON_NUMBER_ATTR;
     
     /* source names */
     static const string SOURCE_HAVANA;

@@ -61,6 +61,7 @@ const string GxfFeature::TRANSCRIPT_TYPE_ATTR = "transcript_type";
 const string GxfFeature::TRANSCRIPT_STATUS_ATTR = "transcript_status";
 const string GxfFeature::TRANSCRIPT_HAVANA_ATTR = "havana_transcript";
 const string GxfFeature::EXON_ID_ATTR = "exon_id";
+const string GxfFeature::EXON_NUMBER_ATTR = "exon_number";
 
 const string GxfFeature::SOURCE_HAVANA = "HAVANA";
 const string GxfFeature::SOURCE_ENSEMBL = "ENSEMBL";
