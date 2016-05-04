@@ -237,5 +237,3 @@ void AnnotationSet::write(GxfWriter& gxfFh) {
         outputFeature(fGenes[iGene], gxfFh);
     }
 }
-
-
