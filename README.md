@@ -50,6 +50,38 @@ some gene identifiers between assemblies.  If a matching base gene id (less
 version) is not found, an attempt is made to match the genes using the
 symbolic name.
 
+### Identification
+
+Gene and transcript identifiers (`*_id` attribute) are based on the source
+identifiers.  For annotations that are passed through unchanged from the
+target assembly, the identifiers are using as-is.  For mapped annotations, the
+a mapping version number, in the form `_n`, is appended to the id.  Where `n`
+is one based number indicating a version of the mapping.  The mapping version
+start at `1' and are addition to the standard identifier version, for example
+`ENST00000456328.2_1`
+
+When a previous release file is supplied, the gene and transcript annotations
+are checked and the mapping version incremented if defined attributes change.
+
+Genes have the mapping version numbers incremented if any of the following
+change from the previous release:
+- contained transcripts, include version and mapping version number
+- coordinates of the gene change
+- the gene_type or gene_status changes
+- the gene_name changes
+
+Transcripts have the mapping version numbers incremented if any of the
+following change from the previous release:
+- coordinates of the transcript or it's features change
+- the transcript_type or transcript_status changes
+- the transcript_name change
+- any tag changes
+
+The following ids have to the mapping versions applied
+- `gene_id`
+- `transcript_id`
+- 'havana_gene
+- 'havana_transcript
 
 ### Categorization of mappings 
 

@@ -27,7 +27,7 @@ extern const string REMAP_NUM_MAPPINGS_ATTR;
 extern const string REMAP_TARGET_STATUS_ATTR;
 
 /* Attribute indicating target gene was substituted due to not being
-* able to map gene. Value version   */
+ * able to map gene. Value is target version */
 extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
 
 class FeatureNode;
@@ -460,13 +460,13 @@ class GeneTree {
                                           FeatureNode* geneTreeLeaf);    
     static bool loadGeneRecord(GxfParser *gxfParser,
                                GxfRecord* gxfRecord,
-                               FeatureNode* geneTreeRoot,
+                               FeatureNode* geneTree,
                                FeatureNode*& geneTreeLeaf,
                                GxfRecordVector& queuedRecords);
     static FeatureNode* loadGene(GxfParser *gxfParser,
                                  GxfFeature* geneFeature);
-    static void removeTransAttrsOnGenes(FeatureNode* geneTreeRoot);
-    static void fixGxfAnnotations(FeatureNode* geneTreeRoot);
+    static void removeTransAttrsOnGenes(FeatureNode* geneTree);
+    static void fixGxfAnnotations(FeatureNode* geneTree);
     public:
     /* factory */
     static FeatureNode* geneTreeFactory(GxfParser *gxfParser,

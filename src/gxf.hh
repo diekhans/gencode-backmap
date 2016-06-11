@@ -43,6 +43,17 @@ static inline string getBaseId(const string& id) {
     return baseId;
 }
 
+/* Get the id with mapping version (_N) removed, if it exists.
+ */
+static inline string getPreMappedId(const string& id) {
+    size_t iun = id.find_last_of('_');
+    if (iun == string::npos) {
+        return id;
+    } else {
+        return id.substr(0, iun);
+    }
+}
+
 /*
  * GxF base record type.  Use instanceOf to determine actually type
  */

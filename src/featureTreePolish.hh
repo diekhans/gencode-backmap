@@ -22,24 +22,38 @@ class FeatureTreePolish {
     typedef ExonIdExonMap::iterator ExonIdExonMapIter;
     typedef ExonIdExonMap::const_iterator ExonIdExonMapConstIter;
 
-    static void renumberExon(FeatureNode* exonNode,
-                             int exonNum,
-                             ExonIdExonMap& exonIdExonMap);
-    static void renumberExons(FeatureNode* transcriptTree,
-                              ExonIdExonMap& exonIdExonMap);
-    static FeatureNode* findNewExon(FeatureNode* featureNode,
-                                    int oldExonNum,
-                                    ExonIdExonMap& exonIdExonMap);
-    static void renumberOtherFeature(FeatureNode* featureNode,
-                                     ExonIdExonMap& exonIdExonMap);
-    static void renumberOtherFeatures(FeatureNode* featureNode,
-                                      ExonIdExonMap& exonIdExonMap);
-    static void renumberTranscript(FeatureNode* transcriptTree);
-    static void renumberGeneExons(FeatureNode* geneTreeRoot);
-
+    void renumberExon(FeatureNode* exonNode,
+                      int exonNum,
+                      ExonIdExonMap& exonIdExonMap) const;
+    void renumberExons(FeatureNode* transcriptTree,
+                       ExonIdExonMap& exonIdExonMap) const;
+    FeatureNode* findNewExon(FeatureNode* featureNode,
+                             int oldExonNum,
+                             ExonIdExonMap& exonIdExonMap) const;
+    void renumberOtherFeature(FeatureNode* featureNode,
+                              ExonIdExonMap& exonIdExonMap) const;
+    void renumberOtherFeatures(FeatureNode* featureNode,
+                               ExonIdExonMap& exonIdExonMap) const;
+    void renumberTranscriptExons(FeatureNode* transcriptTree) const;
+    void renumberGeneExons(FeatureNode* geneTree) const;
+    bool isRemapped(FeatureNode* featureNode) const;
+    void setMappingVersionInId(FeatureNode* featureNode,
+                               const AttrVal* attr,
+                               int version) const;
+    void setMappingVersion(FeatureNode* featureNode,
+                           const string& idAttrName,
+                           const string& havanaIdAttrName,
+                           int version) const;
+    void recursiveSetMappingVersion(FeatureNode* featureNode,
+                                    const string& idAttrName,
+                                    const string& havanaIdAttrName,
+                                    int version) const;
+    void setTranscriptMappingVersion(FeatureNode* transcriptTree) const;
+    void setGeneMappingVersion(FeatureNode* geneTree) const;
+    
     public:
     /* last minute fix-ups */
-    static void polishGene(FeatureNode* geneTreeRoot);
+    void polishGene(FeatureNode* geneTree) const;
 };
 
 #endif

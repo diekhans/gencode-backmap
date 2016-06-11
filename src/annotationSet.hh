@@ -128,6 +128,9 @@ class AnnotationSet {
         return fGenes;
     }
 
+    /* print for debugging */
+    void dump(ostream& fh) const;
+
     /* output genes */
     void write(GxfWriter& gxfFh);
 };

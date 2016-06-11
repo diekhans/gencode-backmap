@@ -13,6 +13,7 @@ struct psl;
 class PslCursor;
 class AnnotationSet;
 class BedMap;
+class FeatureTreePolish;
 
 /* class that maps a gene to the new assemble */
 class GeneMapper {
@@ -104,6 +105,7 @@ class GeneMapper {
     void mapGene(const FeatureNode* srcGeneTree,
                  AnnotationSet& mappedSet,
                  AnnotationSet& unmappedSet,
+                 FeatureTreePolish& featureTreePolish,
                  ostream& mappingInfoFh,
                  ostream* transcriptPslFh);
     RemapStatus getNoMapRemapStatus(const FeatureNode* geneTree) const;

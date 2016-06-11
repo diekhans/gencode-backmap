@@ -230,6 +230,13 @@ void AnnotationSet::outputFeature(const FeatureNode* featureNode,
     }
 }
 
+/* print for debugging */
+void AnnotationSet::dump(ostream& fh) const {
+    for (int iGene = 0; iGene < fGenes.size(); iGene++) {
+        fGenes[iGene]->dump(fh);
+    }
+}
+
 /* output genes */
 void AnnotationSet::write(GxfWriter& gxfFh) {
     for (int iGene = 0; iGene < fGenes.size(); iGene++) {

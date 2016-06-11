@@ -19,8 +19,8 @@ const float geneExpansionThreshold = 0.50;
 static const char* mappingInfoHeaders[] = {
     "id", "name", "type", "biotype", "source",
     "srcChrom", "srcStart", "srcEnd", "srcStrand",
-    "mappedChrom", "mappedStart", "mappedEnd", "mappedStrand",
-    "mappingStatus", "numMappings",
+    "mappedId", "mappedChrom", "mappedStart", "mappedEnd",
+    "mappedStrand", "mappingStatus", "numMappings",
     "targetStatus", "targetBiotype", "targetSubst", NULL
 };
 
@@ -111,7 +111,7 @@ FeatureNode* GeneMapper::findMatchingBoundingNode(const FeatureNodeVector& featu
     assert(feature->isGeneOrTranscript());
     for (int i = 0; i < features.size(); i++)  {
         assert(features[i]->isGeneOrTranscript());
-        if (features[i]->getTypeId() == feature->getTypeId()) {
+        if (getPreMappedId(features[i]->getTypeId()) == getPreMappedId(feature->getTypeId())) {
             return features[i];  // found match!
         }
     }
@@ -462,14 +462,14 @@ const FeatureNode* GeneMapper::getTargetAnnotationNode(const FeatureNode* featur
         return NULL;
     }
     // try id, havana id, then name
-    const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(featureNode->getTypeId(),
+    const FeatureNode* targetNode = fTargetAnnotations->getFeatureNodeById(getPreMappedId(featureNode->getTypeId()),
                                                                            featureNode->fFeature->fSeqid);
     if ((targetNode == NULL) and (featureNode->getHavanaTypeId() != "")) {
-        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->getHavanaTypeId(),
+        targetNode = fTargetAnnotations->getFeatureNodeByName(getPreMappedId(featureNode->getHavanaTypeId()),
                                                               featureNode->fFeature->fSeqid);
     }
     if (targetNode == NULL) {
-        targetNode = fTargetAnnotations->getFeatureNodeByName(featureNode->getTypeName(),
+        targetNode = fTargetAnnotations->getFeatureNodeByName(getPreMappedId(featureNode->getTypeName()),
                                                               featureNode->fFeature->fSeqid);
     }
     return targetNode;
@@ -521,12 +521,13 @@ void GeneMapper::outputFeatureInfo(const ResultFeatureTrees* mappedTree,
                   << srcFeature->fStrand << "\t";
     if ((mappedTree->mapped != NULL) && !substituteTarget) {
         const GxfFeature* mappedFeature = mappedTree->mapped->fFeature;
-        mappingInfoFh << mappedFeature->fSeqid << "\t"
+        mappingInfoFh << mappedFeature->getTypeId() << "\t"
+                      << mappedFeature->fSeqid << "\t"
                       << mappedFeature->fStart << "\t"
                       << mappedFeature->fEnd << "\t"
                       << mappedFeature->fStrand << "\t";
     } else {
-        mappingInfoFh << "\t0\t0\t.\t";
+        mappingInfoFh << "\t\t0\t0\t.\t";
     }
     mappingInfoFh << remapStatusToStr(mappedTree->getRemapStatus()) << "\t"
                   << mappedTree->getNumMappings() << "\t"
@@ -598,6 +599,7 @@ void GeneMapper::setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene) {
 void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          AnnotationSet& mappedSet,
                          AnnotationSet& unmappedSet,
+                         FeatureTreePolish& featureTreePolish,
                          ostream& mappingInfoFh,
                          ostream* transcriptPslFh) {
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
@@ -610,7 +612,7 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
         substituteTarget(&mappedGene);
     }
     if (mappedGene.mapped != NULL) {
-        FeatureTreePolish::polishGene(mappedGene.mapped);
+        featureTreePolish.polishGene(mappedGene.mapped);
     }
     outputInfo(&mappedGene, mappingInfoFh);  // MUST do before saveGene, as it moved to output sets
     saveMapped(mappedGene, mappedSet);
@@ -727,6 +729,7 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
                         ostream* transcriptPslFh) {
     AnnotationSet mappedSet(&fGenomeTransMap->fTargetSizes);
     AnnotationSet unmappedSet(&fGenomeTransMap->fQuerySizes);
+    FeatureTreePolish featureTreePolish;
     
     const FeatureNodeVector& srcGenes = fSrcAnnotations->getGenes();
     outputInfoHeader(mappingInfoFh);
@@ -739,7 +742,7 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
                  << endl;
         }
         if (shouldMapGeneType(srcGenes[i])) {
-            mapGene(srcGenes[i], mappedSet, unmappedSet, mappingInfoFh, transcriptPslFh);
+            mapGene(srcGenes[i], mappedSet, unmappedSet, featureTreePolish, mappingInfoFh, transcriptPslFh);
         }
     }
     if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {

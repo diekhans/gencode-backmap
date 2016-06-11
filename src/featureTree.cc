@@ -384,7 +384,7 @@ FeatureNode* GeneTree::loadGtfGeneRecord(GxfFeature* gxfFeature,
  */
 bool GeneTree::loadGeneRecord(GxfParser *gxfParser,
                               GxfRecord* gxfRecord,
-                              FeatureNode* geneTreeRoot,
+                              FeatureNode* geneTree,
                               FeatureNode*& geneTreeLeaf,
                               GxfRecordVector& queuedRecords) {
     if (instanceOf(gxfRecord, GxfLine)) {
@@ -411,8 +411,8 @@ bool GeneTree::loadGeneRecord(GxfParser *gxfParser,
  * Remove transcript attributes that were accidentally left on genes
  * in some gencode versions.
  */
-void GeneTree::removeTransAttrsOnGenes(FeatureNode* geneTreeRoot) {
-    AttrVals& attrs = geneTreeRoot->fFeature->getAttrs();
+void GeneTree::removeTransAttrsOnGenes(FeatureNode* geneTree) {
+    AttrVals& attrs = geneTree->fFeature->getAttrs();
     attrs.remove(GxfFeature::TRANSCRIPT_ID_ATTR);
     attrs.remove(GxfFeature::TRANSCRIPT_TYPE_ATTR);
     attrs.remove(GxfFeature::TRANSCRIPT_STATUS_ATTR);
@@ -422,8 +422,8 @@ void GeneTree::removeTransAttrsOnGenes(FeatureNode* geneTreeRoot) {
 /*
  * Fix up various issues with GFF3/GTF input.
  */
-void GeneTree::fixGxfAnnotations(FeatureNode* geneTreeRoot) {
-    removeTransAttrsOnGenes(geneTreeRoot);
+void GeneTree::fixGxfAnnotations(FeatureNode* geneTree) {
+    removeTransAttrsOnGenes(geneTree);
 }
 
 /*
@@ -436,19 +436,19 @@ FeatureNode* GeneTree::loadGene(GxfParser *gxfParser,
                                 GxfFeature* geneFeature) {
     assert(geneFeature->fType == GxfFeature::GENE);
 
-    FeatureNode* geneTreeRoot = new FeatureNode(geneFeature);
-    FeatureNode* geneTreeLeaf = geneTreeRoot;  // were we are currently working
+    FeatureNode* geneTree = new FeatureNode(geneFeature);
+    FeatureNode* geneTreeLeaf = geneTree;  // were we are currently working
     GxfRecordVector queuedRecords;
     GxfRecord* gxfRecord = NULL;
     while ((gxfRecord = gxfParser->next()) != NULL) {
-        if (not loadGeneRecord(gxfParser, gxfRecord, geneTreeRoot, geneTreeLeaf, queuedRecords)) {
+        if (not loadGeneRecord(gxfParser, gxfRecord, geneTree, geneTreeLeaf, queuedRecords)) {
             break;
         }
     }
     queueRecords(gxfParser, queuedRecords);
-    fixGxfAnnotations(geneTreeRoot);
+    fixGxfAnnotations(geneTree);
 
-    return geneTreeRoot;
+    return geneTree;
 }
 
 /* factory */

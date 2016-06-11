@@ -14,14 +14,17 @@ testGencodeLiftOverChains = output/hg38ToHg19.gencode.over.chain
 
 diff = diff -u
 
-
-
+# use transcript_id attr, not ID
+gff3ToGenePred = gff3ToGenePred -geneNameAttr=gene_id  -rnaNameAttr=transcript_id
 
 # commands to normalize genePreds for comparison because the V19 GTF's from
 # Ensembl at least sometimes doens't include a start_codon so whack the CDS
 # completeness columns. Also filter genePred to remove tests sequences were
 # gtfToGenePred joins adjacent blocks and gff3ToGenePred doesn't
-normalizeGenePred = awk 'BEGIN{IF=OFS="\t"} /ENST00000578049|ENST00000624585/{next} {$$13=$$14="foo"; print $$0}' | sort
+# also wack PAR transcripts because they get a differnt name with GTF.
+genePredCmpIgnore = ENST00000578049|ENST00000624585
+genePredParAdjust = gsub("ENSTR", "ENST0", $$0); gsub("ENSGR", "ENSG0", $$0)
+normalizeGenePred =  awk 'BEGIN{IF=OFS="\t"} /${genePredCmpIgnore}/{next} {${genePredParAdjust}; $$13=$$14="foo"; print $$0}' | sort
 
 # compare by genePred ensure that GTF and GFF3 produce the same results
 
@@ -35,8 +38,8 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.unmapped.gp
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
@@ -55,8 +58,8 @@ cmpUcscTest: gff3UcscTest gtfUcscTest
 
 gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
@@ -64,16 +67,16 @@ gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
 # ncRNA and patch subsitution
 gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetPatchArg} ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gff3UcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 stdout | ${normalizeGenePred} > output/$@.mapped.gp
-	gff3ToGenePred output/$@.unmapped.gff3 stdout | ${normalizeGenePred} >output/$@.unmapped.gp
+	${gff3ToGenePred} output/$@.mapped.gff3 stdout | ${normalizeGenePred} > output/$@.mapped.gp
+	${gff3ToGenePred} output/$@.unmapped.gff3 stdout | ${normalizeGenePred} >output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
@@ -99,8 +102,8 @@ ${testGencodeLiftOverChains}: ${testUcscLiftOverChains}
 
 gff3NcbiTest: mkdirs
 	${gencode_backmap} --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
@@ -187,8 +190,8 @@ bigTest: bigGff3UcscTest bigGtfUcscTest bigGff3NcbiTest bigGtfNcbiTest
 
 bigGff3UcscTest: mkdirs
 	${gencode_backmap} --swapMap ${v22Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info >& output/$@.gff3.log
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
 
 bigGtfUcscTest: mkdirs
 	${gencode_backmap} --swapMap ${v22Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
@@ -197,8 +200,8 @@ bigGtfUcscTest: mkdirs
 
 bigGff3NcbiTest: mkdirs
 	${gencode_backmap} --swapMap ${v22Gff3} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info >& output/$@.gff3.log
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	gff3ToGenePred output/$@.unmapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
 
 bigGtfNcbiTest: mkdirs
 	${gencode_backmap} --swapMap ${v22Gtf} data/GRCh38.p2-GRCh37.p13.gencode.psl output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
