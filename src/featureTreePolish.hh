@@ -17,23 +17,28 @@
  */
 class FeatureTreePolish {
     private:
-    // use to map old exon ids to new exons in a transcript
-    typedef map<int, vector<FeatureNode*> > ExonIdExonMap;
+    // use to map old exon numbers to new exons in a transcript
+    typedef map<int, vector<FeatureNode*> > ExonNumExonMap;
+    typedef ExonNumExonMap::iterator ExonNumExonMapIter;
+    typedef ExonNumExonMap::const_iterator ExonNumExonMapConstIter;
+
+    // use to add mapping version number to exon ids
+    typedef map<string, vector<FeatureNode*> > ExonIdExonMap;
     typedef ExonIdExonMap::iterator ExonIdExonMapIter;
     typedef ExonIdExonMap::const_iterator ExonIdExonMapConstIter;
-
+    
     void renumberExon(FeatureNode* exonNode,
                       int exonNum,
-                      ExonIdExonMap& exonIdExonMap) const;
+                      ExonNumExonMap& exonNumExonMap) const;
     void renumberExons(FeatureNode* transcriptTree,
-                       ExonIdExonMap& exonIdExonMap) const;
+                       ExonNumExonMap& exonNumExonMap) const;
     FeatureNode* findNewExon(FeatureNode* featureNode,
                              int oldExonNum,
-                             ExonIdExonMap& exonIdExonMap) const;
+                             ExonNumExonMap& exonNumExonMap) const;
     void renumberOtherFeature(FeatureNode* featureNode,
-                              ExonIdExonMap& exonIdExonMap) const;
+                              ExonNumExonMap& exonNumExonMap) const;
     void renumberOtherFeatures(FeatureNode* featureNode,
-                               ExonIdExonMap& exonIdExonMap) const;
+                               ExonNumExonMap& exonNumExonMap) const;
     void renumberTranscriptExons(FeatureNode* transcriptTree) const;
     void renumberGeneExons(FeatureNode* geneTree) const;
     bool isRemapped(FeatureNode* featureNode) const;
@@ -48,7 +53,15 @@ class FeatureTreePolish {
                                     const string& idAttrName,
                                     const string& havanaIdAttrName,
                                     int version) const;
-    void setTranscriptMappingVersion(FeatureNode* transcriptTree) const;
+    void recordTranscriptMappedExons(FeatureNode* transcriptTree,
+                                     ExonIdExonMap& exonIdExonMap) const;
+    void setTranscriptMappingVersion(FeatureNode* transcriptTree,
+                                     ExonIdExonMap& exonIdExonMap) const;
+    void setExonMappingVersion(FeatureNode* exonFeature,
+                               int version) const;
+    void setExonMappingVersion(const string& exonId,
+                               vector<FeatureNode*> exonFeatures) const;
+    void setExonsMappingVersions(ExonIdExonMap& exonIdExonMap) const;
     void setGeneMappingVersion(FeatureNode* geneTree) const;
     
     public:

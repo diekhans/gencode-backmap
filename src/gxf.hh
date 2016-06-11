@@ -43,7 +43,8 @@ static inline string getBaseId(const string& id) {
     return baseId;
 }
 
-/* Get the id with mapping version (_N) removed, if it exists.
+/* 
+ * Get the id with mapping version (_N) removed, if it exists.
  */
 static inline string getPreMappedId(const string& id) {
     size_t iun = id.find_last_of('_');
@@ -52,6 +53,14 @@ static inline string getPreMappedId(const string& id) {
     } else {
         return id.substr(0, iun);
     }
+}
+
+/* 
+ * Determine id an id has a mapping version (_N).
+ */
+static inline bool hasMappingVersion(const string& id) {
+    size_t iun = id.find_last_of('_');
+    return (iun != string::npos);
 }
 
 /*
