@@ -76,6 +76,7 @@ following change from the previous release:
 - the transcript_type or transcript_status changes
 - the transcript_name change
 - any tag changes
+- CDS or other sub-features of a transcript change.
 
 The following ids have to the mapping versions applied
 - `gene_id`

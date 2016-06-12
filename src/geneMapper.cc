@@ -729,7 +729,7 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
                         ostream* transcriptPslFh) {
     AnnotationSet mappedSet(&fGenomeTransMap->fTargetSizes);
     AnnotationSet unmappedSet(&fGenomeTransMap->fQuerySizes);
-    FeatureTreePolish featureTreePolish;
+    FeatureTreePolish featureTreePolish(fPreviousMappedAnotations);
     
     const FeatureNodeVector& srcGenes = fSrcAnnotations->getGenes();
     outputInfoHeader(mappingInfoFh);

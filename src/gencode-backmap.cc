@@ -30,10 +30,12 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& mappingInfoTsv,
                            const string& targetGxf,
                            const string& targetPatchBed,
+                           const string& previousMappedGxf,
                            const string& transcriptPsls) {
     TransMap* genomeTransMap = TransMap::factoryFromFile(mappingAligns, swapMap);
     AnnotationSet srcAnnotations(inGxfFile);
     AnnotationSet* targetAnnotations = (targetGxf.size() > 0) ? new AnnotationSet(targetGxf) : NULL;
+    AnnotationSet* previousMappedAnnotations = (previousMappedGxf.size() > 0) ? new AnnotationSet(previousMappedGxf) : NULL;
     BedMap* targetPatchMap = (targetPatchBed.size() > 0) ? new BedMap(targetPatchBed) : NULL;
     GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile);
     GxfWriter* unmappedGxfFh = GxfWriter::factory(unmappedGxfFile);
@@ -43,14 +45,16 @@ static void gencodeBackmap(const string& inGxfFile,
     }
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
-    GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, targetPatchMap, substituteMissingTargetVersion, useTargetFlags,
-                          onlyManualForTargetSubstituteOverlap);
+    GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, previousMappedAnnotations,
+                          targetPatchMap, substituteMissingTargetVersion,
+                          useTargetFlags, onlyManualForTargetSubstituteOverlap);
     geneMapper.mapGxf(*mappedGxfFh, *unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete mappedGxfFh;
     delete unmappedGxfFh;
     delete genomeTransMap;
     delete targetPatchMap;
     delete targetAnnotations;
+    delete previousMappedAnnotations;
     delete transcriptPslFh;
 }
 
@@ -67,6 +71,8 @@ int main(int argc, char *argv[]) {
         "  --targetGxf=gxfFile - GFF3 or GTF of gene annotations on target genome.\n"
         "    If specified, require mappings to location of previous version of\n"
         "    gene or transcript.\n"
+        "  --previousMappedGxf=gxfFile - GFF3 or GTF of gene annotations on previous mapping.\n"
+        "    This is used to determine the mapped version number to append to the ids.\n"
         "  --headerFile=commentFile - copy contents of this file as comment header for GFF3/GTF output.\n"
         "    Doesn't include GFF3 file type meta comment.\n"
         "  --transcriptPsls=pslFile - write all mapped transcript-level PSL to this file, including\n"
@@ -106,6 +112,7 @@ int main(int argc, char *argv[]) {
         {"verbose", 0, NULL, 'v'},
         {"swapMap", 0, NULL, 's'},
         {"targetGxf", 1, NULL, 't'}, 
+        {"previousMappedGxf", 1, NULL, 'M'}, 
         {"targetPatches", 1, NULL, 'T'}, 
         {"headerFile", 1, NULL, 'H'},
         {"transcriptPsls", 1, NULL, 'p'},
@@ -124,6 +131,7 @@ int main(int argc, char *argv[]) {
     string targetGxf;
     string targetPatchBed;
     string headerFile;
+    string previousMappedGxf;
     string transcriptPsls;
     string substituteMissingTargetVersion;
     bool onlyManualForTargetSubstituteOverlap = false;
@@ -146,6 +154,8 @@ int main(int argc, char *argv[]) {
             useTargetFlags |= GeneMapper::useTargetForPatchRegions;
         } else if (optc == 'H') {
             headerFile = string(optarg);
+        } else if (optc == 'M') {
+            previousMappedGxf = string(optarg);
         } else if (optc == 'p') {
             transcriptPsls = string(optarg);
         } else if (optc == 'm') {
@@ -179,10 +189,12 @@ int main(int argc, char *argv[]) {
     string unmappedGxfFile = argv[optind+3];
     string mappingInfoTsv = argv[optind+4];
 
-    if (!((gxfFormatFromFileName(inGxfFile) == gxfFormatFromFileName(mappedGxfFile))
-          && (gxfFormatFromFileName(inGxfFile) == gxfFormatFromFileName(unmappedGxfFile))
+    if (!((gxfFormatFromFileName(mappedGxfFile) == gxfFormatFromFileName(inGxfFile))
+          && (gxfFormatFromFileName(unmappedGxfFile) == gxfFormatFromFileName(inGxfFile))
           && ((targetGxf.size() == 0)
-              || (gxfFormatFromFileName(inGxfFile) == gxfFormatFromFileName(targetGxf))))) {
+              || (gxfFormatFromFileName(targetGxf) == gxfFormatFromFileName(inGxfFile))))
+          && ((previousMappedGxf.size() == 0)
+              || (gxfFormatFromFileName(previousMappedGxf) == gxfFormatFromFileName(inGxfFile)))) {
         fprintf(stderr, "Error: all input and output formats must be consistently GFF3 or GTF\n");
         return 1;
     }
@@ -192,7 +204,8 @@ int main(int argc, char *argv[]) {
                        substituteMissingTargetVersion, useTargetFlags,
                        onlyManualForTargetSubstituteOverlap,
                        headerFile, mappedGxfFile, unmappedGxfFile,
-                       mappingInfoTsv, targetGxf, targetPatchBed, transcriptPsls);
+                       mappingInfoTsv, targetGxf, targetPatchBed, previousMappedGxf,
+                       transcriptPsls);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;
         return 1;

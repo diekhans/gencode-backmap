@@ -29,6 +29,30 @@ static const char* automaticNonCodingGeneBiotypes[] = {
     "snoRNA", "snRNA", "sRNA", NULL
 };
 
+/* sort the vector in a predictable order.  This is not necessary what
+ * will be in the GxF file by GENCODE conventions. */
+void FeatureNodeVector::sort() {
+    std::sort(begin(), end(),
+              [](const FeatureNode* a, const FeatureNode* b) -> bool {
+                  const GxfFeature* af = a->fFeature;
+                  const GxfFeature* bf = b->fFeature;
+                  if (af->fStrand == "+") {
+                      if (af->fType != bf->fType) {
+                          return af->fType > bf->fType;
+                      } else {
+                          return af->fStart > bf->fStart;
+                      }
+                  } else {
+                      if (af->fType != bf->fType) {
+                          return af->fType < bf->fType;
+                      } else {
+                          return af->fStart < bf->fStart;
+                      }
+                  }
+              });
+}
+
+
 /* is ensembl small non-coding gene */
 bool FeatureNode::isAutomaticSmallNonCodingGene() const {
     if (fFeature->fSource != "ENSEMBL") {

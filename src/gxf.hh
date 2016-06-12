@@ -63,6 +63,18 @@ static inline bool hasMappingVersion(const string& id) {
     return (iun != string::npos);
 }
 
+/* 
+ * get the mapping version, or 0 if none
+ */
+static inline int getMappingVersion(const string& id) {
+    size_t iun = id.find_last_of('_');
+    if (iun == string::npos) {
+        return 0;
+    } else {
+        return stringToInt(id.substr(iun+1));
+    }
+}
+
 /*
  * GxF base record type.  Use instanceOf to determine actually type
  */
@@ -274,6 +286,7 @@ public:
     static const string TRANSCRIPT_HAVANA_ATTR;
     static const string EXON_ID_ATTR;
     static const string EXON_NUMBER_ATTR;
+    static const string TAG_ATTR;
     
     /* source names */
     static const string SOURCE_HAVANA;
@@ -403,22 +416,6 @@ class GxfFeatureVector: public vector<GxfFeature*> {
         clear();
     }
 
-    /* do we contain a particular feature object? */
-    bool contains(const GxfFeature* feature) const {
-        return std::find(begin(), end(), feature) != end();
-    }
-    
-    /* sort the vector */
-    void sort() {
-        std::sort(begin(), end(),
-                  [](const GxfFeature* a, const GxfFeature* b) -> bool {
-                      if (a->fStrand == "+") {
-                          return a->fStart > b->fStart;
-                      } else {
-                          return a->fStart < b->fStart;
-                      }   
-                  });
-    }
 };
 
 /**

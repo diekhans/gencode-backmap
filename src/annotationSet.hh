@@ -30,8 +30,11 @@ class AnnotationSet {
     typedef FeatureMap::iterator FeatureMapIter;
     typedef FeatureMap::const_iterator FeatureMapConstIter;
 
-    // map by base id of genes and transcripts
+    // map by base id of genes and transcripts (not exons).
     FeatureMap fIdFeatureMap;
+
+    // map by base id of exons
+    FeatureMap fIdExonMap;
 
     // map by names of genes and transcripts
     FeatureMap fNameFeatureMap;
@@ -98,13 +101,13 @@ class AnnotationSet {
     /* add a gene the maps */
     void addGene(FeatureNode* geneTree);
 
-    /* get a target gene or transcript node with same base id or NULL.
-     * special handling for PARs. Getting node is used if you need whole tree. */
+    /* get a gene or transcript node with same base id or NULL.  special
+     * handling for PARs. */
     FeatureNode* getFeatureNodeById(const string& id,
                                     const string& seqIdForParCheck) const;
 
-    /* get a target gene or transcript node with same name or NULL.
-     * special handling for PARs. Getting node is used if you need whole tree. */
+    /* get a gene or transcript node with same name or NULL.  special handling
+     * for PARs. */
     FeatureNode* getFeatureNodeByName(const string& name,
                                       const string& seqIdForParCheck) const;
 
@@ -112,6 +115,9 @@ class AnnotationSet {
      * special handling for PARs. */
     GxfFeature* getFeatureById(const string& id,
                                const string& seqIdForParCheck) const;
+
+    /* get exon nodes by base id */
+    FeatureNodeVector getExonNodesById(const string& exonId) const;
 
     /* find overlapping features */
     FeatureNodeVector findOverlappingFeatures(const string& seqid,

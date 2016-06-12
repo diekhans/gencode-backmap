@@ -133,6 +133,16 @@ GxfFeature* AnnotationSet::getFeatureById(const string& id,
     }
 }
 
+/* get exon nodes by base id */
+FeatureNodeVector AnnotationSet::getExonNodesById(const string& exonId) const {
+    FeatureNodeVector exons;
+    FeatureMapConstIter it = fIdExonMap.find(getBaseId(exonId));
+    if (it != fIdExonMap.end()) {
+        exons = it->second;
+    } 
+    return exons;
+}
+
 /* find overlapping features */
 FeatureNodeVector AnnotationSet::findOverlappingFeatures(const string& seqid,
                                                          int start,

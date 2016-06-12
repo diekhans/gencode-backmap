@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <map>
 #include "featureTree.hh"
+class AnnotationSet;
 
 /*
  * Notes:
@@ -26,6 +27,8 @@ class FeatureTreePolish {
     typedef map<string, vector<FeatureNode*> > ExonIdExonMap;
     typedef ExonIdExonMap::iterator ExonIdExonMapIter;
     typedef ExonIdExonMap::const_iterator ExonIdExonMapConstIter;
+
+    const AnnotationSet* fPreviousMappedAnotations; // maybe NULL
     
     void renumberExon(FeatureNode* exonNode,
                       int exonNum,
@@ -41,30 +44,57 @@ class FeatureTreePolish {
                                ExonNumExonMap& exonNumExonMap) const;
     void renumberTranscriptExons(FeatureNode* transcriptTree) const;
     void renumberGeneExons(FeatureNode* geneTree) const;
-    bool isRemapped(FeatureNode* featureNode) const;
+    bool isRemapped(const FeatureNode* featureNode) const;
+    const FeatureNode* getPrevMappedFeature(const FeatureNode* newFeature) const;
+    int getFeatureMappingVersion(const FeatureNode* prevFeature,
+                                 bool featureSame) const;
+    bool compareNodeAttrVals(const FeatureNode* prevNode,
+                             const FeatureNode* newNode,
+                             const string& attrName) const;
+    bool compareNodeAttrs(const FeatureNode* prevNode,
+                          const FeatureNode* newNode,
+                          const StringVector& attrNames) const;
+    bool compareMappedNodes(const FeatureNode* prevNode,
+                            const FeatureNode* newNode,
+                            const StringVector& attrNames) const;
+    bool compareGeneNodes(const FeatureNode* prevNode,
+                          const FeatureNode* newNode) const;
+    bool compareTranscriptNodes(const FeatureNode* prevNode,
+                                const FeatureNode* newNode) const;
+    bool compareOtherNodes(const FeatureNode* prevNode,
+                           const FeatureNode* newNode) const;
+    bool compareMappedTranscripts(const FeatureNode* prevTranscript,
+                                  const FeatureNode* newTranscript) const;
+    bool compareMappedTranscriptsDescendants(const FeatureNode* prevParent,
+                                             const FeatureNode* newParent) const;
     void setMappingVersionInId(FeatureNode* featureNode,
                                const AttrVal* attr,
-                               int version) const;
+                               int mappingVersion) const;
     void setMappingVersion(FeatureNode* featureNode,
                            const string& idAttrName,
                            const string& havanaIdAttrName,
-                           int version) const;
+                           int mappingVersion) const;
     void recursiveSetMappingVersion(FeatureNode* featureNode,
                                     const string& idAttrName,
                                     const string& havanaIdAttrName,
-                                    int version) const;
+                                    int mappingVersion) const;
     void recordTranscriptMappedExons(FeatureNode* transcriptTree,
                                      ExonIdExonMap& exonIdExonMap) const;
-    void setTranscriptMappingVersion(FeatureNode* transcriptTree,
-                                     ExonIdExonMap& exonIdExonMap) const;
+    bool setTranscriptMappingVersion(FeatureNode* transcriptTree) const;
     void setExonMappingVersion(FeatureNode* exonFeature,
-                               int version) const;
+                               int mappingVersion) const;
     void setExonMappingVersion(const string& exonId,
                                vector<FeatureNode*> exonFeatures) const;
     void setExonsMappingVersions(ExonIdExonMap& exonIdExonMap) const;
     void setGeneMappingVersion(FeatureNode* geneTree) const;
     
     public:
+
+    /* constructor */
+    FeatureTreePolish(const AnnotationSet* previousMappedAnotations):
+        fPreviousMappedAnotations(previousMappedAnotations) {
+    }
+    
     /* last minute fix-ups */
     void polishGene(FeatureNode* geneTree) const;
 };

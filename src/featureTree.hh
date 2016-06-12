@@ -7,6 +7,7 @@
 #include <functional>
 #include "gxf.hh"
 #include <ostream>
+#include <algorithm>
 #include "remapStatus.hh"
 
 // FIXME: add the substituted target stuff caused this to step into hacky
@@ -31,9 +32,14 @@ extern const string REMAP_TARGET_STATUS_ATTR;
 extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
 
 class FeatureNode;
-/* Vector of FeatureNode objects */
-typedef vector<FeatureNode*> FeatureNodeVector;
 
+/* Vector of FeatureNode objects */
+class FeatureNodeVector: public vector<FeatureNode*> {
+public:
+    /* sort the vector in a predictable order.  This is not necessary what
+     * will be in the GxF file by GENCODE conventions. */
+    void sort();
+};
 
 /**
  * Tree container for a GxfFeature object and children

@@ -29,6 +29,7 @@ class GeneMapper {
     const AnnotationSet* fSrcAnnotations; // source annotations
     const TransMap* fGenomeTransMap;  // genomic mapping
     const AnnotationSet* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
+    const AnnotationSet* fPreviousMappedAnotations; // previous version
     const BedMap* fTargetPatchMap; // location of patch regions in target genome
     const string fSubstituteTargetVersion;  // pass through targets when gene new gene doesn't map
     unsigned fUseTargetFlags;  // what targets to force.
@@ -125,6 +126,7 @@ class GeneMapper {
     GeneMapper(const AnnotationSet* srcAnnotations,
                const TransMap* genomeTransMap,
                const AnnotationSet* targetAnnotations,
+               const AnnotationSet* previousMappedAnnotations,
                const BedMap* targetPatchMap,
                const string& substituteTargetVersion,
                unsigned useTargetFlags,
@@ -132,6 +134,7 @@ class GeneMapper {
         fSrcAnnotations(srcAnnotations),
         fGenomeTransMap(genomeTransMap),
         fTargetAnnotations(targetAnnotations),
+        fPreviousMappedAnotations(previousMappedAnnotations),
         fTargetPatchMap(targetPatchMap),
         fSubstituteTargetVersion(substituteTargetVersion),
         fUseTargetFlags(useTargetFlags),
