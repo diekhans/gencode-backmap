@@ -4,26 +4,26 @@
 #ifndef featureTransMap_hh
 #define featureTransMap_hh
 #include "transMap.hh"
-#include "gxf.hh"
+#include "feature.hh"
 struct psl;
 class PslMapping;
 
 /* conversion of a list of features to a PSL */
 class FeaturesToPsl {
     private:
-    static bool checkFeatureOrder(const GxfFeatureVector& features);
-    static int sumFeatureSizes(const GxfFeatureVector& features);
+    static bool checkFeatureOrder(const FeatureVector& features);
+    static int sumFeatureSizes(const FeatureVector& features);
     static void makePslBlocks(struct psl* psl,
-                       const GxfFeatureVector& features);
+                       const FeatureVector& features);
     static struct psl* makeFeaturesPsl(const string& qName,
                                        int qSize, int tStart, int tEnd, int tSize,
-                                       const GxfFeatureVector& features);
+                                       const FeatureVector& features);
     public:
     /* create a psl from a list of features. Assumes features are sorter in
      * ascending order.  */
     static struct psl* toPsl(const string& qName,
                              int tSize,
-                             const GxfFeatureVector& features);
+                             const FeatureVector& features);
     
 };
 
@@ -62,11 +62,11 @@ class FeatureTransMap {
      * kept in the input order of the features, even if this creates a
      * negative target strand. */
     PslMapping* mapFeatures(const string& qName,
-                            const GxfFeatureVector& features) const;
+                            const FeatureVector& features) const;
 
     /* map a single feature */
     PslMapping* mapFeature(const string& qName,
-                           const GxfFeature* feature) const;
+                           const Feature* feature) const;
 
 };
 

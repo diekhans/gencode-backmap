@@ -3,7 +3,7 @@
  */
 #include "jkinclude.hh"
 #include <getopt.h>
-#include "gxf.hh"
+#include "gxfRecord.hh"
 #include "typeOps.hh"
 #include "FIOStream.hh"
 #include "transMap.hh"
@@ -11,6 +11,7 @@
 #include "annotationSet.hh"
 #include "bedMap.hh"
 #include "globals.hh"
+#include "gxfIO.hh"
 #include "./version.h"
 
 /* verbose tracing enabled */

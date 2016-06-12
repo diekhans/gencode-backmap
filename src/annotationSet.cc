@@ -2,13 +2,18 @@
 #include <stdexcept>
 #include <iostream>
 #include "transMap.hh"
+#include "featureIO.hh"
+#include "gxfIO.hh"
+
+// FIXME: should writer in featureIO
+
 
 /* add a feature to the location map */
-void AnnotationSet::addLocationMap(FeatureNode* featureNode) {
+void AnnotationSet::addLocationMap(Feature* feature) {
     struct LocationLink* locationLink =  static_cast<struct LocationLink*>(needMem(sizeof(struct LocationLink)));  // zeros memory
-    locationLink->featureNode = featureNode;
-    genomeRangeTreeAddValList(fLocationMap, toCharStr(featureNode->fFeature->fSeqid),
-                              featureNode->fFeature->fStart, featureNode->fFeature->fEnd, locationLink);
+    locationLink->feature = feature;
+    genomeRangeTreeAddValList(fLocationMap, toCharStr(feature->getSeqid()),
+                              feature->getStart(), feature->getEnd(), locationLink);
 }
 
 /* build location map on first use */
@@ -17,8 +22,8 @@ void AnnotationSet::buildLocationMap() {
     fLocationMap = genomeRangeTreeNew();
     for (int iGene = 0; iGene < fGenes.size(); iGene++) {
         addLocationMap(fGenes[iGene]);
-        for (size_t iTrans = 0; iTrans < fGenes[iGene]->fChildren.size(); iTrans++) {
-            addLocationMap(fGenes[iGene]->fChildren[iTrans]);
+        for (size_t iTrans = 0; iTrans < fGenes[iGene]->getChildren().size(); iTrans++) {
+            addLocationMap(fGenes[iGene]->getChild(iTrans));
         }
     }
 }
@@ -40,62 +45,48 @@ void AnnotationSet::freeLocationMap() {
 }
 
 /* link a gene or transcript feature into the maps */
-void AnnotationSet::addFeature(FeatureNode* featureNode) {
-    assert(featureNode->isGeneOrTranscript());
-    GxfFeature* feature = featureNode->fFeature;
+void AnnotationSet::addFeature(Feature* feature) {
+    assert(feature->isGeneOrTranscript());
     // record by id and name
-    fIdFeatureMap[getBaseId(feature->getTypeId())].push_back(featureNode);
-    if (featureNode->getHavanaTypeId() != "") {
-        fIdFeatureMap[getBaseId(featureNode->getHavanaTypeId())].push_back(featureNode);
+    fIdFeatureMap[getBaseId(feature->getTypeId())].push_back(feature);
+    if (feature->getHavanaTypeId() != "") {
+        fIdFeatureMap[getBaseId(feature->getHavanaTypeId())].push_back(feature);
     }
     // save gene/transcript name, although not on small non-coding, as they are
     // not unique.
-    if ((feature->getTypeName() != "") && (not featureNode->isAutomaticSmallNonCodingGene())) {
-        fNameFeatureMap[feature->getTypeName()].push_back(featureNode);
+    if ((feature->getTypeName() != "") && (not feature->isAutomaticSmallNonCodingGene())) {
+        fNameFeatureMap[feature->getTypeName()].push_back(feature);
     }
     if (fLocationMap != NULL) {
-        addLocationMap(featureNode);
+        addLocationMap(feature);
     }
 }
 
 /* add a gene the maps */
-void AnnotationSet::addGene(FeatureNode* geneTree) {
-    assert(geneTree->isGene());
-    fGenes.push_back(geneTree);
-    addFeature(geneTree);
-    for (size_t i = 0; i < geneTree->fChildren.size(); i++) {
-        FeatureNode* transcriptTree = geneTree->fChildren[i];
-        if (transcriptTree->fFeature->fType != GxfFeature::TRANSCRIPT) {
-            throw logic_error("gene record has child that is not of type transcript: " + transcriptTree->fFeature->toString());
+void AnnotationSet::addGene(Feature* gene) {
+    assert(gene->isGene());
+    fGenes.push_back(gene);
+    addFeature(gene);
+    for (size_t i = 0; i < gene->getChildren().size(); i++) {
+        Feature* transcript = gene->getChild(i);
+        if (transcript->getType() != GxfFeature::TRANSCRIPT) {
+            throw logic_error("gene record has child that is not of type transcript: " + transcript->toString());
         }
-        addFeature(transcriptTree);
+        addFeature(transcript);
     }
 }
-
-/* process a record, loading into table or discarding */
-void AnnotationSet::processRecord(GxfParser *gxfParser,
-                                      GxfRecord* gxfRecord) {
-    if (instanceOf(gxfRecord, GxfFeature)) {
-        GxfFeature* geneFeature = dynamic_cast<GxfFeature*>(gxfRecord);
-        FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
-        addGene(geneTree);
-    } else {
-        delete gxfRecord;
-    }
-}
-
 
 /* get a target gene or transcript node from an index by name or id */
-FeatureNode* AnnotationSet::getFeatureNodeByKey(const string& key,
+Feature* AnnotationSet::getFeatureByKey(const string& key,
                                                 const FeatureMap& featureMap,
                                                 const string& seqIdForParCheck) const {
     FeatureMapConstIter it = featureMap.find(key);
     if (it == featureMap.end()) {
         return NULL;
     } else if (it->second.size() == 2) {
-        if (it->second[0]->fFeature->fSeqid == seqIdForParCheck) {
+        if (it->second[0]->getSeqid() == seqIdForParCheck) {
             return it->second[0];
-        } else if (it->second[1]->fFeature->fSeqid == seqIdForParCheck) {
+        } else if (it->second[1]->getSeqid() == seqIdForParCheck) {
             return it->second[1];
         } else {
             throw logic_error("PAR target feature hack confused: " + key);
@@ -109,33 +100,21 @@ FeatureNode* AnnotationSet::getFeatureNodeByKey(const string& key,
 
 /* get a target gene or transcript node with same base id or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
-FeatureNode* AnnotationSet::getFeatureNodeById(const string& id,
+Feature* AnnotationSet::getFeatureById(const string& id,
                                                const string& seqIdForParCheck) const {
-    return getFeatureNodeByKey(getBaseId(id), fIdFeatureMap, seqIdForParCheck);
+    return getFeatureByKey(getBaseId(id), fIdFeatureMap, seqIdForParCheck);
 }
 
 /* get a target gene or transcript node with same name or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
-FeatureNode* AnnotationSet::getFeatureNodeByName(const string& name,
+Feature* AnnotationSet::getFeatureByName(const string& name,
                                                  const string& seqIdForParCheck) const {
-    return getFeatureNodeByKey(name, fNameFeatureMap, seqIdForParCheck);
+    return getFeatureByKey(name, fNameFeatureMap, seqIdForParCheck);
 }
 
-/* get a target gene or transcript with same base or NULL.
- * special handling for PARs/ */
-GxfFeature* AnnotationSet::getFeatureById(const string& id,
-                                              const string& seqIdForParCheck) const {
-    FeatureNode* featureNode = getFeatureNodeById(id, seqIdForParCheck);
-    if (featureNode == NULL) {
-        return NULL;
-    } else {
-        return featureNode->fFeature;
-    }
-}
-
-/* get exon nodes by base id */
-FeatureNodeVector AnnotationSet::getExonNodesById(const string& exonId) const {
-    FeatureNodeVector exons;
+/* get exon features by base id */
+FeatureVector AnnotationSet::getExonsById(const string& exonId) const {
+    FeatureVector exons;
     FeatureMapConstIter it = fIdExonMap.find(getBaseId(exonId));
     if (it != fIdExonMap.end()) {
         exons = it->second;
@@ -144,43 +123,43 @@ FeatureNodeVector AnnotationSet::getExonNodesById(const string& exonId) const {
 }
 
 /* find overlapping features */
-FeatureNodeVector AnnotationSet::findOverlappingFeatures(const string& seqid,
+FeatureVector AnnotationSet::findOverlappingFeatures(const string& seqid,
                                                          int start,
                                                          int end) {
     if (fLocationMap == NULL) {
         buildLocationMap();
     }
-    FeatureNodeVector overlapping;
+    FeatureVector overlapping;
     struct range *over, *overs = genomeRangeTreeAllOverlapping(fLocationMap, toCharStr(seqid), start, end);
     for (over = overs; over != NULL; over = over->next) {
         for (struct LocationLink* tll = static_cast<struct LocationLink*>(over->val); tll != NULL; tll = tll->next) {
-            overlapping.push_back(tll->featureNode);
+            overlapping.push_back(tll->feature);
         }
     }
     return overlapping;
 }
 
 /* is a feature an overlapping gene passing the specified criteria */
-bool AnnotationSet::isOverlappingGene(const FeatureNode* geneTree,
-                                      const FeatureNode* overlappingFeature,
+bool AnnotationSet::isOverlappingGene(const Feature* gene,
+                                      const Feature* overlappingFeature,
                                       float minSimilarity,
                                       bool manualOnlyTranscripts) {
     return overlappingFeature->isGene()
-        and (geneTree->getMaxTranscriptSimilarity(overlappingFeature,
+        and (gene->getMaxTranscriptSimilarity(overlappingFeature,
                                                   manualOnlyTranscripts) >= minSimilarity);
 }
 
 /* find overlapping genes with minimum similarity at the transcript level */
-FeatureNodeVector AnnotationSet::findOverlappingGenes(const FeatureNode* geneTree,
+FeatureVector AnnotationSet::findOverlappingGenes(const Feature* gene,
                                                       float minSimilarity,
                                                       bool manualOnlyTranscripts) {
-    FeatureNodeVector overlappingFeatures 
-        = findOverlappingFeatures(geneTree->fFeature->fSeqid,
-                                  geneTree->fFeature->fStart,
-                                  geneTree->fFeature->fEnd);
-    FeatureNodeVector overlappingGenes;
+    FeatureVector overlappingFeatures 
+        = findOverlappingFeatures(gene->getSeqid(),
+                                  gene->getStart(),
+                                  gene->getEnd());
+    FeatureVector overlappingGenes;
     for (int iFeat = 0; iFeat < overlappingFeatures.size(); iFeat++) {
-        if (isOverlappingGene(geneTree, overlappingFeatures[iFeat], minSimilarity, manualOnlyTranscripts)) {
+        if (isOverlappingGene(gene, overlappingFeatures[iFeat], minSimilarity, manualOnlyTranscripts)) {
             overlappingGenes.push_back(overlappingFeatures[iFeat]);
         }
     }
@@ -192,12 +171,11 @@ AnnotationSet::AnnotationSet(const string& gxfFile,
                              const GenomeSizeMap* genomeSizes):
     fLocationMap(NULL),
     fGenomeSizes(genomeSizes) {
-    GxfParser* gxfParser = GxfParser::factory(gxfFile);
-    GxfRecord* gxfRecord;
-    while ((gxfRecord = gxfParser->next()) != NULL) {
-        processRecord(gxfParser, gxfRecord);
+    FeatureParser parser(gxfFile);
+    Feature* gene;
+    while ((gene = parser.nextGene()) != NULL) {
+        addGene(gene);
     }
-    delete gxfParser;
 }
 
 /* destructor */
@@ -219,10 +197,10 @@ void AnnotationSet::outputSeqRegion(const string& seqId,
 }
 
 /* output GFF3 mapped ##sequence-region if not already written */
-void AnnotationSet::outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
+void AnnotationSet::outputMappedSeqRegionIfNeed(const Feature* gene,
                                                 GxfWriter& gxfFh) {
     if (gxfFh.getFormat() == GFF3_FORMAT) {
-        const string& seqId = geneTree->fFeature->fSeqid;
+        const string& seqId = gene->getSeqid();
         if (fGenomeSizes->have(seqId) and (not checkRecordSeqRegionWritten(seqId))) {
             outputSeqRegion(seqId, fGenomeSizes->get(seqId), gxfFh);
         }
@@ -232,11 +210,11 @@ void AnnotationSet::outputMappedSeqRegionIfNeed(const FeatureNode* geneTree,
 /*
  * recursive output of a GxF feature tree
  */
-void AnnotationSet::outputFeature(const FeatureNode* featureNode,
+void AnnotationSet::outputFeature(const Feature* feature,
                                   GxfWriter& gxfFh) const {
-    gxfFh.write(featureNode->fFeature);
-    for (size_t i = 0; i < featureNode->fChildren.size(); i++) {
-        outputFeature(featureNode->fChildren[i], gxfFh);
+    gxfFh.write(feature);
+    for (size_t i = 0; i < feature->getChildren().size(); i++) {
+        outputFeature(feature->getChild(i), gxfFh);
     }
 }
 

@@ -1,8 +1,9 @@
 ROOT = ..
 include ${ROOT}/config.mk
 
-SRCS = FIOStream.cc gxf.cc gzstream.cc typeOps.cc pslOps.cc frame.cc pslMapping.cc transMap.cc \
-	featureTree.cc remapStatus.cc  annotationSet.cc featureTransMap.cc \
+SRCS = FIOStream.cc gzstream.cc typeOps.cc pslOps.cc frame.cc \
+	gxfIO.cc gxfRecord.cc feature.cc featureIO.cc pslMapping.cc transMap.cc \
+	remapStatus.cc  annotationSet.cc featureTransMap.cc \
 	featureMapper.cc transcriptMapper.cc geneMapper.cc featureTreePolish.cc bedMap.cc gencode-backmap.cc
 
 OBJS =  ${SRCS:%.cc=${OBJDIR}/%.o}

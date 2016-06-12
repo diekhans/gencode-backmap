@@ -108,9 +108,9 @@ void TransMap::mapPslPair(struct psl *inPsl,
 in the same query order, even if it creates a `-' on the target. */
 PslVector TransMap::mapPsl(struct psl* inPsl) const {
     PslVector mappedPsls;
-    struct range *overMapAlnNodes = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);
-    for (struct range *overMapAlnNode = overMapAlnNodes; overMapAlnNode != NULL; overMapAlnNode = overMapAlnNode->next) {
-        for (struct psl *overMapPsl = static_cast<struct psl*>(overMapAlnNode->val); overMapPsl != NULL; overMapPsl = overMapPsl->next) {
+    struct range *overMapAlns = genomeRangeTreeAllOverlapping(fMapAlns, inPsl->tName, inPsl->tStart, inPsl->tEnd);
+    for (struct range *overMapAln = overMapAlns; overMapAln != NULL; overMapAln = overMapAln->next) {
+        for (struct psl *overMapPsl = static_cast<struct psl*>(overMapAln->val); overMapPsl != NULL; overMapPsl = overMapPsl->next) {
             mapPslPair(inPsl, overMapPsl, mappedPsls);
         }
     }

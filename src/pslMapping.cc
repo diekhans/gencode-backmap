@@ -3,7 +3,7 @@
  */
 #include "pslMapping.hh"
 #include <algorithm>
-#include "gxf.hh"
+#include "gxfRecord.hh"
 #include <iostream>
 
 // FIXME: passing down features to this level in simple container is annoying.
@@ -107,11 +107,11 @@ static const GxfFeature* gSecondaryTarget = NULL;
 /* compute fraction of overlap similarity for a psl and a target feature. */
 static float targetSimilarity(const struct psl *mappedPsl,
                               const GxfFeature* targetFeature) {
-    if (targetFeature->fSeqid != mappedPsl->tName) {
+    if (targetFeature->getSeqid() != mappedPsl->tName) {
         return 0.0;  // different chrom
     }
-    int maxStart = max(targetFeature->fStart-1, mappedPsl->tStart);
-    int minEnd = max(targetFeature->fEnd, mappedPsl->tEnd);
+    int maxStart = max(targetFeature->getStart()-1, mappedPsl->tStart);
+    int minEnd = max(targetFeature->getEnd(), mappedPsl->tEnd);
     if (minEnd <= maxStart) {
         return 0.0;  // no overlap
     }

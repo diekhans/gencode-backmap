@@ -1,79 +1,11 @@
 /*
- * Extremely naive and specialized GFF3 and GTF parsers.
- *
- * The goal preserve the exact structure of the GFF3/GTF files, including
- * comments, and only update coordinates (and occasionally split lines).
- * Neither parser in the kent tree design for this.
- *
- * These parser assume the ordering of the GENCODE GFF3/GTF files.
+ * Basic GFF3/GTF records
  */
-
-#ifndef gxf_hh
-#define gxf_hh
+#ifndef gxfRecord_hh
+#define gxfRecord_hh
 #include "typeOps.hh"
-#include <queue>
 #include <stdexcept>
 #include <algorithm>
-using namespace std;
-
-/* it seems so stupid to need to keep writing one-off GFF/GTF parsers */
-
-class GxfFeature;
-class FIOStream;
-
-typedef enum {
-    GXF_UNKNOWN_FORMAT,
-    GFF3_FORMAT,
-    GTF_FORMAT,
-} GxfFormat;
-
-/* Get format from file name, or error */
-GxfFormat gxfFormatFromFileName(const string& fileName);
-
-
-/* Get a base id, deleting the version, if it exists.
- * deal with the ENSTR->ENST0 PAR hack
- */
-static inline string getBaseId(const string& id) {
-    size_t idot = id.find_last_of('.');
-    string baseId = (idot == string::npos) ? id : id.substr(0, idot);
-    if (stringStartsWith(baseId, "ENSGR") or stringStartsWith(baseId, "ENSTR")) {
-        baseId[4] = '0';
-    }
-    return baseId;
-}
-
-/* 
- * Get the id with mapping version (_N) removed, if it exists.
- */
-static inline string getPreMappedId(const string& id) {
-    size_t iun = id.find_last_of('_');
-    if (iun == string::npos) {
-        return id;
-    } else {
-        return id.substr(0, iun);
-    }
-}
-
-/* 
- * Determine id an id has a mapping version (_N).
- */
-static inline bool hasMappingVersion(const string& id) {
-    size_t iun = id.find_last_of('_');
-    return (iun != string::npos);
-}
-
-/* 
- * get the mapping version, or 0 if none
- */
-static inline int getMappingVersion(const string& id) {
-    size_t iun = id.find_last_of('_');
-    if (iun == string::npos) {
-        return 0;
-    } else {
-        return stringToInt(id.substr(iun+1));
-    }
-}
 
 /*
  * GxF base record type.  Use instanceOf to determine actually type
@@ -257,7 +189,7 @@ class AttrVals: public AttrValVector {
 };
 
 /*
- * A row parsed from a GTF/GFF file. Immutable object.
+ * A row parsed from a GTF/GFF file.
  */
 class GxfFeature: public GxfRecord {
 public:
@@ -291,7 +223,8 @@ public:
     /* source names */
     static const string SOURCE_HAVANA;
     static const string SOURCE_ENSEMBL;
-    
+
+    protected:
     // columns parsed from file.
     const string fSeqid;
     const string fSource;
@@ -317,9 +250,7 @@ public:
     }
 
     /* clone the feature */
-    GxfFeature* clone() const {
-        return new GxfFeature(fSeqid, fSource, fType, fStart, fEnd, fScore, fStrand, fPhase, fAttrs);
-    }
+    virtual GxfFeature* clone() const = 0;
     
     /* destructor */
     virtual ~GxfFeature() {
@@ -327,7 +258,33 @@ public:
 
     /* convert all columns, except attributes, to a string */
     string baseColumnsAsString() const;
-    
+
+    /* accessors */
+    const string& getSeqid() const {
+        return fSeqid;
+    }
+    const string& getSource() const {
+        return fSource;
+    }
+    const string& getType() const {
+        return fType;
+    }
+    int getStart() const {
+        return fStart;
+    }
+    int getEnd() const {
+        return fEnd;
+    }
+    const string& getScore() const {
+        return fScore;
+    }
+    const string& getStrand() const {
+        return fStrand;
+    }
+    const string& getPhase() const {
+        return fPhase;
+    }
+
     /* get all attribute */
     const AttrVals& getAttrs() const {
         return fAttrs;
@@ -418,79 +375,4 @@ class GxfFeatureVector: public vector<GxfFeature*> {
 
 };
 
-/**
- * gff3 or gtf parser.
- */
-class GxfParser {
-    private:
-    FIOStream* fIn;  // input stream
-    queue<GxfRecord*> fPending; // FIFO of pushed records to be read before file
-
-    StringVector splitFeatureLine(const string& line) const;
-    GxfRecord* read();
-
-    protected:
-    /* parse a feature */
-    virtual GxfFeature* parseFeature(const StringVector& columns) = 0;
-    
-    /* constructor that opens file */
-    GxfParser(const string& fileName);
-
-    public:
-    /* destructor */
-    virtual ~GxfParser();
-
-    /* get the format being parser */
-    virtual GxfFormat getFormat() const = 0;
-
-    /* Factory to create a parser. file maybe compressed.  If gxfFormat is
-     * unknown, guess from filename*/
-    static GxfParser *factory(const string& fileName,
-                              GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
-
-    /* Read the next record, either queued by push() or from the file , use
-     * instanceOf to determine the type.  Return NULL on EOF.
-     */
-    GxfRecord* next();
-
-    /* Return a record to be read before the file. */
-    void push(GxfRecord* gxfRecord) {
-        fPending.push(gxfRecord);
-    }
-};
-
-/**
- * gff3 or gtf writer.
- */
-class GxfWriter {
-    private:
-    FIOStream* fOut;  // output stream
-
-    protected:
-    /* format a feature line */
-    virtual string formatFeature(const GxfFeature* feature) = 0;
-    
-    public:
-    /* constructor that opens file */
-    GxfWriter(const string& fileName);
-
-    /* destructor */
-    virtual ~GxfWriter();
-
-    /* get the format being written */
-    virtual GxfFormat getFormat() const = 0;
-
-    static GxfWriter *factory(const string& fileName,
-                              GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
-
-    /* copy a file to output, normally used for a header */
-    void copyFile(const string& inFile);
-
-    /* write one GxF record. */
-    void write(const GxfRecord* gxfRecord);
-
-    /* write one GxF line. */
-    void write(const string& line);
-    
-};
 #endif
