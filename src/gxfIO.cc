@@ -40,11 +40,12 @@ static string stripQuotes(const string& s) {
 
 /* Get format from file name, or error */
 GxfFormat gxfFormatFromFileName(const string& fileName) {
-    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")
-        or (fileName == "/dev/null")) {
+    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")) {
         return GFF3_FORMAT;
     } else if (stringEndsWith(fileName, ".gtf") or stringEndsWith(fileName, ".gtf.gz")) {
         return GTF_FORMAT;
+    } else if (fileName == "/dev/null") {
+        return DEV_NULL_FORMAT;
     } else {
         errAbort(toCharStr("Error: expected input annotation with an extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
         return GXF_UNKNOWN_FORMAT;

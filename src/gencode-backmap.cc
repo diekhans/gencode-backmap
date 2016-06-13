@@ -17,6 +17,34 @@
 /* verbose tracing enabled */
 bool gVerbose = false;
 
+/* check if a file is in the same format as a the input */
+static bool checkGxfFormat(GxfFormat inFormat,
+                           const string& gxfFile,
+                           bool isOptional) {
+    if ((gxfFile == "") and isOptional) {
+        return true;
+    }
+    GxfFormat gxfFormat = gxfFormatFromFileName(gxfFile);
+    if (not ((gxfFormat == inFormat) or (gxfFormat = DEV_NULL_FORMAT))) {
+        cerr << "Error: all input and output formats must be consistently GFF3 or GTF" << endl;
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/* check all files are in the same format */
+static bool checkGxfFormats(const string& inGxfFile,
+                            const string& mappedGxfFile,
+                            const string& unmappedGxfFile,
+                            const string& targetGxf,
+                            const string& previousMappedGxf) {
+    GxfFormat inFormat = gxfFormatFromFileName(inGxfFile);
+    return checkGxfFormat(inFormat, mappedGxfFile, false)
+        and checkGxfFormat(inFormat, unmappedGxfFile, false)
+        and checkGxfFormat(inFormat, targetGxf, true)
+        and checkGxfFormat(inFormat, previousMappedGxf, true);
+}
 
 /* map to different assembly */
 static void gencodeBackmap(const string& inGxfFile,
@@ -190,13 +218,8 @@ int main(int argc, char *argv[]) {
     string unmappedGxfFile = argv[optind+3];
     string mappingInfoTsv = argv[optind+4];
 
-    if (!((gxfFormatFromFileName(mappedGxfFile) == gxfFormatFromFileName(inGxfFile))
-          && (gxfFormatFromFileName(unmappedGxfFile) == gxfFormatFromFileName(inGxfFile))
-          && ((targetGxf.size() == 0)
-              || (gxfFormatFromFileName(targetGxf) == gxfFormatFromFileName(inGxfFile))))
-          && ((previousMappedGxf.size() == 0)
-              || (gxfFormatFromFileName(previousMappedGxf) == gxfFormatFromFileName(inGxfFile)))) {
-        fprintf(stderr, "Error: all input and output formats must be consistently GFF3 or GTF\n");
+    if (not checkGxfFormats(inGxfFile, mappedGxfFile, unmappedGxfFile,
+                            targetGxf, previousMappedGxf)) {
         return 1;
     }
     

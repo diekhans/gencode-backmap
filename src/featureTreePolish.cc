@@ -325,7 +325,7 @@ void FeatureTreePolish::setExonsMappingVersions(ExonIdExonMap& exonIdExonMap) co
 
 /* Added mapping version numbers */
 void FeatureTreePolish::setGeneMappingVersion(Feature* gene) const {
-    // exon id is scope is-gene
+    // exon id scope is gene
     ExonIdExonMap exonIdExonMap;
     for (int i = 0; i < gene->getChildren().size(); i++) {
         if (isRemapped(gene->getChild(i))) {
@@ -340,10 +340,12 @@ void FeatureTreePolish::setGeneMappingVersion(Feature* gene) const {
 
 /* last minute fix-ups */
 void FeatureTreePolish::polishGene(Feature* gene) const {
+    // n.b. must renumber exons first, otherwise different exon numbers
+    // with previous version will cause false mapping version increments.
+    renumberGeneExons(gene);
     if (isRemapped(gene)) {
         setGeneMappingVersion(gene);
     }
-    renumberGeneExons(gene);
 }
 
 

@@ -2,15 +2,12 @@
 Test data
 
 - data/hg38ToHg19.over.chain
-  Subset of chains needed to test mappings.  This was generated with:
+  Subset of UCSC chains needed to test mappings. These will be lifted by
+  the ucscLiftEdit command. This is generated with `make mappingChains`
 
-     gff3ToGenePred data/gencode.v22.annotation.gff3 testV22.gp
-     overlapSelect -inFmt=chain testV22.gp /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz data/hg38ToHg19.over.chain
-
-     edit and replace chrM with this:
-          # added by hand to use GRCh37 lite
-          chain 16568 chrM 16569 + 0 16569 chrM 16569 + 0 16569 1
-          16569
+- data/GRCh38.p2-GRCh37.p13.gencode.psl
+  Subset of NCBI chains needed to test mappings. Also generated with
+  `make mappingChains`.
 
 - data/altSeqPatchesP10.bed
   Patch and incident regions on GRCh37

@@ -22,6 +22,7 @@ typedef enum {
     GXF_UNKNOWN_FORMAT,
     GFF3_FORMAT,
     GTF_FORMAT,
+    DEV_NULL_FORMAT,
 } GxfFormat;
 
 /* Get format from file name, or error */
