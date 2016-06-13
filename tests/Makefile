@@ -58,6 +58,22 @@ cmpUcscTest: gff3UcscTest gtfUcscTest
 	diff output/gff3UcscTest.mapped.gp output/gtfUcscTest.mapped.gp
 	diff output/gff3UcscTest.unmapped.gp output/gtfUcscTest.unmapped.gp
 
+gff3NcbiTest: mkdirs ${ncbiLiftOverChains}
+	${gencode_backmap} --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${ncbiLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
+gtfNcbiTest: mkdirs ${ncbiLiftOverChains}
+	${gencode_backmap} --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${ncbiLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
+	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
+	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
+	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
+	${diff} expected/$@.unmapped.gtf output/$@.unmapped.gtf
+	${diff} expected/$@.map-info output/$@.map-info
+
 gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
@@ -124,7 +140,7 @@ gff3MappingVerPrevNoVerTest: mkdirs ${testGencodeLiftOverChains}
 	diff expected/$@.mapped.gff3 output/$@.mapped.gff3
 	diff expected/$@.map-info output/$@.map-info
 
-gtfMappingVerPrevNoVerTest:
+gtfMappingVerPrevNoVerTest: mkdirs ${testGencodeLiftOverChains}
 	${dropMappingVersion} expected/gtfMappingVerBaseTest.mapped.gtf  >output/$@.prev.gtf
 	${gencode_backmap} --previousMappedGxf=output/$@.prev.gtf --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf /dev/null output/$@.map-info
 	diff expected/$@.mapped.gtf output/$@.mapped.gtf
@@ -138,32 +154,16 @@ gff3MappingVerPrevDiffMapTest: mkdirs ${testGencodeLiftOverChains}
 	diff expected/$@.mapped.gff3 output/$@.mapped.gff3
 	diff expected/$@.map-info output/$@.map-info
 
-gtfMappingVerPrevDiffMapTest: mkdirs ${ncbiLiftOverChains}
+gtfMappingVerPrevDiffMapTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --previousMappedGxf=expected/gtfMappingVerBaseTest.mapped.gtf --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf /dev/null output/$@.map-info
 	diff expected/$@.mapped.gtf output/$@.mapped.gtf
 	diff expected/$@.map-info output/$@.map-info
 
 
 # edit to fix names and chrM (don't depend on mkdirs so it doesn't rebuild unless needed)
-${testGencodeLiftOverChains}: ${testUcscLiftOverChains}
+${testGencodeLiftOverChains}: mkdirs ${testUcscLiftOverChains}
 	@mkdir -p output
 	../bin/ucscLiftEdit ${testUcscLiftOverChains} data/GCF_000001405.28.assembly.txt data/GCF_000001405.25.assembly.txt ${testGencodeLiftOverChains}
-
-gff3NcbiTest: mkdirs
-	${gencode_backmap} --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${ncbiLiftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info
-	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
-	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
-	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
-	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
-	${diff} expected/$@.map-info output/$@.map-info
-
-gtfNcbiTest: mkdirs
-	${gencode_backmap} --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${ncbiLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info
-	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
-	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.unmapped.gtf /dev/null
-	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
-	${diff} expected/$@.unmapped.gtf output/$@.unmapped.gtf
-	${diff} expected/$@.map-info output/$@.map-info
 
 # liftover has more wierd cases, so use for tests
 mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTransBiottypeTest \
