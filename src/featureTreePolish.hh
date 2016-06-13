@@ -48,15 +48,26 @@ class FeatureTreePolish {
     const Feature* getPrevMappedFeature(const Feature* newFeature) const;
     int getFeatureMappingVersion(const Feature* prevFeature,
                                  bool featureSame) const;
-    bool compareNodeAttrVals(const Feature* prevFeature,
-                             const Feature* newFeature,
-                             const string& attrName) const;
-    bool compareNodeAttrs(const Feature* prevFeature,
-                          const Feature* newFeature,
-                          const StringVector& attrNames) const;
+    bool compareAttrVal(const AttrVal* prevAttr,
+                        const AttrVal* newAttr,
+                        int iValue,
+                        bool isIdAttr) const;
+    bool compareAttrVals(const Feature* prevFeature,
+                         const Feature* newFeature,
+                         const string& attrName,
+                         bool isIdAttr) const;
+    bool compareAttrs(const Feature* prevFeature,
+                      const Feature* newFeature,
+                      const StringVector& attrNames,
+                      bool isIdAttrs) const;
+    bool compareAttrs(const Feature* prevFeature,
+                      const Feature* newFeature,
+                      const StringVector& attrNames,
+                      const StringVector& idAttrNames) const;
     bool compareMappedFeatures(const Feature* prevFeature,
                                const Feature* newFeature,
-                               const StringVector& attrNames) const;
+                               const StringVector& attrNames,
+                               const StringVector& idAttrNames) const;
     bool compareGeneFeatures(const Feature* prevFeature,
                              const Feature* newFeature) const;
     bool compareTranscriptFeatures(const Feature* prevFeature,

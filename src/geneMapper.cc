@@ -1,7 +1,7 @@
 #include "geneMapper.hh"
 #include "featureMapper.hh"
 #include "jkinclude.hh"
-#include "gxfRecord.hh"
+#include "feature.hh"
 #include "bedMap.hh"
 #include <fstream>
 #include <iostream>
@@ -93,7 +93,7 @@ ResultFeaturesVector GeneMapper::processTranscripts(const Feature* gene,
     ResultFeaturesVector mappedTranscripts;
     for (size_t i = 0; i < gene->getChildren().size(); i++) {
         const Feature* transcript = gene->getChild(i);
-        if (transcript->getType() != GxfFeature::TRANSCRIPT) {
+        if (transcript->getType() != Feature::TRANSCRIPT) {
             throw logic_error("gene record has child that is not of type transcript: " + transcript->toString());
         }
         mappedTranscripts.push_back(processTranscript(transcript, transcriptPslFh));
@@ -317,7 +317,7 @@ void GeneMapper::substituteTarget(ResultFeatures* mappedGene) {
 void GeneMapper::updateMappedGeneBounds(const Feature* mappedTranscript,
                                         string& seqid, string& strand,
                                         int& start, int& end) const {
-    assert(mappedTranscript->getType() == GxfFeature::TRANSCRIPT);
+    assert(mappedTranscript->getType() == Feature::TRANSCRIPT);
     if (seqid == "") {
         // first
         seqid = mappedTranscript->getSeqid();
@@ -452,7 +452,7 @@ TargetStatus GeneMapper::getTargetAnnotationStatus(const ResultFeatures* mappedF
     if (fTargetAnnotations == NULL) {
         return TARGET_STATUS_NA;
     }
-    const GxfFeature* targetFeature = getTargetAnnotation(mappedFeature->src);
+    const Feature* targetFeature = getTargetAnnotation(mappedFeature->src);
     if (targetFeature == NULL) {
         return TARGET_STATUS_NEW;
     }
@@ -468,7 +468,7 @@ TargetStatus GeneMapper::getTargetAnnotationStatus(const ResultFeatures* mappedF
 
 /* If target gene annotations are available, get biotype of target feature */
 const string& GeneMapper::getTargetAnnotationBiotype(const ResultFeatures* mappedFeature) const {
-    const GxfFeature* targetFeature = getTargetAnnotation(mappedFeature->src);
+    const Feature* targetFeature = getTargetAnnotation(mappedFeature->src);
     if (targetFeature == NULL) {
         return emptyString;
     } else {
@@ -480,7 +480,7 @@ const string& GeneMapper::getTargetAnnotationBiotype(const ResultFeatures* mappe
 void GeneMapper::outputFeatureInfo(const ResultFeatures* mappedTree,
                                    bool substituteTarget,
                                    ostream& mappingInfoFh) const {
-    const GxfFeature* srcFeature = mappedTree->src;
+    const Feature* srcFeature = mappedTree->src;
     mappingInfoFh << srcFeature->getTypeId() << "\t"
                   << srcFeature->getTypeName() << "\t"
                   << srcFeature->getType() << "\t"
@@ -491,7 +491,7 @@ void GeneMapper::outputFeatureInfo(const ResultFeatures* mappedTree,
                   << srcFeature->getEnd() << "\t"
                   << srcFeature->getStrand() << "\t";
     if ((mappedTree->mapped != NULL) && !substituteTarget) {
-        const GxfFeature* mappedFeature = mappedTree->mapped;
+        const Feature* mappedFeature = mappedTree->mapped;
         mappingInfoFh << mappedFeature->getTypeId() << "\t"
                       << mappedFeature->getSeqid() << "\t"
                       << mappedFeature->getStart() << "\t"
@@ -532,7 +532,7 @@ void GeneMapper::outputTranscriptInfo(const ResultFeatures* mappedGene,
  */
 void GeneMapper::outputInfo(const ResultFeatures* mappedGene,
                             ostream& mappingInfoFh) const {
-    // not all transcripts maybe not be substituted, so chec at gene level
+    // not all transcripts maybe not be substituted, so check at gene level
     bool substituteTarget = mappedGene->target != NULL;
     outputFeatureInfo(mappedGene, substituteTarget, mappingInfoFh);
     // transcripts

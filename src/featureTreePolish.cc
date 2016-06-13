@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include <algorithm>
 #include "annotationSet.hh"
+#include <iostream>
+
+const bool DEBUG = true;
 
 /* renumber ab exon */
 void FeatureTreePolish::renumberExon(Feature* exon,
@@ -97,8 +100,8 @@ const Feature* FeatureTreePolish::getPrevMappedFeature(const Feature* newFeature
  * if it's considered the same */
 int FeatureTreePolish::getFeatureMappingVersion(const Feature* prevFeature,
                                                 bool featureSame) const {
-    if (prevFeature == NULL) {
-        return 1;
+    if ((prevFeature == NULL) || (not isRemapped(prevFeature))) {
+        return 1;  // first mapped version
     } else {
         int prevMappingVersion = getMappingVersion(prevFeature->getTypeId());
         // if there is no previous mapping version, which either means the
@@ -114,10 +117,25 @@ int FeatureTreePolish::getFeatureMappingVersion(const Feature* prevFeature,
     }
 }
 
-/* compare two feature attribute values */
-bool FeatureTreePolish::compareNodeAttrVals(const Feature* prevFeature,
-                                            const Feature* newFeature,
-                                            const string& attrName) const {
+/* compare one value */
+bool FeatureTreePolish::compareAttrVal(const AttrVal* prevAttr,
+                                       const AttrVal* newAttr,
+                                       int iValue,
+                                       bool isIdAttr) const {
+    if (isIdAttr) {
+        return (getPreMappedId(prevAttr->getVal(iValue)) == getPreMappedId(newAttr->getVal(iValue)));
+    } else {
+        return (prevAttr->getVal(iValue) == newAttr->getVal(iValue));
+    }
+}
+
+
+/* compare two feature attribute values. If it's an id attribute, it's compared 
+* without mapping versions */
+bool FeatureTreePolish::compareAttrVals(const Feature* prevFeature,
+                                        const Feature* newFeature,
+                                        const string& attrName,
+                                        bool isIdAttr) const {
     const AttrVal* prevAttr = prevFeature->getAttrs().find(attrName);
     const AttrVal* newAttr = newFeature->getAttrs().find(attrName);
     if ((prevAttr == NULL) and (newAttr == NULL)) {
@@ -126,41 +144,55 @@ bool FeatureTreePolish::compareNodeAttrVals(const Feature* prevFeature,
         return false;  // one NULL
     } else if (prevAttr->getVals().size() != newAttr->getVals().size()) {
         return false;  // different number of values
-    } else if (prevAttr->getVals().size() == 1) {
-        return (prevAttr->getVal() == newAttr->getVal());  // fast path
     } else {
-        // sort ignore order
-        StringVector prevVals(prevAttr->getVals());
-        sort(prevVals.begin(), prevVals.end());
-        StringVector newVals(newAttr->getVals());
-        sort(newVals.begin(), newVals.end());
-        return (prevVals == newVals);
+        for (int iVal = 0; iVal < prevAttr->getVals().size(); iVal++) {
+            if (not compareAttrVal(prevAttr, newAttr, iVal, isIdAttr)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 
-/* compare a list of two node attribute/values */
-bool FeatureTreePolish::compareNodeAttrs(const Feature* prevFeature,
-                                         const Feature* newFeature,
-                                         const StringVector& attrNames) const {
+/* compare a list of two feature attribute/values */
+bool FeatureTreePolish::compareAttrs(const Feature* prevFeature,
+                                     const Feature* newFeature,
+                                     const StringVector& attrNames,
+                                     bool isIdAttrs) const {
     for (int i = 0; i < attrNames.size(); i++) {
-        if (not compareNodeAttrVals(prevFeature, newFeature, attrNames[i])) {
+        if (not compareAttrVals(prevFeature, newFeature, attrNames[i], isIdAttrs)) {
             return false;
         }
     }
     return true;
 }
 
+/* compare a list of two feature attribute/values */
+bool FeatureTreePolish::compareAttrs(const Feature* prevFeature,
+                                     const Feature* newFeature,
+                                     const StringVector& attrNames,
+                                     const StringVector& idAttrNames) const {
+    return compareAttrs(prevFeature, newFeature, attrNames, false)
+        and compareAttrs(prevFeature, newFeature, idAttrNames, true);
+}
+
 
 /* compare a mapped node with previous mapped node.  This is not recursive */
 bool FeatureTreePolish::compareMappedFeatures(const Feature* prevFeature,
                                               const Feature* newFeature,
-                                              const StringVector& attrNames) const {
-    return (prevFeature->getSource() == newFeature->getSource())
+                                              const StringVector& attrNames,
+                                              const StringVector& idAttrNames) const {
+    bool same = (prevFeature->getSource() == newFeature->getSource())
         and (prevFeature->getStart() == newFeature->getStart())
         and (prevFeature->getEnd() == newFeature->getEnd())
         and (prevFeature->getStrand() == newFeature->getStrand())
         and (prevFeature->getPhase() == newFeature->getPhase())
-        and compareNodeAttrs(prevFeature, newFeature, attrNames);
+        and compareAttrs(prevFeature, newFeature, attrNames, idAttrNames);
+    if (DEBUG and not same) {
+        cerr << "diff prev\t" << prevFeature->toString() << endl
+             << "      new\t" << newFeature->toString() << endl;
+    }
+    return same;
 }
 
 /* compare a mapped gene node with previous mapped gene.  This is not
@@ -171,10 +203,13 @@ bool FeatureTreePolish::compareGeneFeatures(const Feature* prevFeature,
         GxfFeature::GENE_NAME_ATTR,
         GxfFeature::GENE_TYPE_ATTR,
         GxfFeature::GENE_STATUS_ATTR,
-        GxfFeature::GENE_HAVANA_ATTR,
         GxfFeature::TAG_ATTR
     };
-    return compareMappedFeatures(prevFeature, newFeature, attrNames);
+    static const StringVector idAttrNames = {
+        GxfFeature::GENE_ID_ATTR,
+        GxfFeature::GENE_HAVANA_ATTR,
+    };
+    return compareMappedFeatures(prevFeature, newFeature, attrNames, idAttrNames);
 }
 
 /* compare a mapped transcript node with previous mapped transcript.  This is not
@@ -189,7 +224,11 @@ bool FeatureTreePolish::compareTranscriptFeatures(const Feature* prevFeature,
         GxfFeature::TRANSCRIPT_HAVANA_ATTR,
         GxfFeature::TAG_ATTR
     };
-    return compareMappedFeatures(prevFeature, newFeature, attrNames);
+    static const StringVector idAttrNames = {
+        GxfFeature::GENE_ID_ATTR,
+        GxfFeature::TRANSCRIPT_HAVANA_ATTR,
+    };
+    return compareMappedFeatures(prevFeature, newFeature, attrNames, idAttrNames);
 }
 
 /* compare a mapped node of other with previous mapped node.  This is not
@@ -197,11 +236,13 @@ bool FeatureTreePolish::compareTranscriptFeatures(const Feature* prevFeature,
 bool FeatureTreePolish::compareOtherFeatures(const Feature* prevFeature,
                                              const Feature* newFeature) const {
     static const StringVector attrNames = {
-        GxfFeature::EXON_ID_ATTR,
         GxfFeature::EXON_NUMBER_ATTR,
         GxfFeature::TAG_ATTR
     };
-    return compareMappedFeatures(prevFeature, newFeature, attrNames);
+    static const StringVector idAttrNames = {
+        GxfFeature::EXON_ID_ATTR,
+    };
+    return compareMappedFeatures(prevFeature, newFeature, attrNames, idAttrNames);
 }
 
 /* recursively compare descendant nodes of a transcript with previous mapped
@@ -293,7 +334,7 @@ bool FeatureTreePolish::setTranscriptMappingVersion(Feature* transcript) const {
     // find previous transcript, if it exists and derive version from it.
     const Feature* prevTranscript = getPrevMappedFeature(transcript);
     bool transcriptSame = (prevTranscript == NULL)
-        or compareMappedTranscriptsDescendants(transcript, prevTranscript);
+        or compareMappedTranscriptsDescendants(prevTranscript, transcript);
     int mappingVersion = getFeatureMappingVersion(prevTranscript, transcriptSame);
   
     recursiveSetMappingVersion(transcript, GxfFeature::TRANSCRIPT_ID_ATTR, GxfFeature::TRANSCRIPT_HAVANA_ATTR, mappingVersion);

@@ -87,8 +87,8 @@ class AttrVal {
     const string& getName() const {
         return fName;
     }
-    const string& getVal() const {
-        return fVals[0];
+    const string& getVal(int iVal=0) const {
+        return fVals[iVal];
     }
     const StringVector& getVals() const {
         return fVals;
@@ -311,18 +311,20 @@ public:
     }
 
     /* get a attribute value, error it doesn't exist */
-    const string& getAttrValue(const string& name) const {
-        return getAttr(name)->getVal();
+    const string& getAttrValue(const string& name,
+                               int iVal=0) const {
+        return getAttr(name)->getVal(iVal);
     }
 
     /* get a attribute value, default it doesn't exist */
     const string& getAttrValue(const string& name, 
-                               const string& defaultVal) const {
+                               const string& defaultVal,
+                               int iVal=0) const {
         const AttrVal* attrVal = findAttr(name);
         if (attrVal == NULL) {
             return defaultVal;
         } else {
-            return attrVal->getVal();
+            return attrVal->getVal(iVal);
         }
     }
 
