@@ -19,12 +19,12 @@ class AnnotationSet;
 class FeatureTreePolish {
     private:
     // use to map old exon numbers to new exons in a transcript
-    typedef map<int, vector<Feature*> > ExonNumExonMap;
+    typedef map<int, FeatureVector> ExonNumExonMap;
     typedef ExonNumExonMap::iterator ExonNumExonMapIter;
     typedef ExonNumExonMap::const_iterator ExonNumExonMapConstIter;
 
     // use to add mapping version number to exon ids
-    typedef map<string, vector<Feature*> > ExonIdExonMap;
+    typedef map<string, FeatureVector> ExonIdExonMap;
     typedef ExonIdExonMap::iterator ExonIdExonMapIter;
     typedef ExonIdExonMap::const_iterator ExonIdExonMapConstIter;
 
@@ -89,14 +89,18 @@ class FeatureTreePolish {
                                     const string& idAttrName,
                                     const string& havanaIdAttrName,
                                     int mappingVersion) const;
-    void recordTranscriptMappedExons(Feature* transcript,
-                                     ExonIdExonMap& exonIdExonMap) const;
     bool setTranscriptMappingVersion(Feature* transcript) const;
+    void collectExons(const Feature* root,
+                      ExonIdExonMap& exonIdExonMap) const;
+    int getExonMappingVersion(FeatureVector& exonFeatures) const;
     void setExonMappingVersion(Feature* exonFeature,
                                int mappingVersion) const;
     void setExonMappingVersion(const string& exonId,
-                               vector<Feature*> exonFeatures) const;
-    void setExonsMappingVersions(ExonIdExonMap& exonIdExonMap) const;
+                               FeatureVector& exonFeatures,
+                               FeatureVector* prevExonFeatures) const;
+    void setExonsMappingVersions(const Feature* prevGene,
+                                 Feature* gene) const;
+    bool setTranscriptsMappingVersions(Feature* gene) const;
     void setGeneMappingVersion(Feature* gene) const;
     
     public:

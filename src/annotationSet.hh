@@ -34,9 +34,6 @@ class AnnotationSet {
     // map by base id of genes and transcripts (not exons).
     FeatureMap fIdFeatureMap;
 
-    // map by base id of exons
-    FeatureMap fIdExonMap;
-
     // map by names of genes and transcripts
     FeatureMap fNameFeatureMap;
 
@@ -109,9 +106,6 @@ class AnnotationSet {
      * for PARs. */
     Feature* getFeatureByName(const string& name,
                               const string& seqIdForParCheck) const;
-
-    /* get exon features by base id */
-    FeatureVector getExonsById(const string& exonId) const;
 
     /* find overlapping features */
     FeatureVector findOverlappingFeatures(const string& seqid,

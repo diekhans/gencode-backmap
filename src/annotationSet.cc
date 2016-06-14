@@ -112,20 +112,10 @@ Feature* AnnotationSet::getFeatureByName(const string& name,
     return getFeatureByKey(name, fNameFeatureMap, seqIdForParCheck);
 }
 
-/* get exon features by base id */
-FeatureVector AnnotationSet::getExonsById(const string& exonId) const {
-    FeatureVector exons;
-    FeatureMapConstIter it = fIdExonMap.find(getBaseId(exonId));
-    if (it != fIdExonMap.end()) {
-        exons = it->second;
-    } 
-    return exons;
-}
-
 /* find overlapping features */
 FeatureVector AnnotationSet::findOverlappingFeatures(const string& seqid,
-                                                         int start,
-                                                         int end) {
+                                                     int start,
+                                                     int end) {
     if (fLocationMap == NULL) {
         buildLocationMap();
     }
