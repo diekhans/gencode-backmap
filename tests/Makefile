@@ -242,6 +242,9 @@ liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
 v22Dir = /hive/data/genomes/hg38/bed/gencodeV22/data/release_22
 v22Gff3 = ${v22Dir}/gencode.v22.chr_patch_hapl_scaff.annotation.gff3.gz
 v22Gtf = ${v22Dir}/gencode.v22.chr_patch_hapl_scaff.annotation.gtf.gz
+v24Dir = /hive/data/genomes/hg38/bed/gencodeV24/data/release_24
+v24Gff3 = ${v22Dir}/gencode.v24.chr_patch_hapl_scaff.annotation.gff3.gz
+v24Gtf = ${v22Dir}/gencode.v24.chr_patch_hapl_scaff.annotation.gtf.gz
 
 bigTest: bigGff3UcscTest bigGtfUcscTest bigGff3NcbiTest bigGtfNcbiTest
 
@@ -264,6 +267,20 @@ bigGtfNcbiTest: mkdirs
 	${gencode_backmap} --swapMap ${v22Gtf} ${testNcbiLiftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
 	gtfToGenePred output/$@.mapped.gtf /dev/null
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
+
+# add mapping version, use both different alignments and different gencode
+# to add more variation.
+bigGff3UcscMapVerTest: bigGff3NcbiTest
+	${gencode_backmap} --swapMap --previousMappedGxf=output/bigGff3NcbiTest.mapped.gff3 ${v22Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.unmapped.gff3 output/$@.map-info >& output/$@.gff3.log
+	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
+	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
+
+bigGtfUcscMapVerTest: bigGff3NcbiTest
+	${gencode_backmap} --swapMap --previousMappedGxf=output/bigGtf3NcbiTest.mapped.gtf ${v22Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.unmapped.gtf output/$@.map-info >& output/$@.gtf.log
+	gtfToGenePred output/$@.mapped.gtf /dev/null
+	gtfToGenePred output/$@.unmapped.gtf /dev/null
+
+
 
 ##
 # commands to create new mapping chains when test set is annotated
