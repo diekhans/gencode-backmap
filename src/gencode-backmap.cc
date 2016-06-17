@@ -41,7 +41,7 @@ static bool checkGxfFormats(const string& inGxfFile,
                             const string& previousMappedGxf) {
     GxfFormat inFormat = gxfFormatFromFileName(inGxfFile);
     return checkGxfFormat(inFormat, mappedGxfFile, false)
-        and checkGxfFormat(inFormat, unmappedGxfFile, false)
+        and checkGxfFormat(inFormat, unmappedGxfFile, true)
         and checkGxfFormat(inFormat, targetGxf, true)
         and checkGxfFormat(inFormat, previousMappedGxf, true);
 }
@@ -67,17 +67,19 @@ static void gencodeBackmap(const string& inGxfFile,
     AnnotationSet* previousMappedAnnotations = (previousMappedGxf.size() > 0) ? new AnnotationSet(previousMappedGxf) : NULL;
     BedMap* targetPatchMap = (targetPatchBed.size() > 0) ? new BedMap(targetPatchBed) : NULL;
     GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile);
-    GxfWriter* unmappedGxfFh = GxfWriter::factory(unmappedGxfFile);
+    GxfWriter* unmappedGxfFh = (unmappedGxfFile.size() > 0) ? GxfWriter::factory(unmappedGxfFile) : 0;
     if (headerFile.size() > 0) {
         mappedGxfFh->copyFile(headerFile);
-        unmappedGxfFh->copyFile(headerFile);
+        if (unmappedGxfFh != NULL) {
+            unmappedGxfFh->copyFile(headerFile);
+        }
     }
     FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
     FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
     GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, previousMappedAnnotations,
                           targetPatchMap, substituteMissingTargetVersion,
                           useTargetFlags, onlyManualForTargetSubstituteOverlap);
-    geneMapper.mapGxf(*mappedGxfFh, *unmappedGxfFh, mappingInfoFh, transcriptPslFh);
+    geneMapper.mapGxf(*mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete mappedGxfFh;
     delete unmappedGxfFh;
     delete genomeTransMap;
@@ -87,76 +89,84 @@ static void gencodeBackmap(const string& inGxfFile,
     delete transcriptPslFh;
 }
 
+const string usage = "%s [options] inGxf mappingAligns mappedGxf [mappingInfoTsv]\n\n"
+    "Map GENCODE annotations between assemblies projecting through genomic\n"
+    "alignments. This operates on GENCODE GFF3 and GTF files and makes assumptions\n"
+    "about their organization.\n\n"
+    "Options:\n"
+    "  --help - print this message and exit\n"
+    "  --verbose - verbose tracing to stderr\n"
+    "  --swapMap - swap the query and target sides of the mapping alignments\n"
+    "  --unmappedGxf=gxfFile - output unmapped annotations in an GTF/GFF3 file.\n"
+    "    This is mainly useful for debugging.\n"
+    "  --targetGxf=gxfFile - GFF3 or GTF of gene annotations on target genome.\n"
+    "    If specified, require mappings to location of previous version of\n"
+    "    gene or transcript.\n"
+    "  --previousMappedGxf=gxfFile - GFF3 or GTF of gene annotations on previous mapping.\n"
+    "    This is used to determine the mapped version number to append to the ids.\n"
+    "  --headerFile=commentFile - copy contents of this file as comment header for GFF3/GTF output.\n"
+    "    Doesn't include GFF3 file type meta comment.\n"
+    "  --transcriptPsls=pslFile - write all mapped transcript-level PSL to this file, including\n"
+    "    multiple mappers.\n"
+    "  --substituteMissingTargets=targetVersion - if target GxF is specified and no GENE maps to\n"
+    "    the target locus, pass through the original target location.  Only a subset of the\n"
+    "    biotypes are substituted. Argument is target GENCODE version that is stored as an attribute\n"
+    "  --targetPatches=targetPatchRegionBed Target genes with no corresponding mappings and that overlap\n"
+    "    thee patched regions in the target genome will be passed through.\n"
+    "  --useTargetForAutoSmallNonCoding - don't map automatic small non-coding transcripts, substituting\n"
+    "    the target if requested.\n"
+    "  --useTargetForAutoGenes - don't map automatic-only genes, substituting\n"
+    "    the target automatic genes, even if they are not in the source \n"
+    "    If a target set is not specified, they are skipped.\n"
+    "    This does not work well in practice, left in for experimentation.\n"
+    "  --useTargetForPseudoGenes - don't map pseudo genes, substituting\n"
+    "    the target genes, even if they are not in the source.\n"
+    "    If a target set is not specified, they are skipped.\n"
+    "    This does not work well in practice, left in for experimentation.\n"
+    "  --onlyManualForTargetSubstituteOverlap - when checking for overlap of\n"
+    "    target with mapped before substituting a target gene, only consider\n"
+    "    manual transcripts.\n"
+    "Arguments:\n"
+    "  inGxf - Input GENCODE GFF3 or GTF file. The format is identified\n"
+    "          by a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
+    "          additional .gz extensionn.  All GxF files types must be consistent;\n"
+    "          either all GFF3 or all GTF.\n"
+    "  mappingAligns - Alignments between the two genomes.  The \n"
+    "  mappedGxf - GxF file of mapped features on target genome\n"
+    "  unmappedGxf - GxF file of unmapped features on source genome\n"
+    "  mappingInfoTsv - TSV file with information about each gene and transcript mapping\n"
+    "\n";
+
+const struct option long_options[] = {
+    {"help", 0, NULL, 'h'},
+    {"verbose", 0, NULL, 'v'},
+    {"swapMap", 0, NULL, 's'},
+    {"unmappedGxf", 1, NULL, 'U'},
+    {"targetGxf", 1, NULL, 't'}, 
+    {"previousMappedGxf", 1, NULL, 'M'}, 
+    {"targetPatches", 1, NULL, 'T'}, 
+    {"headerFile", 1, NULL, 'H'},
+    {"transcriptPsls", 1, NULL, 'p'},
+    {"substituteMissingTargets", 1, NULL, 'm'},
+    {"useTargetForAutoSmallNonCoding", 0, NULL, 'N'},
+    {"useTargetForAutoGenes", 0, NULL, 'A'},
+    {"useTargetForPseudoGenes", 0, NULL, 'P'},
+    {"onlyManualForTargetSubstituteOverlap", 0, NULL, 'O'},
+    {NULL, 0, NULL, 0}
+};
+const char* short_options = "hst:p:m:n";
+
+/* print usage */
+static void prUsage() {
+    cerr << usage << "Version: " << VERSION << " (" << VERSION_HASH <<  ")" << endl;
+}
+
 /* Entry point.  Parse arguments. */
 int main(int argc, char *argv[]) {
-    const string usage = "%s [options] inGxf mappingAligns mappedGxf unmappedGxf mappingInfoTsv\n\n"
-        "Map GENCODE annotations between assemblies projecting through genomic\n"
-        "alignments. This operates on GENCODE GFF3 and GTF files and makes assumptions\n"
-        "about their organization.\n\n"
-        "Options:\n"
-        "  --help - print this message and exit\n"
-        "  --verbose - verbose tracing to stderr\n"
-        "  --swapMap - swap the query and target sides of the mapping alignments\n"
-        "  --targetGxf=gxfFile - GFF3 or GTF of gene annotations on target genome.\n"
-        "    If specified, require mappings to location of previous version of\n"
-        "    gene or transcript.\n"
-        "  --previousMappedGxf=gxfFile - GFF3 or GTF of gene annotations on previous mapping.\n"
-        "    This is used to determine the mapped version number to append to the ids.\n"
-        "  --headerFile=commentFile - copy contents of this file as comment header for GFF3/GTF output.\n"
-        "    Doesn't include GFF3 file type meta comment.\n"
-        "  --transcriptPsls=pslFile - write all mapped transcript-level PSL to this file, including\n"
-        "    multiple mappers.\n"
-        "  --substituteMissingTargets=targetVersion - if target GxF is specified and no GENE maps to\n"
-        "    the target locus, pass through the original target location.  Only a subset of the\n"
-        "    biotypes are substituted. Argument is target GENCODE version that is stored as an attribute\n"
-        "  --targetPatches=targetPatchRegionBed Target genes with no corresponding mappings and that overlap\n"
-        "    thee patched regions in the target genome will be passed through.\n"
-        "  --useTargetForAutoSmallNonCoding - don't map automatic small non-coding transcripts, substituting\n"
-        "    the target if requested.\n"
-        "  --useTargetForAutoGenes - don't map automatic-only genes, substituting\n"
-        "    the target automatic genes, even if they are not in the source \n"
-        "    If a target set is not specified, they are skipped.\n"
-        "    This does not work well in practice, left in for experimentation.\n"
-        "  --useTargetForPseudoGenes - don't map pseudo genes, substituting\n"
-        "    the target genes, even if they are not in the source.\n"
-        "    If a target set is not specified, they are skipped.\n"
-        "    This does not work well in practice, left in for experimentation.\n"
-        "  --onlyManualForTargetSubstituteOverlap - when checking for overlap of\n"
-        "    target with mapped before substituting a target gene, only consider\n"
-        "    manual transcripts.\n"
-        "Arguments:\n"
-        "  inGxf - Input GENCODE GFF3 or GTF file. The format is identified\n"
-        "          by a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
-        "          additional .gz extensionn.  All GxF files types must be consistent;\n"
-        "          either all GFF3 or all GTF.\n"
-        "  mappingAligns - Alignments between the two genomes.  The \n"
-        "  mappedGxf - GxF file of mapped features on target genome\n"
-        "  unmappedGxf - GxF file of unmapped features on source genome\n"
-        "  mappingInfoTsv - TSV file with information about each gene and transcript mapping\n"
-        "\n"
-        "Version: %s (%s)\n";
-
-    const struct option long_options[] = {
-        {"help", 0, NULL, 'h'},
-        {"verbose", 0, NULL, 'v'},
-        {"swapMap", 0, NULL, 's'},
-        {"targetGxf", 1, NULL, 't'}, 
-        {"previousMappedGxf", 1, NULL, 'M'}, 
-        {"targetPatches", 1, NULL, 'T'}, 
-        {"headerFile", 1, NULL, 'H'},
-        {"transcriptPsls", 1, NULL, 'p'},
-        {"substituteMissingTargets", 1, NULL, 'm'},
-        {"useTargetForAutoSmallNonCoding", 0, NULL, 'N'},
-        {"useTargetForAutoGenes", 0, NULL, 'A'},
-        {"useTargetForPseudoGenes", 0, NULL, 'P'},
-        {"onlyManualForTargetSubstituteOverlap", 0, NULL, 'O'},
-        {NULL, 0, NULL, 0}
-    };
-    const char* short_options = "hst:p:m:n";
-    
     bool swapMap = false;
     bool help = false;
     unsigned useTargetFlags = 0;
+    string unmappedGxfFile;
     string targetGxf;
     string targetPatchBed;
     string headerFile;
@@ -176,6 +186,8 @@ int main(int argc, char *argv[]) {
             gVerbose = true;
         } else if (optc == 's') {
             swapMap = true;
+        } else if (optc == 'U') {
+            unmappedGxfFile = string(optarg);
         } else if (optc == 't') {
             targetGxf = string(optarg);
         } else if (optc == 'T') {
@@ -203,20 +215,20 @@ int main(int argc, char *argv[]) {
     }    
     if (help) {
         // don't check any other options with help
-        fprintf(stderr, toCharStr(usage), argv[0], toCharStr(VERSION), toCharStr(VERSION_HASH));
+        prUsage();
         return 1;
     }
 
-    if ((argc - optind) != 5) {
-        fprintf(stderr, "wrong # args: ");
-        fprintf(stderr, toCharStr(usage), argv[0], toCharStr(VERSION), toCharStr(VERSION_HASH));
+    int nposargs = (argc - optind);
+    if ((nposargs < 3) or (nposargs > 4)) {
+        cerr << "wrong # args: ";
+        prUsage();
         return 1;
     }
     string inGxfFile = argv[optind];
     string mappingAligns = argv[optind+1];
     string mappedGxfFile = argv[optind+2];
-    string unmappedGxfFile = argv[optind+3];
-    string mappingInfoTsv = argv[optind+4];
+    string mappingInfoTsv = (nposargs > 3) ? argv[optind+3] : "";
 
     if (not checkGxfFormats(inGxfFile, mappedGxfFile, unmappedGxfFile,
                             targetGxf, previousMappedGxf)) {
