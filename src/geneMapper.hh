@@ -142,7 +142,7 @@ class GeneMapper {
 
     /* Map a GFF3/GTF */
     void mapGxf(GxfWriter& mappedGxfFh,
-                GxfWriter& unmappedGxfFh,
+                GxfWriter* unmappedGxfFh,
                 ostream& mappingInfoFh,
                 ostream* transcriptPslFh);
 };

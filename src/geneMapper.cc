@@ -695,7 +695,7 @@ void GeneMapper::copyTargetGenes(AnnotationSet& mappedSet,
 
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
-                        GxfWriter& unmappedGxfFh,
+                        GxfWriter* unmappedGxfFh,
                         ostream& mappingInfoFh,
                         ostream* transcriptPslFh) {
     AnnotationSet mappedSet(&fGenomeTransMap->fTargetSizes);
@@ -720,6 +720,8 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
         copyTargetGenes(mappedSet, mappingInfoFh);
     }
     mappedSet.write(mappedGxfFh);
-    unmappedSet.write(unmappedGxfFh);
+    if (unmappedGxfFh != NULL) {
+        unmappedSet.write(*unmappedGxfFh);
+    }
 }
 

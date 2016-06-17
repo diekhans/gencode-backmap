@@ -368,7 +368,7 @@ void FeatureTreePolish::setExonMappingVersion(const string& exonId,
                                               FeatureVector& exonFeatures,
                                               FeatureVector* prevExonFeatures) const {
     int mappingVersion = (prevExonFeatures != NULL)
-        ? getExonMappingVoersion(*prevExonFeatures) : 1;
+        ? getExonMappingVersion(*prevExonFeatures) : 1;
     for (int i = 0; i < exonFeatures.size(); i++) {
         if (isRemapped(exonFeatures[i])) {
             setExonMappingVersion(exonFeatures[i], mappingVersion);
