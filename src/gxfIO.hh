@@ -13,9 +13,7 @@ using namespace std;
 
 /* it seems so stupid to need to keep writing one-off GFF/GTF parsers */
 
-class GxfFeature;
-class GxfRecord;
-class AttrVals;
+#include "gxfRecord.hh"
 class FIOStream;
 
 typedef enum {
@@ -54,7 +52,7 @@ class GxfParser {
     /* constructor that opens file */
     GxfParser(const string& fileName,
               GxfFeatureFactory gxfFeatureFactory);
-
+    
     public:
     /* destructor */
     virtual ~GxfParser();
@@ -101,6 +99,7 @@ class GxfWriter {
     virtual GxfFormat getFormat() const = 0;
 
     static GxfWriter *factory(const string& fileName,
+                              ParIdHackMethod parIdHackMethod,
                               GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
 
     /* copy a file to output, normally used for a header */

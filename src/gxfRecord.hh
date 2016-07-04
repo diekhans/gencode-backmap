@@ -8,6 +8,14 @@
 #include <algorithm>
 
 /*
+ * Method used to hack PAR ids to be unique when required by format.
+ */
+typedef enum {
+    PAR_ID_HACK_OLD,  // ENSTR method
+    PAR_ID_HACK_NEW   // _PAR_Y method
+} ParIdHackMethod;
+
+/*
  * GxF base record type.  Use instanceOf to determine actually type
  */
 class GxfRecord {
@@ -92,6 +100,9 @@ class AttrVal {
     }
     const StringVector& getVals() const {
         return fVals;
+    }
+    int size() const {
+        return fVals.size();
     }
 };
 

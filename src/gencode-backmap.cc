@@ -53,6 +53,7 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& substituteMissingTargetVersion,
                            unsigned useTargetFlags,
                            bool onlyManualForTargetSubstituteOverlap,
+                           ParIdHackMethod parIdHackMethod,
                            const string& headerFile,
                            const string& mappedGxfFile,
                            const string& unmappedGxfFile,
@@ -66,16 +67,17 @@ static void gencodeBackmap(const string& inGxfFile,
     AnnotationSet* targetAnnotations = (targetGxf.size() > 0) ? new AnnotationSet(targetGxf) : NULL;
     AnnotationSet* previousMappedAnnotations = (previousMappedGxf.size() > 0) ? new AnnotationSet(previousMappedGxf) : NULL;
     BedMap* targetPatchMap = (targetPatchBed.size() > 0) ? new BedMap(targetPatchBed) : NULL;
-    GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile);
-    GxfWriter* unmappedGxfFh = (unmappedGxfFile.size() > 0) ? GxfWriter::factory(unmappedGxfFile) : 0;
+    GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile, parIdHackMethod);
+    GxfWriter* unmappedGxfFh = (unmappedGxfFile.size() > 0)
+        ? GxfWriter::factory(unmappedGxfFile, parIdHackMethod) : NULL;
     if (headerFile.size() > 0) {
         mappedGxfFh->copyFile(headerFile);
         if (unmappedGxfFh != NULL) {
             unmappedGxfFh->copyFile(headerFile);
         }
     }
-    FIOStream mappingInfoFh(mappingInfoTsv, ios::out);
-    FIOStream *transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
+    FIOStream mappingInfoFh((mappingInfoTsv.size() > 0) ? mappingInfoTsv : "/dev/null" , ios::out);
+    FIOStream* transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
     GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, previousMappedAnnotations,
                           targetPatchMap, substituteMissingTargetVersion,
                           useTargetFlags, onlyManualForTargetSubstituteOverlap);
@@ -126,6 +128,8 @@ const string usage = "%s [options] inGxf mappingAligns mappedGxf [mappingInfoTsv
     "  --onlyManualForTargetSubstituteOverlap - when checking for overlap of\n"
     "    target with mapped before substituting a target gene, only consider\n"
     "    manual transcripts.\n"
+    "  --oldStyleParIdHack - use ENSTR style PAR id unique on output rather than the\n"
+    "    newer _PAR_Y.  Either form is recognized on input.\n"
     "Arguments:\n"
     "  inGxf - Input GENCODE GFF3 or GTF file. The format is identified\n"
     "          by a .gff3 or .gtf extension, it maybe compressed with gzip with an\n"
@@ -152,6 +156,7 @@ const struct option long_options[] = {
     {"useTargetForAutoGenes", 0, NULL, 'A'},
     {"useTargetForPseudoGenes", 0, NULL, 'P'},
     {"onlyManualForTargetSubstituteOverlap", 0, NULL, 'O'},
+    {"oldStyleParIdHack", 0, NULL, 'Q'},
     {NULL, 0, NULL, 0}
 };
 const char* short_options = "hst:p:m:n";
@@ -173,6 +178,7 @@ int main(int argc, char *argv[]) {
     string previousMappedGxf;
     string transcriptPsls;
     string substituteMissingTargetVersion;
+    ParIdHackMethod parIdHackMethod = PAR_ID_HACK_NEW;
     bool onlyManualForTargetSubstituteOverlap = false;
     opterr = 0;  // we print error message
     while (true) {
@@ -209,6 +215,8 @@ int main(int argc, char *argv[]) {
             useTargetFlags |= GeneMapper::useTargetForAutoGenes;
         } else if (optc == 'P') {
             useTargetFlags |= GeneMapper::useTargetForPseudoGenes;
+        } else if (optc == 'Q') {
+            parIdHackMethod = PAR_ID_HACK_OLD;
         } else {
             errAbort(toCharStr("invalid option %s"), argv[optind-1]);
         }
@@ -238,7 +246,7 @@ int main(int argc, char *argv[]) {
     try {
         gencodeBackmap(inGxfFile, mappingAligns, swapMap,
                        substituteMissingTargetVersion, useTargetFlags,
-                       onlyManualForTargetSubstituteOverlap,
+                       onlyManualForTargetSubstituteOverlap, parIdHackMethod,
                        headerFile, mappedGxfFile, unmappedGxfFile,
                        mappingInfoTsv, targetGxf, targetPatchBed, previousMappedGxf,
                        transcriptPsls);
