@@ -44,8 +44,11 @@ class GeneMapper {
      * to be mapped twice. */
     StringSet fMappedIdsNames;
 
+    string featureDesc(const Feature* feature) const;
     bool isSrcSeqInMapping(const Feature* feature) const;
-    void recordMapped(const Feature* feature);
+    void debugRecordMapped(const Feature* feature,
+                           const string& desc,
+                           const string& key = "") const;
     void recordGeneMapped(const Feature* gene);
     bool checkMapped(const Feature* feature) const;
     bool checkGeneMapped(const Feature* gene) const ;

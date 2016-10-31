@@ -1,0 +1,16 @@
+
+- ZNF577 - no longer manually annotated
+    - in V19/V20, gene was manually annotated with multiple transcripts.
+    - in V25, gene is automatic, with one transcript plus a second transcript
+      being in moved to gene AC074141.1
+    - RefSeq continues to annotation this gene
+
+- ZNF883 - no longer manually annotated
+   - in V19/V20 - manual, lincRNA
+   - in V25 - automatic, protein_coding
+
+
+- PPIAL4E/PPIAL4F- gene name swap
+  - genes names swapped for locus V19+V20 to V25
+  - both change from pseudogene to protein_coding
+  - gene id instablity

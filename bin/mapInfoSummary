@@ -20,25 +20,25 @@ def parseArgs():
                         choices=("all", "biotype","biocat"), default="all",
                         help="groups counts for all biotype, by biotype, or by catgeory ")
     parser.add_argument('--sourceGroup', action="store_true", default=False,
-                       help="group counts by HAVANA vs ENSEMBL")
+                        help="group counts by HAVANA vs ENSEMBL")
     parser.add_argument("--mappingStatusGroup", action="store_true", default=False,
-                       help="group by mapping status (default in no other of the status grouping specified)")
+                        help="group by mapping status (default in no other of the status grouping specified)")
     parser.add_argument("--targetStatusGroup", action="store_true", default=False,
                         help="group by target annotation status")
     parser.add_argument('--multimapGroup', action="store_true", default=False,
-                       help="group counts single vs multiple mappers")
+                        help="group counts single vs multiple mappers")
     parser.add_argument('--genomicSizeGroup', action="store_true", default=False,
-                       help="group binning of gene or transcript genomic length")
+                        help="group binning of gene or transcript genomic length")
     parser.add_argument('--substituteTargetGroup', action="store_true", default=False,
-                       help="group by substituting target")
+                        help="group by substituting target")
     parser.add_argument('--biotypeFilter', dest="biotypeFilters", action="append",
                         help="filter my this biotype, maybe repeated")
     parser.add_argument('--matrixColumnKey', dest="matrixColumnKey",
                         help="output a matrix with this column name as key, or one of special names: genomicSize")
     parser.add_argument('--rowFrequencies', action="store_true", default=False,
-                       help="output matrix as row frequencies")
+                        help="output matrix as row frequencies")
     parser.add_argument('--columnFrequencies', action="store_true", default=False,
-                       help="output matrix as column frequencies")
+                        help="output matrix as column frequencies")
     parser.add_argument('what', type=str, choices=("gene", "transcript"),
                         help="analyze by gene or transcript")
     parser.add_argument('mapInfoTsv', type=str, help="mapInfo output of gencode-backmap")

@@ -163,22 +163,22 @@ ENST00000535836.1	C10orf53-201	transcript	protein_coding	ENSEMBL	chr10	49679686	
 ENSG00000070748.16	CHAT	gene	protein_coding	HAVANA	chr10	49609095	49665104	+	ENSG00000070748.16_1	chr10	50817141	50873150	+	full_contig	1	overlap	protein_coding	
 ENST00000339797.4	CHAT-007	transcript	protein_coding	HAVANA	chr10	49609095	49665104	+	ENST00000339797.4_1	chr10	50817141	50873150	+	full_contig	1	new		
 ENSG00000269713.6	NBPF9	gene	protein_coding	HAVANA	chr1	149054027	149103561	-			0	0	.	gene_conflict	5	overlap	protein_coding	V19
-ENST00000615421.3	NBPF9-002	transcript	protein_coding	HAVANA	chr1	149054027	149103539	-			0	0	.	gene_conflict	4	nonOverlap	processed_transcript	V19
-ENST00000613595.3	NBPF9-203	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-			0	0	.	gene_conflict	3	overlap	protein_coding	V19
-ENST00000584027.7	NBPF9-202	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-			0	0	.	gene_conflict	4	overlap	protein_coding	V19
+ENST00000615421.3	NBPF9-002	transcript	protein_coding	HAVANA	chr1	149054027	149103539	-			0	0	.	gene_conflict	4	new		V19
+ENST00000613595.3	NBPF9-203	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-			0	0	.	gene_conflict	3	new		V19
+ENST00000584027.7	NBPF9-202	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-			0	0	.	gene_conflict	4	new		V19
 ENST00000613969.3	NBPF9-204	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-			0	0	.	gene_conflict	3	new		V19
 ENST00000621074.3	NBPF9-205	transcript	protein_coding	ENSEMBL	chr1	149054033	149082311	-			0	0	.	gene_conflict	3	new		V19
-ENST00000621645.3	NBPF9-007	transcript	protein_coding	HAVANA	chr1	149054138	149103561	-			0	0	.	gene_conflict	5	nonOverlap	processed_transcript	V19
-ENST00000610300.3	NBPF9-008	transcript	protein_coding	HAVANA	chr1	149055630	149082311	-			0	0	.	gene_conflict	2	overlap	processed_transcript	V19
+ENST00000621645.3	NBPF9-007	transcript	protein_coding	HAVANA	chr1	149054138	149103561	-			0	0	.	gene_conflict	5	new		V19
+ENST00000610300.3	NBPF9-008	transcript	protein_coding	HAVANA	chr1	149055630	149082311	-			0	0	.	gene_conflict	2	new		V19
 ENST00000483630.4	NBPF9-201	transcript	protein_coding	ENSEMBL	chr1	149055630	149075866	-			0	0	.	gene_conflict	3	nonOverlap	processed_transcript	V19
-ENST00000611593.1	NBPF9-006	transcript	retained_intron	HAVANA	chr1	149059763	149066634	-			0	0	.	gene_conflict	4	overlap	processed_transcript	V19
+ENST00000611593.1	NBPF9-006	transcript	retained_intron	HAVANA	chr1	149059763	149066634	-			0	0	.	gene_conflict	4	new		V19
 ENSG00000182824.7	AC008132.15	gene	lincRNA	HAVANA	chr22	18733914	18757906	+	ENSG00000182824.7_1	chr22	18721427	18745419	+	full_contig	1	overlap	protein_coding	
 ENST00000342888.3	AC008132.15-001	transcript	lincRNA	HAVANA	chr22	18733914	18757894	+	ENST00000342888.3_1	chr22	18721427	18745407	+	full_contig	1	overlap	protein_coding	
 ENST00000611876.1	AC008132.15-003	transcript	lincRNA	HAVANA	chr22	18756348	18757906	+	ENST00000611876.1_1	chr22	18743861	18745419	+	full_contig	1	new		
 ENSG00000277870.3	FAM230A	gene	lincRNA	HAVANA	chr22	18487126	18500583	+			0	0	.	full_contig	1	nonOverlap	protein_coding	
 ENST00000615181.3	FAM230A-201	transcript	lincRNA	ENSEMBL	chr22	18487126	18489905	+			0	0	.	full_contig	1	new		
-ENST00000624459.1	FAM230A-001	transcript	lincRNA	HAVANA	chr22	18487139	18500583	+			0	0	.	full_contig	1	nonOverlap	protein_coding	
-ENST00000624001.1	FAM230A-002	transcript	lincRNA	HAVANA	chr22	18489203	18490145	+			0	0	.	full_contig	1	nonOverlap	protein_coding	
+ENST00000624459.1	FAM230A-001	transcript	lincRNA	HAVANA	chr22	18487139	18500583	+			0	0	.	full_contig	1	new		
+ENST00000624001.1	FAM230A-002	transcript	lincRNA	HAVANA	chr22	18489203	18490145	+			0	0	.	full_contig	1	new		
 ENSG00000188280.10	FAM230A	gene	antisense	HAVANA	chr22	20338805	20354372	+			0	0	.	gene_size_change	1	overlap	protein_coding	V19
 ENST00000617303.3	FAM230A-003	transcript	antisense	HAVANA	chr22	20338805	20354372	+			0	0	.	gene_size_change	1	new		V19
 ENST00000583722.4	FAM230A-201	transcript	antisense	ENSEMBL	chr22	20340996	20352255	+			0	0	.	gene_size_change	1	overlap	protein_coding	V19
@@ -186,7 +186,7 @@ ENST00000610338.1	FAM230A-004	transcript	antisense	HAVANA	chr22	20340997	2035404
 ENSG00000265300.1	AC007731.1	gene	miRNA	ENSEMBL	chr22	20483225	20483316	-	ENSG00000265300.1_1	chr22	20837512	20837603	-	full_contig	1	overlap	miRNA	
 ENST00000578704.1	AC007731.1-201	transcript	miRNA	ENSEMBL	chr22	20483225	20483316	-	ENST00000578704.1_1	chr22	20837512	20837603	-	full_contig	1	overlap	miRNA	
 ENSG00000275540.1	CTC-559E9.12	gene	unprocessed_pseudogene	HAVANA	chr19	19740884	19750127	+			0	0	.	full_contig	1	nonOverlap	pseudogene	
-ENST00000617163.1	CTC-559E9.12-001	transcript	unprocessed_pseudogene	HAVANA	chr19	19740884	19750127	+			0	0	.	full_contig	1	nonOverlap	processed_pseudogene	
+ENST00000617163.1	CTC-559E9.12-001	transcript	unprocessed_pseudogene	HAVANA	chr19	19740884	19750127	+			0	0	.	full_contig	1	new		
 ENSG00000270325.1	BNIP3P9	gene	processed_pseudogene	HAVANA	chr19	19856975	19857527	+	ENSG00000270325.1_1	chr19	19967784	19968336	+	full_contig	1	overlap	pseudogene	
 ENST00000603714.1	BNIP3P9-001	transcript	processed_pseudogene	HAVANA	chr19	19856975	19857527	+	ENST00000603714.1_1	chr19	19967784	19968336	+	full_contig	1	overlap	processed_pseudogene	
 ENSG00000252802.1	Y_RNA	gene	misc_RNA	ENSEMBL	chr1	26593940	26594041	-	ENSG00000252802.1_1	chr1	26920431	26920532	-	full_contig	1	overlap	misc_RNA	

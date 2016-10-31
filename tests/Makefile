@@ -36,6 +36,7 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3ParNamingTest gtfParNamingTest cmpParNamingTest \
 	gff3NcbiTest gtfNcbiTest \
 	gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
+	regressTests \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap cmpUcscSubstituteManOverlap \
 	mappingVerTests mapInfoSumTests ucscLiftEditTest
 
@@ -188,6 +189,36 @@ ${testGencodeLiftOverChains}: mkdirs ${testUcscLiftOverChains}
 	@mkdir -p output
 	../bin/ucscLiftEdit ${testUcscLiftOverChains} data/GCF_000001405.28.assembly.txt data/GCF_000001405.25.assembly.txt ${testGencodeLiftOverChains}
 
+##
+# various regression tests
+#
+##
+regressTests:  idChangeV25Test
+
+##
+# Id changes and related in v25
+##
+# CHD2 - OTT transcript base id moved between genes. This caused chd2 to be dropped due to the target subsitution mechanism though it had already subsituted the gene.
+#    OTTHUMT00000415070.1 was in CHD2 in V19/V20 and moved to
+#    OTTHUMT00000415070.3 in RP11-437B10.1 in V25
+# DUX4 - OTT gene id reused for DUX4L1, Ensemble gene ids changed too.  This causes both
+#        failure to map due to non-overlap and failure to substitute because of thinking it's
+#        already mapped.
+# ZNF577 - manually annotated in V19, no longer manually annotated in V25.  This caused it
+#        
+
+idChangeV25Test: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --targetGxf=data/idChange.v19.gff3 ${targetSubstArg} ${headerArg} data/idChange.v25.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info --unmappedGxf=output/$@.unmapped.gff3
+	diff expected/$@.mapped.gff3 output/$@.mapped.gff3
+	diff expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	diff expected/$@.map-info output/$@.map-info
+
+
+
+###
+# mapInfoSum tests
+###
+
 # liftover has more wierd cases, so use for tests
 mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTransBiottypeTest \
 	mapInfoSumTransBiocatTest mapInfoSumTransBiocatMultimapTest \
@@ -296,24 +327,24 @@ bigGtfUcscMapVerTest: bigGff3NcbiTest
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
 
 
-
 ##
 # commands to create new mapping chains when test set is annotated
 ##
 mappingChains: ucscMappingChains ncbiMappingChains
 
-ucscMappingChains: tmp/testV22.gp
-	overlapSelect tmp/testV22.gp  /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
+ucscMappingChains: tmp/testGrch38.gp
+	overlapSelect tmp/testGrch38.gp  /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
 
-ncbiMappingChains: tmp/GRCh37.p13.sizes tmp/GRCh38.p2.sizes tmp/GRCh38-GRCh37.p13.gff tmp/GRCh38.p2.refseq-gencode.lift tmp/GRCh37.p13.refseq-gencode.lift tmp/testV22.gp
+ncbiMappingChains: tmp/GRCh37.p13.sizes tmp/GRCh38.p2.sizes tmp/GRCh38-GRCh37.p13.gff tmp/GRCh38.p2.refseq-gencode.lift tmp/GRCh37.p13.refseq-gencode.lift tmp/testGrch38.gp
 	gff3ToPsl tmp/GRCh37.p13.sizes tmp/GRCh38.p2.sizes tmp/GRCh38-GRCh37.p13.gff /dev/stdout \
 	| liftUp -nohead -type=.psl /dev/stdout tmp/GRCh38.p2.refseq-gencode.lift error /dev/stdin \
 	| liftUp -nohead -type=.psl -pslQ /dev/stdout  tmp/GRCh37.p13.refseq-gencode.lift error /dev/stdin \
-	| overlapSelect tmp/testV22.gp -inFmt=psl /dev/stdin ${testNcbiLiftOverChains}
+	| overlapSelect tmp/testGrch38.gp -inFmt=psl /dev/stdin ${testNcbiLiftOverChains}
 
-tmp/testV22.gp: data/gencode.v22.annotation.gff3
+# need to only include first ##gff-version header
+tmp/testGrch38.gp: data/gencode.v22.annotation.gff3 data/idChange.v25.gff3
 	@mkdir -p $(dir $@)
-	gff3ToGenePred $< $@
+	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' data/gencode.v22.annotation.gff3 data/idChange.v25.gff3)  $@
 
 tmp/GRCh37.p13.refseq-gencode.lift: tmp/GCF_000001405.25.assembly.txt
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@
@@ -341,6 +372,21 @@ tmp/GCF_000001405.25.assembly.txt:
 
 tmp/GCF_000001405.28.assembly.txt:
 	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
+
+
+##
+# generate problem regions on GRCh37
+##
+problemRegions: tmp/testGrch37.gp
+	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz | zcat | cut -f 2- > tmp/altSeqPatchesP10.bed
+	wget -nv -O tmp/Hg19.grcIncidentDb.bb http://genomewiki.ucsc.edu/images/6/67/Hg19.grcIncidentDb.bb
+	bigBedToBed tmp/Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > tmp/Hg19.grcIncidentDb.bed
+	(cat tmp/altSeqPatchesP10.bed tmp/Hg19.grcIncidentDb.bed) | overlapSelect -inFmt=bed tmp/testGrch37.gp /dev/stdin data/problemRegions.bed
+
+# need to only include first ##gff-version header
+tmp/testGrch37.gp: data/gencode.v19.annotation.gff3 data/idChange.v19.gff3
+	@mkdir -p $(dir $@)
+	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' data/gencode.v22.annotation.gff3 data/idChange.v25.gff3)  $@
 
 mkdirs:
 	@mkdir -p output
