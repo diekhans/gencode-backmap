@@ -35,8 +35,7 @@ class Feature;
 /* Vector of Feature objects */
 class FeatureVector: public vector<Feature*> {
 public:
-    /* sort the vector in a predictable order.  This is not necessary what
-     * will be in the GxF file by GENCODE conventions. */
+    /* sort the vector in a chromosome order. */
     void sort();
 };
 

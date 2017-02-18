@@ -292,7 +292,7 @@ gtfUcscValgrind: mkdirs
 
 
 liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
-v25Dir = /hive/data/genomes/hg38/bed/gencodeV25/data/release_24
+v25Dir = /hive/data/genomes/hg38/bed/gencodeV25/data/release_25
 v25Gff3 = ${v25Dir}/gencode.v25.chr_patch_hapl_scaff.annotation.gff3.gz
 v25Gtf = ${v25Dir}/gencode.v25.chr_patch_hapl_scaff.annotation.gtf.gz
 

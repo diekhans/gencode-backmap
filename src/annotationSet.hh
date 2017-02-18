@@ -122,6 +122,11 @@ class AnnotationSet {
         return fGenes;
     }
 
+    /* sort genes */
+    void sort() {
+        fGenes.sort();
+    }
+    
     /* print for debugging */
     void dump(ostream& fh) const;
 

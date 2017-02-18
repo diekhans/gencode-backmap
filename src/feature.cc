@@ -30,23 +30,55 @@ static const char* automaticNonCodingGeneBiotypes[] = {
     "snoRNA", "snRNA", "sRNA", NULL
 };
 
+/* compare chrom names to emulate GENCODE sorting */
+static bool chromLessThan(const string& a, const string& b) {
+    // chrom vs non-chrom; ucsc names have chr_accession, so check for that too
+    bool aIsChr = (a.find("chr") == 0) or (a.find("_") < 0);
+    bool bIsChr = (b.find("chr") == 0) or (b.find("_") < 0);
+    if (aIsChr and (not bIsChr)) {
+        return true;
+    } else if (bIsChr and (not aIsChr)) {
+        return false;
+    } else if ((not aIsChr) and (not bIsChr)) {
+        return aIsChr < bIsChr; // not a chrom
+    }
+    // autosomes, or X,Y, or M
+    bool aIsAuto = isdigit(a[3]);
+    bool bIsAuto = isdigit(b[3]);
+    if (aIsAuto and (not bIsAuto)) {
+        return true;
+    } else if (bIsAuto and (not aIsAuto)) {
+        return false;
+    }
+    
+    // put chrM last
+    bool aIsChrM = (a == "chrM");
+    bool bIsChrM = (b == "chrM");
+    if (aIsChrM and (not bIsChrM)) {
+        return false;
+    } else if (bIsChrM and (not aIsChrM)) {
+        return true;
+    } else if (aIsChrM and bIsChrM) {
+        return false;
+    }
+    // both chroms
+    if (a.size() != b.size()) {
+        return a.size() < b.size();  // chr10 vs chr1
+    }
+    return a < b;
+}
+
 /* sort the vector in a predictable order.  This is not necessary what
  * will be in the GxF file by GENCODE conventions. */
 void FeatureVector::sort() {
     std::sort(begin(), end(),
               [](const Feature* a, const Feature* b) -> bool {
-                  if (a->getStrand() == "+") {
-                      if (a->getType() != b->getType()) {
-                          return a->getType() > b->getType();
-                      } else {
-                          return a->getStart() > b->getStart();
-                      }
+                  if (a->getSeqid() != b->getSeqid()) {
+                      return chromLessThan(a->getSeqid(), b->getSeqid());
+                  } else if (a->getStart() != b->getStart()) {
+                      return a->getStart() < b->getStart();
                   } else {
-                      if (a->getType() != b->getType()) {
-                          return a->getType() < b->getType();
-                      } else {
-                          return a->getStart() < b->getStart();
-                      }
+                      return a->getEnd() < b->getEnd();
                   }
               });
 }
