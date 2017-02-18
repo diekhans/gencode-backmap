@@ -11,18 +11,20 @@ from gencode import categoryCounts
 from gencode.gencodeGenes import getFunctionForBioType, BioType
 
 # FIXME: this has gotten very convoluted with all the options
+# FIXME: this no longer works with mapInfo changes to output multiple, simpler rows.
+# need to rewrite
+
+raise Exception("program not working")
 
 def parseArgs():
     desc="""produce a summary of the success of mappings produce by gencode-backmap
 """
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--biotypeGroup', type=str,
-                        choices=("all", "biotype","biocat"), default="all",
+                        choices=("all", "srcBiotype", "srcBiocat"), default="all",
                         help="groups counts for all biotype, by biotype, or by catgeory ")
-    parser.add_argument('--sourceGroup', action="store_true", default=False,
-                        help="group counts by HAVANA vs ENSEMBL")
-    parser.add_argument("--mappingStatusGroup", action="store_true", default=False,
-                        help="group by mapping status (default in no other of the status grouping specified)")
+    parser.add_argument("--mappedStatusGroup", action="store_true", default=False,
+                        help="group by mapped status (default in no other of the status grouping specified)")
     parser.add_argument("--targetStatusGroup", action="store_true", default=False,
                         help="group by target annotation status")
     parser.add_argument('--multimapGroup', action="store_true", default=False,
@@ -39,7 +41,7 @@ def parseArgs():
                         help="output matrix as row frequencies")
     parser.add_argument('--columnFrequencies', action="store_true", default=False,
                         help="output matrix as column frequencies")
-    parser.add_argument('what', type=str, choices=("gene", "transcript"),
+    parser.add_argument('what', type=str, choices=("gene", "trans"),
                         help="analyze by gene or transcript")
     parser.add_argument('mapInfoTsv', type=str, help="mapInfo output of gencode-backmap")
     parser.add_argument('summaryOut', type=str, help="Summary output TSV")
@@ -56,35 +58,32 @@ def orderOfMagniudeBin(row):
     return magBin
 
 class MapInfoSummary(object):
-    def __init__(self, whatAnnotation, biotypeGroup, sourceGroup, mappingStatusGroup, targetStatusGroup, multimapGroup, genomicSizeGroup, substituteTargetGroup,
+    def __init__(self, whatAnnotation, biotypeGroup, mappedStatusGroup, targetStatusGroup, multimapGroup, genomicSizeGroup, substituteTargetGroup,
                  biotypeFilters, columnKeyColumn):
         if biotypeFilters != None:
-            self.filterFunc = lambda row: (row.type == whatAnnotation) and (row.biotype in biotypeFilters)
+            self.filterFunc = lambda row: (row.type == whatAnnotation) and (row.srcBiotype in biotypeFilters)
         else:
             self.filterFunc = lambda row: row.type == whatAnnotation
         rowKeyHeader = []
         rowKeyFuncs = [] # list of functions to call to get keys
-        if sourceGroup:
-            rowKeyHeader.append("source")
-            rowKeyFuncs.append(lambda row: row.source)
-        if biotypeGroup == "biotype": 
-            rowKeyHeader.append("biotype")
-            rowKeyFuncs.append(lambda row: row.biotype)
-        elif biotypeGroup == "biocat":
-            rowKeyHeader.append("biocat")
-            rowKeyFuncs.append(lambda row: getFunctionForBioType(BioType(row.biotype)))
+        if biotypeGroup == "srcBiotype": 
+            rowKeyHeader.append("srcBiotype")
+            rowKeyFuncs.append(lambda row: row.srcBiotype)
+        elif biotypeGroup == "srcBiocat":
+            rowKeyHeader.append("srcBiocat")
+            rowKeyFuncs.append(lambda row: getFunctionForBioType(BioType(row.srcBiotype)))
         if genomicSizeGroup:
             rowKeyHeader.append("genomicSize")
             rowKeyFuncs.append(lambda row: orderOfMagniudeBin(row))
-        if mappingStatusGroup:
-            rowKeyHeader.append("mappingStatus")
-            rowKeyFuncs.append(lambda row: row.mappingStatus)
+        if mappedStatusGroup:
+            rowKeyHeader.append("mappedStatus")
+            rowKeyFuncs.append(lambda row: row.mappedStatus)
         if targetStatusGroup:
             rowKeyHeader.append("targetStatus")
             rowKeyFuncs.append(lambda row: row.targetStatus)
         if multimapGroup:
             rowKeyHeader.append("multimap")
-            rowKeyFuncs.append(lambda row: "yes" if (row.numMappings > 1) else "no")
+            rowKeyFuncs.append(lambda row: "yes" if (row.mappedCount > 1) else "no")
         if substituteTargetGroup:
             rowKeyHeader.append("targetSubst")
             rowKeyFuncs.append(lambda row: "yes" if (row.targetSubst != "") else "no")
@@ -99,10 +98,10 @@ class MapInfoSummary(object):
         self.counts = categoryCounts.CategoryCounts(rowKeyHeader)
 
     def count(self, mapInfoTsv):
-        # id	type	biotype	srcChrom	srcStart	srcEnd	srcStrand	mappedChrom	mappedStart	mappedEnd	mappedStrand	mappingStatus	numMappings
+        # id	type	biotype	srcChrom	srcStart	srcEnd	srcStrand	mappedChrom	mappedStart	mappedEnd	mappedStrand	mappedStatus	mappedCount
         typeMap={"srcStart": int, "srcEnd": int,
                  "mappedStart": int, "mappedEnd": int,
-                 "numMappings": int}
+                 "mappedCount": int}
         self.counts.countTsv(mapInfoTsv, typeMap=typeMap, getRowKeys=self.getRowKeys, getColumnKey=self.getColumnKey, filterFunc=self.filterFunc)
         
     def writeCountsFreqs(self, outFh):
@@ -112,8 +111,8 @@ class MapInfoSummary(object):
         self.counts.writeMatrix(outFh, rowFrequencies=rowFrequencies, columnFrequencies=columnFrequencies, inclTotals=True)
 
 args = parseArgs()
-summary = MapInfoSummary(args.what, args.biotypeGroup, args.sourceGroup,
-                         args.mappingStatusGroup, args.targetStatusGroup,
+summary = MapInfoSummary(args.what, args.biotypeGroup,
+                         args.mappedStatusGroup, args.targetStatusGroup,
                          args.multimapGroup, args.genomicSizeGroup,
                          args.substituteTargetGroup,
                          args.biotypeFilters, args.matrixColumnKey)

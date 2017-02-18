@@ -43,16 +43,37 @@ class GeneMapper {
      * N.B. Can't use AnnotationSet to track this, due to PAR mappings needing
      * to be mapped twice. */
     StringSet fMappedIdsNames;
-
+    
+    int fCurrentGeneNum;  /* used by output info log to logically group features together,
+                           * increments each time a gene is process */ 
+    
+    void outputInfoHeader(ostream& mappingInfoFh) const;
+    void outputInfo(const string& recType,
+                    const string& featType,
+                    const Feature* feature,
+                    RemapStatus mappingStatus,
+                    int mappingCount,
+                    TargetStatus targetStatus,
+                    ostream& mappingInfoFh) const;
+    void outputSrcGeneInfo(const ResultFeatures* mappedGene,
+                           ostream& mappingInfoFh) const;
+    void outputMappedGeneInfo(const ResultFeatures* mappedGene,
+                              ostream& mappingInfoFh) const;
+    void outputUnmappedGeneInfo(const ResultFeatures* mappedGene,
+                                ostream& mappingInfoFh) const;
+    void outputTargetGeneInfo(const ResultFeatures* mappedGene,
+                              const string& targetAction,
+                              ostream& mappingInfoFh) const;
     string featureDesc(const Feature* feature) const;
     bool isSrcSeqInMapping(const Feature* feature) const;
     void debugRecordMapped(const Feature* feature,
                            const string& desc,
                            const string& key = "") const;
     void recordGeneMapped(const Feature* gene);
-    bool checkMapped(const Feature* feature) const;
+    void recordTranscriptMapped(const Feature* transcript);
     bool checkGeneMapped(const Feature* gene) const ;
-
+    bool checkTranscriptMapped(const Feature* transcript) const;
+    bool checkGeneTranscriptsMapped(const Feature* gene) const;
     ResultFeatures processTranscript(const Feature* transcript,
                                      ostream* transcriptPslFh) const;
     ResultFeaturesVector processTranscripts(const Feature* gene,
@@ -90,19 +111,9 @@ class GeneMapper {
                     AnnotationSet& mappedSet);
     void saveUnmapped(ResultFeatures& mappedGene,
                       AnnotationSet& unmappedSet);
-    void outputInfoHeader(ostream& mappingInfoFh) const;
     const Feature* getTargetAnnotation(const Feature* feature) const;
     TargetStatus getTargetAnnotationStatus(const ResultFeatures* mappedFeature) const;
     const string& getTargetAnnotationBiotype(const ResultFeatures* mappedFeature) const;
-    void outputFeatureInfo(const ResultFeatures* mappedGene,
-                           bool substituteTarget,
-                           ostream& mappingInfoFh) const;
-    void outputTranscriptInfo(const ResultFeatures* mappedGene,
-                              bool substituteTarget,
-                              const Feature* srcTranscript,
-                              ostream& mappingInfoFh) const;
-    void outputInfo(const ResultFeatures* mappedGene,
-                    ostream& mappingInfoFh) const;
     void processGeneLevelMapping(ResultFeatures* mappedGene);
     void setGeneLevelMappingAttributes(ResultFeatures* mappedGene);
     void mapGene(const Feature* srcGeneTree,
@@ -140,7 +151,8 @@ class GeneMapper {
         fTargetPatchMap(targetPatchMap),
         fSubstituteTargetVersion(substituteTargetVersion),
         fUseTargetFlags(useTargetFlags),
-        fOnlyManualForTargetSubstituteOverlap(onlyManualForTargetSubstituteOverlap) {
+        fOnlyManualForTargetSubstituteOverlap(onlyManualForTargetSubstituteOverlap),
+        fCurrentGeneNum(-1) {
     }
 
     /* Map a GFF3/GTF */

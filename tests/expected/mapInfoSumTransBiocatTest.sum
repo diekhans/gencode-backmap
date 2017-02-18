@@ -1,4 +1,4 @@
-biocat	mappingStatus	count	freq
+srcBiocat	mappedStatus	count	freq
 pseudo	full_contig	11	0.08
 pseudo	gene_size_change	1	0.01
 pseudo	no_seq_map	1	0.01

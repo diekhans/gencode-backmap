@@ -127,16 +127,16 @@ The following files are needed to map using the UCSC liftover alignments:
   which will be swapped.  This produced slightly better results that using the
   - http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz
 - NCBI assembly report file for GRCh37
-  - ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.assembly.txt
+  - ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt
 - NCBI assembly report file for GRCh38.  Since only the primary assembly is
   map, it is not necessary to update this for new releases.
-  - ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
+  - ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
 - GENCODE V19 primary annotations in GFF3 and GTF
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gtf.gz
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gff3.gz
 - Current GENCODE primary assembly GFF3 and GTF files to map
-  - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/gencode.v23.annotation.gff3.gz
-  - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_23/gencode.v23.basic.annotation.gtf.gz
+  - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_25/gencode.v25.annotation.gff3.gz
+  - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_25/gencode.v25.basic.annotation.gtf.gz
 - GRC patch BED file for GRCh37 from UCSC.  Download from
   - http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz
 - GRC incident table from UCSC browser:
@@ -155,13 +155,13 @@ UCSC.  Additionally, GENCODE annotates the GRCh37-lite chrM, while UCSC had
 incorporated a different chrM version.  Convert the UCSC alignments to
 use GENCODE names:
 ```
-../gencode-backmap/bin/ucscLiftEdit hg38ToHg19.over.chain.gz GCF_000001405.28.assembly.txt GCF_000001405.25.assembly.txt hg38ToHg19.over.gencode.chain
+../gencode-backmap/bin/ucscLiftEdit hg38ToHg19.over.chain.gz GCF_000001405.26_GRCh38_assembly_report.txt GCF_000001405.13_GRCh37_assembly_report.txt hg38ToHg19.over.gencode.chain
 ```
 
 Map the annotation files:
 ```
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gff3.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gff3 gencode.v23lift37.map-info.tsv
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed gencode.v23.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v23lift37.annotation.gtf
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gff3.gz --targetPatches=problemRegions.bed gencode.v25.annotation.gff3.gz  hg38ToHg19.over.gencode.chain gencode.v25lift37.annotation.gff3 gencode.v25lift37.map-info.tsv
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed gencode.v25.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v25lift37.annotation.gtf
 ```
 
 Where `liftGxfHeader.txt` is the comments to add at the beginning of the output GFF3 or GTF files.

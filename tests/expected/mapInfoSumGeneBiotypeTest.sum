@@ -1,4 +1,4 @@
-biotype	mappingStatus	count	freq
+srcBiotype	mappedStatus	count	freq
 Mt_tRNA	full_contig	6	0.10
 TR_V_pseudogene	full_contig	1	0.02
 antisense	full_contig	1	0.02

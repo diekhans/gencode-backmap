@@ -3,6 +3,8 @@
 # FIXME: danger of bdump, etc, methods conflicting with columns.  maybe
 # a better convention to avoid collisions
 # FIXME: need accessor functions for columns
+import sys
+from pycbio.tsv import TsvError
 
 class TsvRow(object):
     "Row of a TSV where columns are fields."
@@ -20,8 +22,8 @@ class TsvRow(object):
             for i in xrange(len(self._columns_)):
                 setattr(self, self._columns_[i], row[i])
 
-    def __parse(self, row):
-        for i in xrange(len(self._columns_)):
+    def __parseCol(self, row, i):
+        try:
             col = row[i]
             ct = self._colTypes_[i]
             if type(ct) == tuple:
@@ -29,6 +31,12 @@ class TsvRow(object):
             elif ct:
                 col = ct(col)
             setattr(self, self._columns_[i], col)
+        except Exception as ex:
+            raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i]), None, ex), None, sys.exc_info()[2]
+
+    def __parse(self, row):
+        for i in xrange(len(self._columns_)):
+            self.__parseCol(row, i)
 
     def __getitem__(self, key):
         "access a column by string key or numeric index"

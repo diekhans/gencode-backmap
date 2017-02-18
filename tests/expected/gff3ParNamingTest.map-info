@@ -1,29 +1,57 @@
-id	name	type	biotype	source	srcChrom	srcStart	srcEnd	srcStrand	mappedId	mappedChrom	mappedStart	mappedEnd	mappedStrand	mappingStatus	numMappings	targetStatus	targetBiotype	targetSubst
-ENSG00000228572.7	LL0YNC03-29C1.1	gene	unprocessed_pseudogene	HAVANA	chrX	253743	255091	+	ENSG00000228572.7_1	chrX	170410	171758	+	full_contig	1	overlap	pseudogene	
-ENST00000431238.7	LL0YNC03-29C1.1-001	transcript	unprocessed_pseudogene	HAVANA	chrX	253743	255091	+	ENST00000431238.7_1	chrX	170410	171758	+	full_contig	1	overlap	unprocessed_pseudogene	
-ENSG00000182378.13	PLCXD1	gene	protein_coding	HAVANA	chrX	276322	303356	+	ENSG00000182378.13_1	chrX	192989	220023	+	full_contig	1	overlap	protein_coding	
-ENST00000399012.6	PLCXD1-001	transcript	protein_coding	HAVANA	chrX	276322	303353	+	ENST00000399012.6_1	chrX	192989	220020	+	full_contig	1	overlap	protein_coding	
-ENST00000484611.7	PLCXD1-009	transcript	processed_transcript	HAVANA	chrX	276324	291537	+	ENST00000484611.7_1	chrX	192991	208204	+	full_contig	1	overlap	processed_transcript	
-ENST00000430923.7	PLCXD1-010	transcript	protein_coding	HAVANA	chrX	276353	291629	+	ENST00000430923.7_1	chrX	193020	208296	+	full_contig	1	overlap	protein_coding	
-ENST00000445062.6	PLCXD1-005	transcript	protein_coding	HAVANA	chrX	281055	288869	+	ENST00000445062.6_1	chrX	197722	205536	+	full_contig	1	overlap	protein_coding	
-ENST00000381657.7	PLCXD1-002	transcript	protein_coding	HAVANA	chrX	281192	303356	+	ENST00000381657.7_1	chrX	197859	220023	+	full_contig	1	overlap	protein_coding	
-ENST00000429181.6	PLCXD1-006	transcript	protein_coding	HAVANA	chrX	281194	288787	+	ENST00000429181.6_1	chrX	197861	205454	+	full_contig	1	overlap	protein_coding	
-ENST00000381663.8	PLCXD1-201	transcript	protein_coding	ENSEMBL	chrX	281462	303353	+	ENST00000381663.8_1	chrX	198129	220020	+	full_contig	1	overlap	protein_coding	
-ENST00000443019.6	PLCXD1-003	transcript	protein_coding	HAVANA	chrX	283163	288829	+	ENST00000443019.6_1	chrX	199830	205496	+	full_contig	1	overlap	protein_coding	
-ENST00000415337.6	PLCXD1-007	transcript	protein_coding	HAVANA	chrX	283465	291639	+	ENST00000415337.6_1	chrX	200132	208306	+	full_contig	1	overlap	protein_coding	
-ENST00000447472.6	PLCXD1-008	transcript	protein_coding	HAVANA	chrX	283479	291629	+	ENST00000447472.6_1	chrX	200146	208296	+	full_contig	1	overlap	protein_coding	
-ENST00000448477.6	PLCXD1-004	transcript	protein_coding	HAVANA	chrX	283734	290757	+	ENST00000448477.6_1	chrX	200401	207424	+	full_contig	1	overlap	protein_coding	
-ENSG00000228572.7	LL0YNC03-29C1.1	gene	unprocessed_pseudogene	HAVANA	chrY	253743	255091	+	ENSG00000228572.7_1	chrY	120410	121758	+	full_contig	1	overlap	pseudogene	
-ENST00000431238.7	LL0YNC03-29C1.1-001	transcript	unprocessed_pseudogene	HAVANA	chrY	253743	255091	+	ENST00000431238.7_1	chrY	120410	121758	+	full_contig	1	overlap	unprocessed_pseudogene	
-ENSG00000182378.13	PLCXD1	gene	protein_coding	HAVANA	chrY	276322	303356	+	ENSG00000182378.13_1	chrY	142989	170023	+	full_contig	1	overlap	protein_coding	
-ENST00000399012.6	PLCXD1-001	transcript	protein_coding	HAVANA	chrY	276322	303353	+	ENST00000399012.6_1	chrY	142989	170020	+	full_contig	1	overlap	protein_coding	
-ENST00000484611.7	PLCXD1-009	transcript	processed_transcript	HAVANA	chrY	276324	291537	+	ENST00000484611.7_1	chrY	142991	158204	+	full_contig	1	overlap	processed_transcript	
-ENST00000430923.7	PLCXD1-010	transcript	protein_coding	HAVANA	chrY	276353	291629	+	ENST00000430923.7_1	chrY	143020	158296	+	full_contig	1	overlap	protein_coding	
-ENST00000445062.6	PLCXD1-005	transcript	protein_coding	HAVANA	chrY	281055	288869	+	ENST00000445062.6_1	chrY	147722	155536	+	full_contig	1	overlap	protein_coding	
-ENST00000381657.7	PLCXD1-002	transcript	protein_coding	HAVANA	chrY	281192	303356	+	ENST00000381657.7_1	chrY	147859	170023	+	full_contig	1	overlap	protein_coding	
-ENST00000429181.6	PLCXD1-006	transcript	protein_coding	HAVANA	chrY	281194	288787	+	ENST00000429181.6_1	chrY	147861	155454	+	full_contig	1	overlap	protein_coding	
-ENST00000381663.8	PLCXD1-201	transcript	protein_coding	ENSEMBL	chrY	281462	303353	+	ENST00000381663.8_1	chrY	148129	170020	+	full_contig	1	overlap	protein_coding	
-ENST00000443019.6	PLCXD1-003	transcript	protein_coding	HAVANA	chrY	283163	288829	+	ENST00000443019.6_1	chrY	149830	155496	+	full_contig	1	overlap	protein_coding	
-ENST00000415337.6	PLCXD1-007	transcript	protein_coding	HAVANA	chrY	283465	291639	+	ENST00000415337.6_1	chrY	150132	158306	+	full_contig	1	overlap	protein_coding	
-ENST00000447472.6	PLCXD1-008	transcript	protein_coding	HAVANA	chrY	283479	291629	+	ENST00000447472.6_1	chrY	150146	158296	+	full_contig	1	overlap	protein_coding	
-ENST00000448477.6	PLCXD1-004	transcript	protein_coding	HAVANA	chrY	283734	290757	+	ENST00000448477.6_1	chrY	150401	157424	+	full_contig	1	overlap	protein_coding	
+geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featStart	featEnd	featStrand	mappingStatus	mappingCount	targetStatus
+0	mapSrc	gene	ENSG00000228572.7	OTTHUMG00000046372.2	LL0YNC03-29C1.1	unprocessed_pseudogene	chrX	253743	255091	+	none	0	na
+0	mapSrc	trans	ENST00000431238.7	OTTHUMT00000107057.2	LL0YNC03-29C1.1-001	unprocessed_pseudogene	chrX	253743	255091	+	none	0	na
+0	map	gene	ENSG00000228572.7_1	OTTHUMG00000046372.2_1	LL0YNC03-29C1.1	unprocessed_pseudogene	chrX	170410	171758	+	full_contig	1	overlap
+0	map	trans	ENST00000431238.7_1	OTTHUMT00000107057.2_1	LL0YNC03-29C1.1-001	unprocessed_pseudogene	chrX	170410	171758	+	full_contig	1	overlap
+1	mapSrc	gene	ENSG00000182378.13	OTTHUMG00000022693.5	PLCXD1	protein_coding	chrX	276322	303356	+	none	0	na
+1	mapSrc	trans	ENST00000399012.6	OTTHUMT00000058878.2	PLCXD1-001	protein_coding	chrX	276322	303353	+	none	0	na
+1	mapSrc	trans	ENST00000484611.7	OTTHUMT00000393211.1	PLCXD1-009	processed_transcript	chrX	276324	291537	+	none	0	na
+1	mapSrc	trans	ENST00000430923.7	OTTHUMT00000393212.2	PLCXD1-010	protein_coding	chrX	276353	291629	+	none	0	na
+1	mapSrc	trans	ENST00000445062.6	OTTHUMT00000313973.2	PLCXD1-005	protein_coding	chrX	281055	288869	+	none	0	na
+1	mapSrc	trans	ENST00000381657.7	OTTHUMT00000058879.2	PLCXD1-002	protein_coding	chrX	281192	303356	+	none	0	na
+1	mapSrc	trans	ENST00000429181.6	OTTHUMT00000313974.2	PLCXD1-006	protein_coding	chrX	281194	288787	+	none	0	na
+1	mapSrc	trans	ENST00000381663.8		PLCXD1-201	protein_coding	chrX	281462	303353	+	none	0	na
+1	mapSrc	trans	ENST00000443019.6	OTTHUMT00000058880.3	PLCXD1-003	protein_coding	chrX	283163	288829	+	none	0	na
+1	mapSrc	trans	ENST00000415337.6	OTTHUMT00000313975.2	PLCXD1-007	protein_coding	chrX	283465	291639	+	none	0	na
+1	mapSrc	trans	ENST00000447472.6	OTTHUMT00000313976.1	PLCXD1-008	protein_coding	chrX	283479	291629	+	none	0	na
+1	mapSrc	trans	ENST00000448477.6	OTTHUMT00000058881.3	PLCXD1-004	protein_coding	chrX	283734	290757	+	none	0	na
+1	map	gene	ENSG00000182378.13_1	OTTHUMG00000022693.5_1	PLCXD1	protein_coding	chrX	192989	220023	+	full_contig	1	overlap
+1	map	trans	ENST00000399012.6_1	OTTHUMT00000058878.2_1	PLCXD1-001	protein_coding	chrX	192989	220020	+	full_contig	1	overlap
+1	map	trans	ENST00000484611.7_1	OTTHUMT00000393211.1_1	PLCXD1-009	processed_transcript	chrX	192991	208204	+	full_contig	1	overlap
+1	map	trans	ENST00000430923.7_1	OTTHUMT00000393212.2_1	PLCXD1-010	protein_coding	chrX	193020	208296	+	full_contig	1	overlap
+1	map	trans	ENST00000445062.6_1	OTTHUMT00000313973.2_1	PLCXD1-005	protein_coding	chrX	197722	205536	+	full_contig	1	overlap
+1	map	trans	ENST00000381657.7_1	OTTHUMT00000058879.2_1	PLCXD1-002	protein_coding	chrX	197859	220023	+	full_contig	1	overlap
+1	map	trans	ENST00000429181.6_1	OTTHUMT00000313974.2_1	PLCXD1-006	protein_coding	chrX	197861	205454	+	full_contig	1	overlap
+1	map	trans	ENST00000381663.8_1		PLCXD1-201	protein_coding	chrX	198129	220020	+	full_contig	1	overlap
+1	map	trans	ENST00000443019.6_1	OTTHUMT00000058880.3_1	PLCXD1-003	protein_coding	chrX	199830	205496	+	full_contig	1	overlap
+1	map	trans	ENST00000415337.6_1	OTTHUMT00000313975.2_1	PLCXD1-007	protein_coding	chrX	200132	208306	+	full_contig	1	overlap
+1	map	trans	ENST00000447472.6_1	OTTHUMT00000313976.1_1	PLCXD1-008	protein_coding	chrX	200146	208296	+	full_contig	1	overlap
+1	map	trans	ENST00000448477.6_1	OTTHUMT00000058881.3_1	PLCXD1-004	protein_coding	chrX	200401	207424	+	full_contig	1	overlap
+2	mapSrc	gene	ENSG00000228572.7	OTTHUMG00000046372.2	LL0YNC03-29C1.1	unprocessed_pseudogene	chrY	253743	255091	+	none	0	na
+2	mapSrc	trans	ENST00000431238.7	OTTHUMT00000107057.2	LL0YNC03-29C1.1-001	unprocessed_pseudogene	chrY	253743	255091	+	none	0	na
+2	map	gene	ENSG00000228572.7_1	OTTHUMG00000046372.2_1	LL0YNC03-29C1.1	unprocessed_pseudogene	chrY	120410	121758	+	full_contig	1	overlap
+2	map	trans	ENST00000431238.7_1	OTTHUMT00000107057.2_1	LL0YNC03-29C1.1-001	unprocessed_pseudogene	chrY	120410	121758	+	full_contig	1	overlap
+3	mapSrc	gene	ENSG00000182378.13	OTTHUMG00000022693.5	PLCXD1	protein_coding	chrY	276322	303356	+	none	0	na
+3	mapSrc	trans	ENST00000399012.6	OTTHUMT00000058878.2	PLCXD1-001	protein_coding	chrY	276322	303353	+	none	0	na
+3	mapSrc	trans	ENST00000484611.7	OTTHUMT00000393211.1	PLCXD1-009	processed_transcript	chrY	276324	291537	+	none	0	na
+3	mapSrc	trans	ENST00000430923.7	OTTHUMT00000393212.2	PLCXD1-010	protein_coding	chrY	276353	291629	+	none	0	na
+3	mapSrc	trans	ENST00000445062.6	OTTHUMT00000313973.2	PLCXD1-005	protein_coding	chrY	281055	288869	+	none	0	na
+3	mapSrc	trans	ENST00000381657.7	OTTHUMT00000058879.2	PLCXD1-002	protein_coding	chrY	281192	303356	+	none	0	na
+3	mapSrc	trans	ENST00000429181.6	OTTHUMT00000313974.2	PLCXD1-006	protein_coding	chrY	281194	288787	+	none	0	na
+3	mapSrc	trans	ENST00000381663.8		PLCXD1-201	protein_coding	chrY	281462	303353	+	none	0	na
+3	mapSrc	trans	ENST00000443019.6	OTTHUMT00000058880.3	PLCXD1-003	protein_coding	chrY	283163	288829	+	none	0	na
+3	mapSrc	trans	ENST00000415337.6	OTTHUMT00000313975.2	PLCXD1-007	protein_coding	chrY	283465	291639	+	none	0	na
+3	mapSrc	trans	ENST00000447472.6	OTTHUMT00000313976.1	PLCXD1-008	protein_coding	chrY	283479	291629	+	none	0	na
+3	mapSrc	trans	ENST00000448477.6	OTTHUMT00000058881.3	PLCXD1-004	protein_coding	chrY	283734	290757	+	none	0	na
+3	map	gene	ENSG00000182378.13_1	OTTHUMG00000022693.5_1	PLCXD1	protein_coding	chrY	142989	170023	+	full_contig	1	overlap
+3	map	trans	ENST00000399012.6_1	OTTHUMT00000058878.2_1	PLCXD1-001	protein_coding	chrY	142989	170020	+	full_contig	1	overlap
+3	map	trans	ENST00000484611.7_1	OTTHUMT00000393211.1_1	PLCXD1-009	processed_transcript	chrY	142991	158204	+	full_contig	1	overlap
+3	map	trans	ENST00000430923.7_1	OTTHUMT00000393212.2_1	PLCXD1-010	protein_coding	chrY	143020	158296	+	full_contig	1	overlap
+3	map	trans	ENST00000445062.6_1	OTTHUMT00000313973.2_1	PLCXD1-005	protein_coding	chrY	147722	155536	+	full_contig	1	overlap
+3	map	trans	ENST00000381657.7_1	OTTHUMT00000058879.2_1	PLCXD1-002	protein_coding	chrY	147859	170023	+	full_contig	1	overlap
+3	map	trans	ENST00000429181.6_1	OTTHUMT00000313974.2_1	PLCXD1-006	protein_coding	chrY	147861	155454	+	full_contig	1	overlap
+3	map	trans	ENST00000381663.8_1		PLCXD1-201	protein_coding	chrY	148129	170020	+	full_contig	1	overlap
+3	map	trans	ENST00000443019.6_1	OTTHUMT00000058880.3_1	PLCXD1-003	protein_coding	chrY	149830	155496	+	full_contig	1	overlap
+3	map	trans	ENST00000415337.6_1	OTTHUMT00000313975.2_1	PLCXD1-007	protein_coding	chrY	150132	158306	+	full_contig	1	overlap
+3	map	trans	ENST00000447472.6_1	OTTHUMT00000313976.1_1	PLCXD1-008	protein_coding	chrY	150146	158296	+	full_contig	1	overlap
+3	map	trans	ENST00000448477.6_1	OTTHUMT00000058881.3_1	PLCXD1-004	protein_coding	chrY	150401	157424	+	full_contig	1	overlap
