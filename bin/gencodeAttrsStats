@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import sys, os
+myBinDir = os.path.normpath(os.path.abspath(os.path.dirname(sys.argv[0])))
+sys.path.append(myBinDir + "/../lib")
+import argparse
+from collections import defaultdict
+from pycbio.sys import fileOps
+from pycbio.sys.symEnum import SymEnum
+from pycbio.tsv import TsvReader
+from gencode.gencodeGenes import *
+
+
+def parseArgs():
+    desc="""Produce a summary of from the ucsc gencode attrs table.  This is
+simple and independent of the map-info format changes.
+"""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('liftAttrsTsv', help="lift TSV of attrs table")
+    parser.add_argument('statsTsv', help="output TSV")
+    args = parser.parse_args()
+    return args
+
+MappingType = SymEnum("MappingType",
+                      ("total", "mapped", "target"))
+mappingTypesReal = list(MappingType)[1:]
+CategoryType = SymEnum("CategoryType",
+                       ("total", "coding", "nonCoding", "smallNonCode", "pseudo", "problem"))
+categoryTypesReal = list(CategoryType)[1:]
+
+def idToMappingType(featId):
+    return MappingType.mapped if featId.find('_') >= 0 else MappingType.target
+    
+def bioTypeToCategory(bioType):
+    if bioType in bioTypesCoding:
+        return CategoryType.coding
+    elif bioType in bioTypesProblem:
+        return CategoryType.problem
+    elif bioType in bioTypesSmallNonCoding:
+        return CategoryType.smallNonCode
+    elif bioType in bioTypesNonCoding:
+        return CategoryType.nonCoding  # must do after small non-coding
+    elif bioType in bioTypesPseudo:
+        return CategoryType.pseudo
+    else:
+        raise Exception("logic error: {} ({})".format(bioType, type(bioType)))
+
+
+class GencodeAttrsStats(object):
+    def __init__(self, liftAttrsTsv):
+        self.gencode = GencodeGenes()
+        self.gencode.loadInfoFromFile(liftAttrsTsv, onlyExisting=False)
+
+        # by CategoryType, MappingType
+        self.geneCounts = defaultdict(lambda : defaultdict(int))
+        self.transCounts = defaultdict(lambda : defaultdict(int))
+
+        for gene in self.gencode.genesById.values():
+            self.__countGene(gene)
+
+    def __count(self, counts, bioType, featId):
+        categoryType = bioTypeToCategory(bioType)
+        mappingType = idToMappingType(featId)
+        counts[CategoryType.total][MappingType.total] += 1
+        counts[CategoryType.total][mappingType] += 1
+        counts[categoryType][MappingType.total] += 1
+        counts[categoryType][mappingType] += 1
+            
+    def __countGene(self, gene):
+        self.__count(self.geneCounts, gene.bioType, gene.id)
+        for trans in gene.transcripts:
+            self.__countTrans(trans)
+
+    def __countTrans(self, trans):
+        self.__count(self.transCounts, trans.bioType, trans.id)
+
+    def __writeCounts(self, desc, counts, outTsvFh):
+        for mt in MappingType:
+            fileOps.prRow(outTsvFh, [desc, mt]
+                          + [counts[ct][mt] for ct in CategoryType])
+        
+    def write(self, outTsvFh):
+        fileOps.prRow(outTsvFh, ["", ""] + [ct for ct in CategoryType])
+        self.__writeCounts("gene", self.geneCounts, outTsvFh)
+        self.__writeCounts("trans", self.transCounts, outTsvFh)
+
+
+def gencodeAttrsStats(opts):
+    attrStats = GencodeAttrsStats(opts.liftAttrsTsv)
+    with open(opts.statsTsv, "w") as outTsvFh:
+        attrStats.write(outTsvFh)
+
+gencodeAttrsStats(parseArgs())

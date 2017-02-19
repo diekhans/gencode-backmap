@@ -1,8 +1,0 @@
-mappedStatus	count	freq
-full_contig	42	0.67
-full_fragment	1	0.02
-gene_conflict	1	0.02
-gene_size_change	6	0.10
-no_seq_map	3	0.05
-partial	10	0.16
-all	63	1.00

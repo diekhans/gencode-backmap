@@ -47,3 +47,4 @@ CXXFLAGS += ${KENTINC} ${CXXDEBUG}
 BINDIR = ${ROOT}/bin
 OBJDIR = ${ROOT}/objs
 gencode_backmap = ${BINDIR}/gencode-backmap
+gencodeAttrsStats = ${BINDIR}/gencodeAttrsStats
