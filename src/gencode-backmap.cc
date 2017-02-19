@@ -163,7 +163,7 @@ const char* short_options = "hst:p:m:n";
 
 /* print usage */
 static void prUsage() {
-    cerr << usage << "Version: " << VERSION << " (" << VERSION_HASH <<  ")" << endl;
+    cerr << usage << "Version: " << VERSION << endl;
 }
 
 /* Entry point.  Parse arguments. */
