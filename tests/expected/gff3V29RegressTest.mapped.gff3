@@ -4,6 +4,10 @@
 #contact: gencode@sanger.ac.uk
 #format: gff3
 #date: 2015-03-06
+##sequence-region chr2 1 243199373
+chr2	HAVANA	gene	20729227	20729736	.	-	.	ID=ENSG00000279307.2;gene_id=ENSG00000279307.2_1;gene_type=processed_pseudogene;gene_name=AC012065.5;level=2;havana_gene=OTTHUMG00000191506.1_1;remap_status=full_contig;remap_num_mappings=1;remap_target_status=new
+chr2	HAVANA	transcript	20729227	20729736	.	-	.	ID=ENST00000624084.2;Parent=ENSG00000279307.2;gene_id=ENSG00000279307.2_1;transcript_id=ENST00000624084.2_1;gene_type=processed_pseudogene;gene_name=AC012065.5;transcript_type=processed_pseudogene;transcript_name=AC012065.5-201;level=2;transcript_support_level=NA;ont=PGO:0000004;tag=basic;havana_gene=OTTHUMG00000191506.1_1;havana_transcript=OTTHUMT00000488157.1_1;remap_num_mappings=1;remap_status=full_contig;remap_target_status=new
+chr2	HAVANA	exon	20729227	20729736	.	-	.	ID=exon:ENST00000624084.2:1;Parent=ENST00000624084.2;gene_id=ENSG00000279307.2_1;transcript_id=ENST00000624084.2_1;gene_type=processed_pseudogene;gene_name=AC012065.5;transcript_type=processed_pseudogene;transcript_name=AC012065.5-201;exon_number=1;exon_id=ENSE00003758258.2_1;level=2;transcript_support_level=NA;ont=PGO:0000004;tag=basic;havana_gene=OTTHUMG00000191506.1_1;havana_transcript=OTTHUMT00000488157.1_1;remap_original_location=chr2:-:20529467-20529976;remap_status=full_contig
 ##sequence-region chr19 1 59128983
 chr19	ENSEMBL	gene	3490820	3500938	.	-	.	ID=ENSG00000129932.8;gene_id=ENSG00000129932.8_1;gene_type=protein_coding;gene_name=DOHH;level=3;remap_status=full_contig;remap_num_mappings=1;remap_target_status=overlap
 chr19	ENSEMBL	transcript	3490820	3500938	.	-	.	ID=ENST00000427575.5;Parent=ENSG00000129932.8;gene_id=ENSG00000129932.8_1;transcript_id=ENST00000427575.5_1;gene_type=protein_coding;gene_name=DOHH;transcript_type=protein_coding;transcript_name=DOHH-201;level=3;protein_id=ENSP00000398882.1;transcript_support_level=1;tag=basic,appris_principal_1,CCDS;ccdsid=CCDS12108.1;remap_num_mappings=1;remap_status=full_contig;remap_target_status=overlap

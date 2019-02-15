@@ -4,6 +4,3 @@
 #contact: gencode@sanger.ac.uk
 #format: gff3
 #date: 2015-03-06
-chr2	HAVANA	gene	20529467	20529976	.	-	.	ID=ENSG00000279307.2;gene_id=ENSG00000279307.2;gene_type=processed_pseudogene;gene_name=AC012065.5;level=2;havana_gene=OTTHUMG00000191506.1;remap_status=no_seq_map;remap_num_mappings=0;remap_target_status=new
-chr2	HAVANA	transcript	20529467	20529976	.	-	.	ID=ENST00000624084.2;Parent=ENSG00000279307.2;gene_id=ENSG00000279307.2;transcript_id=ENST00000624084.2;gene_type=processed_pseudogene;gene_name=AC012065.5;transcript_type=processed_pseudogene;transcript_name=AC012065.5-201;level=2;transcript_support_level=NA;ont=PGO:0000004;tag=basic;havana_gene=OTTHUMG00000191506.1;havana_transcript=OTTHUMT00000488157.1;remap_num_mappings=0;remap_status=no_seq_map;remap_target_status=new
-chr2	HAVANA	exon	20529467	20529976	.	-	.	ID=exon:ENST00000624084.2:1;Parent=ENST00000624084.2;gene_id=ENSG00000279307.2;transcript_id=ENST00000624084.2;gene_type=processed_pseudogene;gene_name=AC012065.5;transcript_type=processed_pseudogene;transcript_name=AC012065.5-201;exon_number=1;exon_id=ENSE00003758258.2;level=2;transcript_support_level=NA;ont=PGO:0000004;tag=basic;havana_gene=OTTHUMG00000191506.1;havana_transcript=OTTHUMT00000488157.1;remap_status=no_seq_map

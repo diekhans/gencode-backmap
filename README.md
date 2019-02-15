@@ -125,6 +125,7 @@ The following files are needed to map using the UCSC liftover alignments:
 
 - UCSC liftover alignments.  These are the alignments of GRCh37 to GRCh38,
   which will be swapped.  This produced slightly better results that using the
+  GRCh38 to GRCh37 alignments.
   - http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz
 - NCBI assembly report file for GRCh37
   - ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt

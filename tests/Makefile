@@ -265,7 +265,6 @@ v25Gff3 = ${v25Dir}/gencode.v25.chr_patch_hapl_scaff.annotation.gff3.gz
 v25Gtf = ${v25Dir}/gencode.v25.chr_patch_hapl_scaff.annotation.gtf.gz
 
 bigTest: bigGff3UcscTest bigGtfUcscTest
-# don't run any more: bigGff3NcbiTest bigGtfNcbiTest
 
 bigGff3UcscTest: mkdirs
 	${gencode_backmap} --oldStyleParIdHack --swapMap --unmappedGxf=output/$@.unmapped.gff3 ${v25Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.map-info >& output/$@.gff3.log
@@ -274,28 +273,6 @@ bigGff3UcscTest: mkdirs
 
 bigGtfUcscTest: mkdirs
 	${gencode_backmap} --oldStyleParIdHack --swapMap --unmappedGxf=output/$@.unmapped.gtf ${v25Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.map-info >& output/$@.gtf.log
-	gtfToGenePred output/$@.mapped.gtf /dev/null
-	gtfToGenePred output/$@.unmapped.gtf /dev/null
-
-bigGff3NcbiTest: mkdirs
-	${gencode_backmap} --oldStyleParIdHack --swapMap --unmappedGxf=output/$@.unmapped.gff3 ${v25Gff3} ${testNcbiLiftOverChains} output/$@.mapped.gff3 output/$@.map-info >& output/$@.gff3.log
-	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
-	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
-
-bigGtfNcbiTest: mkdirs
-	${gencode_backmap} --oldStyleParIdHack --swapMap --unmappedGxf=output/$@.unmapped.gtf ${v25Gtf} ${testNcbiLiftOverChains} output/$@.mapped.gtf output/$@.map-info >& output/$@.gtf.log
-	gtfToGenePred output/$@.mapped.gtf /dev/null
-	gtfToGenePred output/$@.unmapped.gtf /dev/null
-
-# add mapping version, use both different alignments and different gencode
-# to add more variation.
-bigGff3UcscMapVerTest: bigGff3NcbiTest
-	${gencode_backmap} --oldStyleParIdHack --swapMap --previousMappedGxf=output/bigGff3NcbiTest.mapped.gff3 --unmappedGxf=output/$@.unmapped.gff3 ${v25Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.map-info >& output/$@.gff3.log
-	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
-	${gff3ToGenePred} output/$@.unmapped.gff3 /dev/null
-
-bigGtfUcscMapVerTest: bigGff3NcbiTest
-	${gencode_backmap} --oldStyleParIdHack --swapMap --previousMappedGxf=output/bigGtf3NcbiTest.mapped.gtf --unmappedGxf=output/$@.unmapped.gtf ${v25Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.map-info >& output/$@.gtf.log
 	gtfToGenePred output/$@.mapped.gtf /dev/null
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
 
@@ -309,9 +286,9 @@ ucscMappingChains: tmp/testGrch38.gp
 	overlapSelect tmp/testGrch38.gp  /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
 
 # need to only include first ##gff-version header
-tmp/testGrch38.gp: data/gencode.v22.annotation.gff3 data/idChange.v25.gff3  data/gencode.v29.annotation.gff3
+tmp/testGrch38.gp: data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3
 	@mkdir -p $(dir $@)
-	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' data/gencode.v22.annotation.gff3 data/idChange.v25.gff3)  $@
+	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' $^)  $@
 
 tmp/GRCh37.p13.refseq-gencode.lift: tmp/GCF_000001405.25.assembly.txt
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@
