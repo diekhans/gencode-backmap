@@ -2,7 +2,7 @@
 Objects to store gencode gene annotations
 """
 import sys, re
-from pycbio.hgdata.genePred import GenePredReader, GenePredDbReader
+from pycbio.hgdata.genePred import GenePredReader
 from pycbio.tsv import TsvReader, TabFileReader
 from pycbio.sys.enumeration import Enumeration
 from pycbio.sys import PycbioException
@@ -45,7 +45,7 @@ BioType = Enumeration("BioType", ("IG_C_gene", "IG_D_gene", "IG_J_gene", "IG_V_g
                                   "transcribed_unprocessed_pseudogene",
                                   "unitary_pseudogene",
                                   "transcribed_unitary_pseudogene",
-                                  "unprocessed_pseudogene", 
+                                  "unprocessed_pseudogene",
                                   ("overlapping_ncrna_3prime", "3prime_overlapping_ncrna"),
                                   ("overlapping_ncRNA_3prime", "3prime_overlapping_ncRNA"),
                                   "disrupted_domain",
@@ -354,7 +354,7 @@ class GencodeTranscriptLocus(object):
     def hasMultiLoci(self):
         "is the transcript associated with multiple loci?"
         return len(self.transcript.transcriptLoci) > 1
-    
+
     def hasCds(self):
         return (self.gp.cdsStart < self.gp.cdsEnd)
 
@@ -441,7 +441,7 @@ class GencodeTranscript(object):
         return GencodeMethod.manual if self.havanaId is not None else GencodeMethod.automatic
 
     def getExtendedMethod(self):
-        """get extended method that indicates merged transcripts.  Must have 
+        """get extended method that indicates merged transcripts.  Must have
         loaded the Transcript_source metadata"""
         if self.extendedMethod is None:
             raise GencodeGenesException("Transcript_source metadata must be loaded to get transcript extended method: " + self.id)
@@ -457,7 +457,7 @@ class GencodeTranscript(object):
             return GencodeTranscript.__infoTsvWithTagsHeader
         else:
             return GencodeTranscript.__infoTsvBasicHeader
-    
+
     def toInfoRow(self, inclTags=True):
         # biostatus no longer supported
         row = [self.gene.id, self.gene.name, self.gene.bioType, "", self.id, self.name, self.bioType, "", _emptyIfNone(self.gene.havanaId),  _emptyIfNone(self.havanaId),  _emptyIfNone(self.ccdsId), self.level]
@@ -559,7 +559,7 @@ class GencodeGene(object):
         return GencodeMethod.manual if self.havanaId is not None else GencodeMethod.automatic
 
     def getExtendedMethod(self):
-        """get extended method that indicates merged genes.  Must have 
+        """get extended method that indicates merged genes.  Must have
         loaded the Gene_source metadata"""
         if self.extendedMethod is None:
             raise GencodeGenesException("Gene_source metadata must be loaded to get gene extended method: " + self.id)
@@ -630,7 +630,7 @@ class GencodeGenes(object):
         for gene in self.genesById.itervalues():
             for geneLocus in gene.geneLoci:
                 yield geneLocus
-        
+
     def getOverlappingGeneLoci(self, chrom, chromStart, chromEnd, strand=None):
         """Get GeneLoci overlapping range.  This covers entry range of gene,
         including introns"""
@@ -682,7 +682,7 @@ class GencodeGenes(object):
         gene.name = info.geneName
         gene.bioType = info.geneType
         gene.havanaId = info.havanaGene
-        
+
     def __loadInfoRowGene(self, info):
         gene = self.obtainGene(info.geneId)
         if gene.name is None:
@@ -758,7 +758,7 @@ class GencodeGenes(object):
     def __makeChromSubSelectClauses(chromSubSelects):
         clauses = ["(transcriptId in ({}))".format(chromSubSelect) for chromSubSelect in chromSubSelects]
         return "({})".format(" or ".join(clauses))
-        
+
     @staticmethod
     def __makeTranscriptIdSelectWhere(chromSubSelects=None, transcriptIdSubSelect=None):
         """generate, possibly empty, where clause for tables keyed by tables,
@@ -899,7 +899,7 @@ class GencodeGenes(object):
                     errFh.write("Error: " + str(ex) + "\n")
                 else:
                     raise ex
-        if errCnt != 0: 
+        if errCnt != 0:
             raise GencodeGenesException("missing gene information for " + str(errCnt) + " loci, check info file")
 
     def finish(self, errFh=None):
