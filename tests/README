@@ -18,3 +18,8 @@ Test data
   Test subset of annotations in GTF format
 - data/gencode.v22.metadata.PolyA_feature
   PolyA features to map, these have corresponding entries in the gff3/gtf files.
+
+- data/gencode.v29.annotation.gff3
+  - ENST00000427575.5 - didn't map, liftover is clean
+  - ENST00000624084.2 - didn't map, mapped in v26lift37 but not v29lift37, not in V19
+  

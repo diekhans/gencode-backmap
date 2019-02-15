@@ -1,0 +1,9 @@
+geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featStart	featEnd	featStrand	mappingStatus	mappingCount	targetStatus
+0	mapSrc	gene	ENSG00000279307.2	OTTHUMG00000191506.1	AC012065.5	processed_pseudogene	chr2	20529467	20529976	-	none	0	na
+0	mapSrc	trans	ENST00000624084.2	OTTHUMT00000488157.1	AC012065.5-201	processed_pseudogene	chr2	20529467	20529976	-	none	0	na
+0	unmap	gene	ENSG00000279307.2	OTTHUMG00000191506.1	AC012065.5	processed_pseudogene	chr2	20529467	20529976	-	no_seq_map	0	new
+0	unmap	trans	ENST00000624084.2	OTTHUMT00000488157.1	AC012065.5-201	processed_pseudogene	chr2	20529467	20529976	-	no_seq_map	0	new
+1	mapSrc	gene	ENSG00000129932.8		DOHH	protein_coding	chr19	3490822	3500940	-	none	0	na
+1	mapSrc	trans	ENST00000427575.5		DOHH-201	protein_coding	chr19	3490822	3500940	-	none	0	na
+1	map	gene	ENSG00000129932.8_1		DOHH	protein_coding	chr19	3490820	3500938	-	full_contig	1	overlap
+1	map	trans	ENST00000427575.5_1		DOHH-201	protein_coding	chr19	3490820	3500938	-	full_contig	1	overlap

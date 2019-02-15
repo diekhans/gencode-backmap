@@ -36,9 +36,10 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3ParNamingTest gtfParNamingTest cmpParNamingTest \
 	gff3NcbiTest gtfNcbiTest \
 	gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
-	regressTests \
-	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap cmpUcscSubstituteManOverlap \
-	mappingVerTests ucscLiftEditTest reportsTests
+	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
+	cmpUcscSubstituteManOverlap \
+	gff3V29RegressTest \
+	ucscLiftEditTest regressTests
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} --unmappedGxf=output/$@.unmapped.gff3 data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
@@ -116,7 +117,7 @@ gff3UcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.map-info output/$@.map-info
 
 gtfUcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap --on --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGtfArg} ${targetSubstArg} ${headerArg} --unmappedGxf=output/$@.unmapped.gtf data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap} --oldStyleParIdHack --swapMap  --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGtfArg} ${targetSubstArg} ${headerArg} --unmappedGxf=output/$@.unmapped.gtf data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	gtfToGenePred -genePredExt output/$@.mapped.gtf /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	gtfToGenePred -genePredExt output/$@.unmapped.gtf /dev/stdout | ${normalizeGenePred} > output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
@@ -193,7 +194,7 @@ ${testGencodeLiftOverChains}: mkdirs ${testUcscLiftOverChains}
 # various regression tests
 #
 ##
-regressTests:  idChangeV25Test
+regressTests: idChangeV25Test gff3V29RegressTest
 
 ##
 # Id changes and related in v25
@@ -217,6 +218,16 @@ idChangeV25Test: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+
+# reported not mapped, but seens to work
+gff3V29RegressTest: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} --unmappedGxf=output/$@.unmapped.gff3 data/gencode.v29.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
+	gff3ToGenePred output/$@.unmapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.unmapped.gp
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
 
 ##
 ## lift edit
@@ -292,19 +303,13 @@ bigGtfUcscMapVerTest: bigGff3NcbiTest
 ##
 # commands to create new mapping chains when test set is changed
 ##
-mappingChains: ucscMappingChains ncbiMappingChains
+mappingChains: ucscMappingChains
 
 ucscMappingChains: tmp/testGrch38.gp
 	overlapSelect tmp/testGrch38.gp  /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
 
-ncbiMappingChains: tmp/GRCh37.p13.sizes tmp/GRCh38.p2.sizes tmp/GRCh38-GRCh37.p13.gff tmp/GRCh38.p2.refseq-gencode.lift tmp/GRCh37.p13.refseq-gencode.lift tmp/testGrch38.gp
-	gff3ToPsl tmp/GRCh37.p13.sizes tmp/GRCh38.p2.sizes tmp/GRCh38-GRCh37.p13.gff /dev/stdout \
-	| liftUp -nohead -type=.psl /dev/stdout tmp/GRCh38.p2.refseq-gencode.lift error /dev/stdin \
-	| liftUp -nohead -type=.psl -pslQ /dev/stdout  tmp/GRCh37.p13.refseq-gencode.lift error /dev/stdin \
-	| overlapSelect tmp/testGrch38.gp -inFmt=psl /dev/stdin ${testNcbiLiftOverChains}
-
 # need to only include first ##gff-version header
-tmp/testGrch38.gp: data/gencode.v22.annotation.gff3 data/idChange.v25.gff3
+tmp/testGrch38.gp: data/gencode.v22.annotation.gff3 data/idChange.v25.gff3  data/gencode.v29.annotation.gff3
 	@mkdir -p $(dir $@)
 	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' data/gencode.v22.annotation.gff3 data/idChange.v25.gff3)  $@
 
@@ -319,14 +324,6 @@ tmp/GRCh37.p13.sizes: tmp/GCF_000001405.25.assembly.txt
 
 tmp/GRCh38.p2.sizes: tmp/GCF_000001405.28.assembly.txt
 	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@
-
-# NCBI official one is broken FIXME: note 
-#ncbiRemapGffUrl = ftp://ftp.ncbi.nlm.nih.gov/pub/remap/Homo_sapiens/1.7/GRCh38-GRCh37.p13.gff
-ncbiRemapGffUrl = ftp://ftp.ncbi.nlm.nih.gov/pub/murphyte/assm_alignments/GRCh38.p2-GRCh37.p13.gff.gz
-tmp/GRCh38-GRCh37.p13.gff:
-	@mkdir -p tmp
-	#wget -nv -O $@ ${ncbiRemapGffUrl}
-	wget -nv -O /dev/stdout ${ncbiRemapGffUrl} | zcat >$@
 
 tmp/GCF_000001405.25.assembly.txt:
 	@mkdir -p tmp
