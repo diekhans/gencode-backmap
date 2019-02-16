@@ -1,4 +1,4 @@
-#include "gxfIO.hh"
+#include "gxf.hh"
 #include "FIOStream.hh"
 #include <typeinfo>
 #include <string>
@@ -10,6 +10,7 @@
 static bool isQuoted(const string& s) {
     return ((s.size() > 1) and (s[0] == '"') and (s[s.size()-1] == '"'));
 }
+
 
 /* is a value a integrate or float */
 static bool isNumeric(const string& s) {
@@ -36,38 +37,119 @@ static string stripQuotes(const string& s) {
     }
 }
 
-/* is this an attribute that must be hacked to be unique in GTF? */
-static bool isParIdNonUniqAttr(const string& name) {
-    return (name == GxfFeature::GENE_ID_ATTR) or (name == GxfFeature::TRANSCRIPT_ID_ATTR);
-}
+const string GxfFeature::GENE = "gene";
+const string GxfFeature::TRANSCRIPT = "transcript";
+const string GxfFeature::EXON = "exon";
+const string GxfFeature::CDS = "CDS";
+const string GxfFeature::START_CODON = "start_codon";
+const string GxfFeature::UTR = "UTR";
+const string GxfFeature::STOP_CODON = "stop_codon";
+const string GxfFeature::STOP_CODON_REDEFINED_AS_SELENOCYSTEINE = "stop_codon_redefined_as_selenocysteine";
+
+
+// standard attribute names
+const string GxfFeature::ID_ATTR = "ID";
+const string GxfFeature::PARENT_ATTR = "Parent";
+const string GxfFeature::GENE_ID_ATTR = "gene_id";
+const string GxfFeature::GENE_NAME_ATTR = "gene_name";
+const string GxfFeature::GENE_TYPE_ATTR = "gene_type";
+const string GxfFeature::GENE_STATUS_ATTR = "gene_status";
+const string GxfFeature::GENE_HAVANA_ATTR = "havana_gene";
+const string GxfFeature::TRANSCRIPT_ID_ATTR = "transcript_id";
+const string GxfFeature::TRANSCRIPT_NAME_ATTR = "transcript_name";
+const string GxfFeature::TRANSCRIPT_TYPE_ATTR = "transcript_type";
+const string GxfFeature::TRANSCRIPT_STATUS_ATTR = "transcript_status";
+const string GxfFeature::TRANSCRIPT_HAVANA_ATTR = "havana_transcript";
+const string GxfFeature::EXON_ID_ATTR = "exon_id";
+
+const string GxfFeature::SOURCE_HAVANA = "HAVANA";
+const string GxfFeature::SOURCE_ENSEMBL = "ENSEMBL";
+
 
 /* Get format from file name, or error */
 GxfFormat gxfFormatFromFileName(const string& fileName) {
-    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")) {
+    if (stringEndsWith(fileName, ".gff3") or stringEndsWith(fileName, ".gff3.gz")
+        or (fileName == "/dev/null")) {
         return GFF3_FORMAT;
     } else if (stringEndsWith(fileName, ".gtf") or stringEndsWith(fileName, ".gtf.gz")) {
         return GTF_FORMAT;
-    } else if (fileName == "/dev/null") {
-        return DEV_NULL_FORMAT;
     } else {
         errAbort(toCharStr("Error: expected input annotation with an extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
         return GXF_UNKNOWN_FORMAT;
     }
 }
 
+/* return base columns (excluding attributes) as a string */
+string GxfFeature::baseColumnsAsString() const {
+    return fSeqid + "\t" + fSource + "\t" + fType + "\t" + to_string(fStart) + "\t"
+        + to_string(fEnd) + "\t" + fScore + "\t" + fStrand + "\t" + fPhase + "\t";
+}
+
+/* get the id based on feature type, or empty string if it doesn't have an
+ * id */
+const string& GxfFeature::getTypeId() const {
+    if (fType == GxfFeature::GENE) {
+        return getAttrValue(GxfFeature::GENE_ID_ATTR, emptyString);
+    } else if (fType == GxfFeature::TRANSCRIPT) {
+        return getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR, emptyString);
+    } else if (fType == GxfFeature::EXON) {
+        return getAttrValue(GxfFeature::EXON_ID_ATTR, emptyString);
+    } else {
+        return emptyString;
+    }
+}
+
+/* get the havana id based on feature type, or empty string if it doesn't have an
+ * id */
+const string& GxfFeature::getHavanaTypeId() const {
+    if (fType == GxfFeature::GENE) {
+        return getAttrValue(GxfFeature::GENE_HAVANA_ATTR, emptyString);
+    } else if (fType == GxfFeature::TRANSCRIPT) {
+        return getAttrValue(GxfFeature::TRANSCRIPT_HAVANA_ATTR, emptyString);
+    } else {
+        return emptyString;
+    }
+}
+
+/* get the name based on feature type, or empty string if it doesn't have an
+ * id */
+const string& GxfFeature::getTypeName() const {
+    if (fType == GxfFeature::GENE) {
+        return getAttrValue(GxfFeature::GENE_NAME_ATTR, emptyString);
+    } else if (fType == GxfFeature::TRANSCRIPT) {
+        return getAttrValue(GxfFeature::TRANSCRIPT_NAME_ATTR, emptyString);
+    } else {
+        return emptyString;
+    }
+}
+
+/* get the biotype based on feature type, or empty string if it doesn't have an
+ * id */
+const string& GxfFeature::getTypeBiotype() const {
+    static const string emptyString;
+    if (fType == GxfFeature::GENE) {
+        return getAttrValue(GxfFeature::GENE_TYPE_ATTR, emptyString);
+    } else if (fType == GxfFeature::TRANSCRIPT) {
+        return getAttrValue(GxfFeature::TRANSCRIPT_TYPE_ATTR, emptyString);
+    } else {
+        return emptyString;
+    }
+}
+
 /* Parse for GFF 3 */
 class Gff3Parser: public GxfParser {
     private:
+    /* is this a multi-valued attribute? */
     /* parse ID=ENSG00000223972.5 */
-    void parseAttr(const string& attrStr,
-                   AttrVals& attrVals) const {
+    static void parseAttr(const string& attrStr,
+                          AttrVals& attrVals) {
         size_t i = attrStr.find('=');
         if (i == string::npos) {
             throw invalid_argument("Invalid GFF3 attribute \"" + attrStr + "\"");
         }
         string name = attrStr.substr(0,i);
-        string value = stripQuotes(attrStr.substr(i+1));
-        StringVector values = stringSplit(value, ',');
+        string value = attrStr.substr(i+1);
+        StringVector values = stringSplit(stripQuotes(value), ',');
         AttrVal* attrVal = new AttrVal(name, values[0]);
         attrVals.push_back(attrVal);
         for (int i = 1; i < values.size(); i++) {
@@ -76,7 +158,7 @@ class Gff3Parser: public GxfParser {
     }
 
     /* parse: ID=ENSG00000223972.5;gene_id=ENSG00000223972.5 */
-    AttrVals parseAttrs(const string& attrsStr) const {
+    static AttrVals parseAttrs(const string& attrsStr) {
         AttrVals attrVals;
         StringVector parts = stringSplit(attrsStr,';');
         // `;' is a separator
@@ -88,9 +170,8 @@ class Gff3Parser: public GxfParser {
 
     public:
     /* constructor */
-    Gff3Parser(const string& fileName,
-               GxfFeatureFactory gxfFeatureFactory):
-        GxfParser(fileName, gxfFeatureFactory) {
+    Gff3Parser(const string& fileName):
+        GxfParser(fileName) {
     }
  
     /* get the format being parser */
@@ -100,49 +181,34 @@ class Gff3Parser: public GxfParser {
 
     /* parse a feature */
     virtual GxfFeature* parseFeature(const StringVector& columns) {
-        return fGxfFeatureFactory(columns[0], columns[1], columns[2],
-                                  stringToInt(columns[3]), stringToInt(columns[4]),
-                                  columns[5], columns[6], columns[7], parseAttrs(columns[8]));
+        return new GxfFeature(columns[0], columns[1], columns[2],
+                              stringToInt(columns[3]), stringToInt(columns[4]),
+                              columns[5], columns[6], columns[7], parseAttrs(columns[8]));
     }
 };
     
 /* Parse for GTF */
 class GtfParser: public GxfParser {
     private:
-
-    /* if a value has a non-unique hack, remove it */
-    string removeParUniqHack(const string& value) const {
-        if (stringStartsWith(value, "ENSGR") or stringStartsWith(value, "ENSTR")) {
-            return value.substr(0, 4) + "0" + value.substr(5);
-        } else if (stringEndsWith(value, "_PAR_Y")) {
-            return value.substr(0, value.size()-6);
-        } else {
-            return value;
-        }
-    }
-    
     /* parse ID=ENSG00000223972.5 */
-    void parseAttr(const string& attrStr,
-                   AttrVals& attrVals) const {
+    static void parseAttr(const string& attrStr,
+                          AttrVals& attrVals) {
         size_t i = attrStr.find(' ');
         if (i == string::npos) {
             throw invalid_argument("Invalid GTF attribute \"" + attrStr + "\"");
         }
         string name = attrStr.substr(0,i);
-        string value = stripQuotes(attrStr.substr(i+1));
-        if (isParIdNonUniqAttr(name)) {
-            value = removeParUniqHack(value);
-        }
+        string value = attrStr.substr(i+1);
         int idx = attrVals.findIdx(name);
         if (idx >= 0) {
-            attrVals[idx]->addVal(value);
+            attrVals[idx]->addVal(stripQuotes(value));
         } else {
-            attrVals.push_back(new AttrVal(name, value));
+            attrVals.push_back(new AttrVal(name, stripQuotes(value)));
         }
     }
 
     /* parse: gene_id "ENSG00000223972.5"; gene_type "transcribed_unprocessed_pseudogene";  */
-    AttrVals parseAttrs(const string& attrsStr) const {
+    static AttrVals parseAttrs(const string& attrsStr) {
         AttrVals attrVals;
         StringVector parts = stringSplit(attrsStr,';');
         // last will be empty, since `;' is a terminator
@@ -154,9 +220,8 @@ class GtfParser: public GxfParser {
 
     public:
    /* constructor */
-    GtfParser(const string& fileName,
-              GxfFeatureFactory gxfFeatureFactory):
-        GxfParser(fileName, gxfFeatureFactory) {
+    GtfParser(const string& fileName):
+        GxfParser(fileName) {
     }
  
     /* get the format being parser */
@@ -166,9 +231,9 @@ class GtfParser: public GxfParser {
 
      /* parse a feature */
     virtual GxfFeature* parseFeature(const StringVector& columns) {
-        return fGxfFeatureFactory(columns[0], columns[1], columns[2],
-                                  stringToInt(columns[3]), stringToInt(columns[4]),
-                                  columns[5], columns[6], columns[7], parseAttrs(columns[8]));
+        return new GxfFeature(columns[0], columns[1], columns[2],
+                              stringToInt(columns[3]), stringToInt(columns[4]),
+                              columns[5], columns[6], columns[7], parseAttrs(columns[8]));
     }
 };
 
@@ -182,10 +247,8 @@ StringVector GxfParser::splitFeatureLine(const string& line) const {
 }
 
 /* constructor that opens file, which maybe compressed. */
-GxfParser::GxfParser(const string& fileName,
-                     GxfFeatureFactory gxfFeatureFactory):
-    fIn(new FIOStream(fileName)),
-    fGxfFeatureFactory(gxfFeatureFactory) {
+GxfParser::GxfParser(const string& fileName):
+    fIn(new FIOStream(fileName)) {
 }
 
 /* destructor */
@@ -221,15 +284,14 @@ GxfRecord* GxfParser::next() {
 /* Factory to create a parser. file maybe compressed.  If gxfFormat is
  * unknown, guess from filename*/
 GxfParser *GxfParser::factory(const string& fileName,
-                              GxfFeatureFactory gxfFeatureFactory,
                               GxfFormat gxfFormat) {
     if (gxfFormat==GXF_UNKNOWN_FORMAT) {
         gxfFormat = gxfFormatFromFileName(fileName);
     }
     if (gxfFormat == GFF3_FORMAT) {
-        return new Gff3Parser(fileName, gxfFeatureFactory);
+        return new Gff3Parser(fileName);
     } else {
-        return new GtfParser(fileName, gxfFeatureFactory);
+        return new GtfParser(fileName);
     }
 }
 
@@ -280,47 +342,18 @@ class Gff3Writer: public GxfWriter {
 
 /* Write for GTF */
 class GtfWriter: public GxfWriter {
-    private:
-    ParIdHackMethod fParIdHackMethod;
-
-    /* Does this record have the PAR Y */
-    bool hasParYTag(const AttrVals& attrVals) const {
-        const AttrVal* tagAttr = attrVals.find(GxfFeature::TAG_ATTR);
-        if (tagAttr != NULL) {
-            for (int i = 0; i < tagAttr->size(); i++) {
-                if (tagAttr->getVal(i) == "PAR") {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    /* modify an id in the PAR */
-    string addParUniqHack(const string& id) const {
-        if (fParIdHackMethod == PAR_ID_HACK_OLD) {
-            assert(id[5] == '0');
-            return id.substr(0, 4) + "R" + id.substr(5);
-        } else {
-            return id + "_PAR_Y";
-        }
-    }
+    public:
 
     /* format an attribute */
-    string formatAttr(const string& name,
-                      const string& val,
-                      bool isParY) const {
+    static string formatAttr(const string& name,
+                             const string& val) {
         // n.b. this is not general, doesn't handle embedded quotes
         bool numericAttr = isNumeric(val);
         string strAttr = name + " ";
         if (!numericAttr) {
             strAttr += "\"";
         }
-        if (isParY and isParIdNonUniqAttr(name)) {
-            strAttr +=  addParUniqHack(val);
-        } else {
-            strAttr += val;
-        }
+        strAttr += val;
         if (!numericAttr) {
             strAttr += "\"";
         }
@@ -328,20 +361,19 @@ class GtfWriter: public GxfWriter {
     }
 
     /* format an attribute and values */
-    string formatAttr(const AttrVal* attrVal,
-                      bool isParY) const {
+    static string formatAttr(const AttrVal* attrVal) {
         string strAttr;
         for (int i = 0; i < attrVal->getVals().size(); i++) {
             if (i > 0) {
                 strAttr += " ";  // same formatting as GENCODE
             }
-            strAttr += formatAttr(attrVal->getName(), attrVal->getVals()[i], isParY) +  ";";
+            strAttr += formatAttr(attrVal->getName(), attrVal->getVals()[i]) +  ";";
         }
         return strAttr;
     }
 
     /* should this attribute be included */
-    bool includeAttr(const AttrVal* attrVal) const {
+    static bool includeAttr(const AttrVal* attrVal) {
         // drop GFF3 linkage attributes
         return not ((attrVal->getName() == GxfFeature::ID_ATTR)
                     or (attrVal->getName() == GxfFeature::PARENT_ATTR)
@@ -349,26 +381,21 @@ class GtfWriter: public GxfWriter {
     }
     
     /* format attribute */
-    string formatAttrs(const AttrVals& attrVals) const {
-        bool isParY = hasParYTag(attrVals);
+    static string formatAttrs(const AttrVals& attrVals) {
         string strAttrs;
         for (int i = 0; i < attrVals.size(); i++) {
             if (includeAttr(attrVals[i])) {
                 if (strAttrs.size() > 0) {
                     strAttrs += " ";  // same formatting as GENCODE
                 }
-                strAttrs += formatAttr(attrVals[i], isParY);
+                strAttrs += formatAttr(attrVals[i]);
             }
         }
         return strAttrs;
     }
-    public:
-
     /* constructor */
-    GtfWriter(const string& fileName,
-              ParIdHackMethod parIdHackMethod):
-        GxfWriter(fileName),
-        fParIdHackMethod(parIdHackMethod) {
+    GtfWriter(const string& fileName):
+        GxfWriter(fileName) {
     }
 
     /* get the format being parser */
@@ -395,15 +422,14 @@ GxfWriter::~GxfWriter() {
 /* Factory to create a writer. file maybe compressed.  If gxfFormat is
  * unknown, guess from filename*/
 GxfWriter *GxfWriter::factory(const string& fileName,
-                              ParIdHackMethod parIdHackMethod,
                               GxfFormat gxfFormat) {
-    if (gxfFormat == GXF_UNKNOWN_FORMAT) {
+    if (gxfFormat==GXF_UNKNOWN_FORMAT) {
         gxfFormat = gxfFormatFromFileName(fileName);
     }
     if (gxfFormat == GFF3_FORMAT) {
         return new Gff3Writer(fileName);
     } else {
-        return new GtfWriter(fileName, parIdHackMethod);
+        return new GtfWriter(fileName);
     }
 }
 
