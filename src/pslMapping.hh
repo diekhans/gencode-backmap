@@ -5,7 +5,7 @@
 #define pslMapping_hh
 #include "pslOps.hh"
 #include <iostream>
-class GxfFeature;
+class FeatureNode;
 
 /* set of mapped alignments */
 class PslMapping {
@@ -20,8 +20,8 @@ class PslMapping {
     /* constructor, sort mapped PSLs */
     PslMapping(struct psl* srcPsl,
                PslVector& mappedPsls,
-               const GxfFeature* primaryTarget=NULL,
-               const GxfFeature* secondaryTarget=NULL);
+               const FeatureNode* primaryTarget=NULL,
+               const FeatureNode* secondaryTarget=NULL);
 
     /* free up psls */
     ~PslMapping();
@@ -37,10 +37,11 @@ class PslMapping {
         return fMappedPsls;
     }
 
-    /* sort or restore the mapped PSLs  Kind of a hack to allow restore so
-     * we don't have to pass primaryTarget/secondaryTargets everywhere */
-    void sortMappedPsls(const GxfFeature* primaryTarget=NULL,
-                        const GxfFeature* secondaryTarget=NULL);
+    /* sort or restore the mapped PSLs  Kind of a hack to allow sort so
+     * we don't have to pass primaryTarget/secondaryTargets everywhere.
+     * targets maybe NULL. */
+    void sortMappedPsls(const FeatureNode* primaryTarget=NULL,
+                        const FeatureNode* secondaryTarget=NULL);
 
     /* are there any mappings? */
     bool haveMappings() const {

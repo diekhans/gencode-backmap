@@ -3,10 +3,9 @@
  */
 #ifndef geneMapper_hh
 #define geneMapper_hh
-#include "gxfRecord.hh"
-#include "feature.hh"
+#include "gxf.hh"
+#include "featureTree.hh"
 #include "typeOps.hh"
-#include "resultFeatures.hh"
 #include <set>
 class TransMap;
 class PslMapping;
@@ -50,86 +49,86 @@ class GeneMapper {
     void outputInfoHeader(ostream& mappingInfoFh) const;
     void outputInfo(const string& recType,
                     const string& featType,
-                    const Feature* feature,
+                    const FeatureNode* feature,
                     RemapStatus mappingStatus,
                     int mappingCount,
                     TargetStatus targetStatus,
                     ostream& mappingInfoFh) const;
-    void outputSrcGeneInfo(const ResultFeatures* mappedGene,
+    void outputSrcGeneInfo(const ResultFeatureTrees* mappedGene,
                            ostream& mappingInfoFh) const;
-    void outputMappedGeneInfo(const ResultFeatures* mappedGene,
+    void outputMappedGeneInfo(const ResultFeatureTrees* mappedGene,
                               ostream& mappingInfoFh) const;
-    void outputUnmappedGeneInfo(const ResultFeatures* mappedGene,
+    void outputUnmappedGeneInfo(const ResultFeatureTrees* mappedGene,
                                 ostream& mappingInfoFh) const;
-    void outputTargetGeneInfo(const ResultFeatures* mappedGene,
+    void outputTargetGeneInfo(const ResultFeatureTrees* mappedGene,
                               const string& targetAction,
                               ostream& mappingInfoFh) const;
-    string featureDesc(const Feature* feature) const;
-    bool isSrcSeqInMapping(const Feature* feature) const;
-    void debugRecordMapped(const Feature* feature,
+    string featureDesc(const FeatureNode* feature) const;
+    bool isSrcSeqInMapping(const FeatureNode* feature) const;
+    void debugRecordMapped(const FeatureNode* feature,
                            const string& desc,
                            const string& key = "") const;
-    void recordGeneMapped(const Feature* gene);
-    void recordTranscriptMapped(const Feature* transcript);
-    bool checkGeneMapped(const Feature* gene) const ;
-    bool checkTranscriptMapped(const Feature* transcript) const;
-    bool checkGeneTranscriptsMapped(const Feature* gene) const;
-    ResultFeatures processTranscript(const Feature* transcript,
+    void recordGeneMapped(const FeatureNode* gene);
+    void recordTranscriptMapped(const FeatureNode* transcript);
+    bool checkGeneMapped(const FeatureNode* gene) const ;
+    bool checkTranscriptMapped(const FeatureNode* transcript) const;
+    bool checkGeneTranscriptsMapped(const FeatureNode* gene) const;
+    ResultFeatureTrees processTranscript(const FeatureNode* transcript,
                                      ostream* transcriptPslFh) const;
-    ResultFeaturesVector processTranscripts(const Feature* gene,
+    ResultFeatureTreesVector processTranscripts(const FeatureNode* gene,
                                             ostream* transcriptPslFh) const;
-    Feature* findMatchingBoundingFeature(const FeatureVector& features,
-                                         const Feature* srcFeature) const;
-    void copyMappingMetadata(const Feature* origFeature,
-                             Feature* newFeature) const;
-    void copyGeneMetadata(const Feature* origGene,
-                          Feature* newGene) const;
-    void forceToUnmapped(ResultFeatures* mappedGene) const;
-    void forceToUnmappedDueToRemapStatus(ResultFeatures* mappedGene,
+    FeatureNode* findMatchingBoundingFeature(const FeatureNodeVector& features,
+                                         const FeatureNode* srcFeature) const;
+    void copyMappingMetadata(const FeatureNode* origFeature,
+                             FeatureNode* newFeature) const;
+    void copyGeneMetadata(const FeatureNode* origGene,
+                          FeatureNode* newGene) const;
+    void forceToUnmapped(ResultFeatureTrees* mappedGene) const;
+    void forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
                                          RemapStatus remapStatus) const;
-    void forceToUnmappedDueToTargetStatus(ResultFeatures* mappedGene,
+    void forceToUnmappedDueToTargetStatus(ResultFeatureTrees* mappedGene,
                                           TargetStatus targetStatus) const;
-    bool hasMixedMappedSeqStrand(const ResultFeatures* mappedGene) const;
-    bool hasTargetStatusNonOverlap(const ResultFeatures* mappedGene) const;
-    bool hasExcessiveSizeChange(const ResultFeatures* mappedGene) const;
+    bool hasMixedMappedSeqStrand(const ResultFeatureTrees* mappedGene) const;
+    bool hasTargetStatusNonOverlap(const ResultFeatureTrees* mappedGene) const;
+    bool hasExcessiveSizeChange(const ResultFeatureTrees* mappedGene) const;
 
-    void setNumGeneMappings(Feature* mappedGeneTree) const;
-    bool checkForPathologicalGeneRename(const ResultFeatures* mappedGene,
-                                        const Feature* targetGene) const;
-    bool shouldSubstituteTarget(const ResultFeatures* mappedGene) const;
-    void substituteTarget(ResultFeatures* mappedGene);
-    void updateMappedGeneBounds(const Feature* mappedTranscript,
+    void setNumGeneMappings(FeatureNode* mappedGeneTree) const;
+    bool checkForPathologicalGeneRename(const ResultFeatureTrees* mappedGene,
+                                        const FeatureNode* targetGene) const;
+    bool shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const;
+    void substituteTarget(ResultFeatureTrees* mappedGene);
+    void updateMappedGeneBounds(const FeatureNode* mappedTranscript,
                                 string& seqid, string& strand,
                                 int& start, int& end) const;
-    Feature* buildMappedGeneFeature(const Feature* srcGeneTree,
-                                        ResultFeaturesVector& mappedTranscripts) const;
-    Feature* buildUnmappedGeneFeature(const Feature* srcGeneTree,
-                                          ResultFeaturesVector& mappedTranscripts) const;
-    ResultFeatures buildGeneFeature(const Feature* srcGeneTree,
-                                        ResultFeaturesVector& mappedTranscripts) const;
-    void saveMapped(ResultFeatures& mappedGene,
+    FeatureNode* buildMappedGeneFeature(const FeatureNode* srcGeneTree,
+                                        ResultFeatureTreesVector& mappedTranscripts) const;
+    FeatureNode* buildUnmappedGeneFeature(const FeatureNode* srcGeneTree,
+                                          ResultFeatureTreesVector& mappedTranscripts) const;
+    ResultFeatureTrees buildGeneFeature(const FeatureNode* srcGeneTree,
+                                        ResultFeatureTreesVector& mappedTranscripts) const;
+    void saveMapped(ResultFeatureTrees& mappedGene,
                     AnnotationSet& mappedSet);
-    void saveUnmapped(ResultFeatures& mappedGene,
+    void saveUnmapped(ResultFeatureTrees& mappedGene,
                       AnnotationSet& unmappedSet);
-    const Feature* getTargetAnnotation(const Feature* feature) const;
-    TargetStatus getTargetAnnotationStatus(const ResultFeatures* mappedFeature) const;
-    const string& getTargetAnnotationBiotype(const ResultFeatures* mappedFeature) const;
-    void processGeneLevelMapping(ResultFeatures* mappedGene);
-    void setGeneLevelMappingAttributes(ResultFeatures* mappedGene);
-    void mapGene(const Feature* srcGeneTree,
+    const FeatureNode* getTargetAnnotation(const FeatureNode* feature) const;
+    TargetStatus getTargetAnnotationStatus(const ResultFeatureTrees* mappedFeature) const;
+    const string& getTargetAnnotationBiotype(const ResultFeatureTrees* mappedFeature) const;
+    void processGeneLevelMapping(ResultFeatureTrees* mappedGene);
+    void setGeneLevelMappingAttributes(ResultFeatureTrees* mappedGene);
+    void mapGene(const FeatureNode* srcGeneTree,
                  AnnotationSet& mappedSet,
                  AnnotationSet& unmappedSet,
                  FeatureTreePolish& featureTreePolish,
                  ostream& mappingInfoFh,
                  ostream* transcriptPslFh);
-    RemapStatus getNoMapRemapStatus(const Feature* gene) const;
-    bool shouldMapGeneType(const Feature* gene) const;
-    bool inTargetPatchRegion(const Feature* targetGene);
-    bool checkTargetOverlappingMapped(const Feature* targetGene,
+    RemapStatus getNoMapRemapStatus(const FeatureNode* gene) const;
+    bool shouldMapGeneType(const FeatureNode* gene) const;
+    bool inTargetPatchRegion(const FeatureNode* targetGene);
+    bool checkTargetOverlappingMapped(const FeatureNode* targetGene,
                                       AnnotationSet& mappedSet);
-    bool shouldIncludeTargetGene(const Feature* gene,
+    bool shouldIncludeTargetGene(const FeatureNode* gene,
                                  AnnotationSet& mappedSet);
-    void copyTargetGene(const Feature* targetGene,
+    void copyTargetGene(const FeatureNode* targetGene,
                         AnnotationSet& mappedSet,
                         ostream& mappingInfoFh);
     void copyTargetGenes(AnnotationSet& mappedSet,

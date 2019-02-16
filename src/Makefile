@@ -2,7 +2,7 @@ ROOT = ..
 include ${ROOT}/config.mk
 
 SRCS = FIOStream.cc gzstream.cc typeOps.cc pslOps.cc frame.cc \
-	gxfIO.cc gxfRecord.cc feature.cc featureIO.cc pslMapping.cc transMap.cc \
+	gxf.cc featureTree.cc pslMapping.cc transMap.cc \
 	remapStatus.cc  annotationSet.cc featureTransMap.cc \
 	featureMapper.cc transcriptMapper.cc geneMapper.cc featureTreePolish.cc bedMap.cc gencode-backmap.cc
 

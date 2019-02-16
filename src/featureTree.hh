@@ -31,8 +31,13 @@ extern const string REMAP_TARGET_STATUS_ATTR;
 extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
 
 class FeatureNode;
-/* Vector of FeatureNode objects */
-typedef vector<FeatureNode*> FeatureNodeVector;
+/* Vector of Feature objects */
+class FeatureNodeVector: public vector<FeatureNode*> {
+public:
+    /* sort the vector in a chromosome order. */
+    void sort();
+};
+
 
 
 /**
@@ -48,7 +53,7 @@ class FeatureNode {
     int fNumMappings;    // Number of location feature was mapped too.  Not set for all node types.
 
     private:
-    int getTranscriptExonSize() const;
+    int getTranscriptExonLength() const;
     int getOverlapAmount(const FeatureNode* other) const;
     int countExonOverlap(const FeatureNode* exon1,
                          const FeatureNode* trans2) const;
@@ -72,19 +77,122 @@ class FeatureNode {
         }
     }
 
+    /* accessors */
+    FeatureNode* getParent() {
+        return fParent;
+    }
+    FeatureNodeVector& getChildren() {
+        return fChildren;
+    }
+    const FeatureNodeVector& getChildren() const {
+        return fChildren;
+    }
+    FeatureNode* getChild(int iChild) {
+        return fChildren[iChild];
+    }
+    const FeatureNode* getChild(int iChild) const {
+        return fChildren[iChild];
+    }
+    RemapStatus getRemapStatus() const {
+        return fRemapStatus;
+    }
+    TargetStatus getTargetStatus() const {
+        return fTargetStatus;
+    }
+    int getNumMappings() const {
+        return fNumMappings;
+    }
+    const string& getSeqid() const {
+        return fFeature->getSeqid();
+    }
+    const string& getSource() const {
+        return fFeature->getSource();
+    }
+    const string& getType() const {
+        return fFeature->getType();
+    }
+    int getStart() const {
+        return fFeature->getStart();
+    }
+    int getEnd() const {
+        return fFeature->getEnd();
+    }
+    /* get the length of the feature */
+    int length() const {
+        return fFeature->length();
+    }
+    const string& getScore() const {
+        return fFeature->getScore();
+    }
+    const string& getStrand() const {
+        return fFeature->getStrand();
+    }
+    const string& getPhase() const {
+        return fFeature->getPhase();
+    }
+    string toString() const {
+        return fFeature->toString();
+    }
+
+    /* does this feature overlap another */
+    bool overlaps(const FeatureNode* other) const {
+        return fFeature->overlaps(other->getGxfFeature());
+    }
+
+    /* get all attribute */
+    const AttrVals& getAttrs() const {
+        return fFeature->getAttrs();
+    }
+
+    /* get all attribute */
+    AttrVals& getAttrs() {
+        return fFeature->getAttrs();
+    }
+    
+    /* does the attribute exist */
+    bool hasAttr(const string& name) const {
+        return fFeature->hasAttr(name);
+    }
+
+    /* get a attribute, NULL if it doesn't exist */
+    const AttrVal* findAttr(const string& name) const {
+        return fFeature->findAttr(name);
+    }
+
+    /* get a attribute, error it doesn't exist */
+    const AttrVal* getAttr(const string& name) const {
+        return fFeature->getAttr(name);
+    }
+
+    /* get a attribute value, error it doesn't exist */
+    const string& getAttrValue(const string& name) const {
+        return fFeature->getAttrValue(name);
+    }
+
+    /* get a attribute value, default it doesn't exist */
+    const string& getAttrValue(const string& name, 
+                               const string& defaultVal) const {
+        return fFeature->getAttrValue(name, defaultVal);
+    }
+
+    /* get underlying GxF feature object */
+    const GxfFeature* getGxfFeature() const {
+        return fFeature;
+    }
+    
     /* is this a gene? */
     bool isGene() const {
-        return (fFeature->fType == GxfFeature::GENE);
+        return (fFeature->getType() == GxfFeature::GENE);
     }
 
     /* is this a transcript? */
     bool isTranscript() const {
-        return (fFeature->fType == GxfFeature::TRANSCRIPT);
+        return (fFeature->getType() == GxfFeature::TRANSCRIPT);
     }
 
     /* is this an exon? */
     bool isExon() const {
-        return (fFeature->fType == GxfFeature::EXON);
+        return (fFeature->getType() == GxfFeature::EXON);
     }
 
     /* is this a gene or transcript */
@@ -128,7 +236,7 @@ class FeatureNode {
 
     /* is this an automatic annotation? */
     bool isAutomatic() const {
-        return fFeature->fSource == GxfFeature::SOURCE_ENSEMBL;
+        return fFeature->getSource() == GxfFeature::SOURCE_ENSEMBL;
     }
 
     /* is this an pseudogene annotation (excluding polymorphic)? */
@@ -141,14 +249,14 @@ class FeatureNode {
     bool anyChildWithRemapStatus(unsigned remapStatusSet) const;
     bool allChildWithRemapStatus(unsigned remapStatusSet) const;
 
-    /* recursively get a list features matching the specified filter */
-    void getMatching(GxfFeatureVector& hits,
-                     function<bool(const GxfFeature*)>(filter)) const {
-        if (filter(fFeature)) {
-            hits.push_back(fFeature);
+    /* recursively get a list features matching of specified type */
+    void getMatchingType(FeatureNodeVector& hits,
+                         const string& type) const {
+        if (getType() == type) {
+            hits.push_back(const_cast<FeatureNode*>(this));
         }
         for (int i = 0; i < fChildren.size(); i++) {
-            fChildren[i]->getMatching(hits, filter);
+            fChildren[i]->getMatchingType(hits, type);
         }
     }
     
@@ -165,6 +273,11 @@ class FeatureNode {
         fRemapStatus = remapStatus;
     }
 
+    /* set the number of mapping for this feature */
+    void setNumMappings(int numMappings) {
+        fNumMappings = numMappings;
+    }
+    
     /* recursively set the remap status. */
     void rsetRemapStatus(RemapStatus remapStatus);
 
@@ -179,9 +292,12 @@ class FeatureNode {
 
     /* recursively set the target status attribute node. */
     void rsetSubstitutedMissingTargetAttr(const string& targetVersion);
-
+   
     /* clone tree */
-    FeatureNode* clone() const;
+    FeatureNode* cloneTree() const;
+
+    /* clone feature, but not children */
+    FeatureNode* cloneFeature() const;
 
     /* print node for debugging */
     void dumpNode(ostream& fh) const;
@@ -197,10 +313,19 @@ class FeatureNode {
 
     /* depth-first output */
     void write(ostream& fh) const;
+
+    /* factory to create a node */
+    static FeatureNode* factory(const string& seqid, const string& source,
+                                const string& type, int start, int end,
+                                const string& score, const string& strand,
+                                const string& phase, const AttrVals& attrs) {
+        return new FeatureNode(new GxfFeature(seqid, source, type, start, end,
+                                              score, strand, phase, attrs));
+    }
+
 };
 
-/**
- * Trees resulting from a map.
+/** * Trees resulting from a map.
  */
 class ResultFeatureTrees {
     private:
@@ -472,5 +597,49 @@ class GeneTree {
     static FeatureNode* geneTreeFactory(GxfParser *gxfParser,
                                         GxfFeature* geneFeature);
 };
+
+/* Get a base id, deleting the version, if it exists.
+ * deal with the ENSTR->ENST0 PAR hack
+ */
+static inline string getBaseId(const string& id) {
+    size_t idot = id.find_last_of('.');
+    string baseId = (idot == string::npos) ? id : id.substr(0, idot);
+    if (stringStartsWith(baseId, "ENSGR") or stringStartsWith(baseId, "ENSTR")) {
+        baseId[4] = '0';
+    }
+    return baseId;
+}
+
+/* 
+ * Get the id with mapping version (_N) removed, if it exists.
+ */
+static inline string getPreMappedId(const string& id) {
+    size_t iun = id.find_last_of('_');
+    if (iun == string::npos) {
+        return id;
+    } else {
+        return id.substr(0, iun);
+    }
+}
+
+/* 
+ * Determine id an id has a mapping version (_N).
+ */
+static inline bool hasMappingVersion(const string& id) {
+    size_t iun = id.find_last_of('_');
+    return (iun != string::npos);
+}
+
+/* 
+ * get the mapping version, or 0 if none
+ */
+static inline int getMappingVersion(const string& id) {
+    size_t iun = id.find_last_of('_');
+    if (iun == string::npos) {
+        return 0;
+    } else {
+        return stringToInt(id.substr(iun+1));
+    }
+}
 
 #endif

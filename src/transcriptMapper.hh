@@ -6,10 +6,10 @@
 class TransMap;
 class PslMapping;
 class FeatureTransMap;
-class Feature;
+class FeatureNode;
 class AnnotationSet;
-#include "feature.hh"
-#include "resultFeatures.hh"
+class ResultFeatureTrees;
+#include "featureTree.hh"
 #include "transMap.hh"
 
 /**
@@ -29,22 +29,21 @@ class TranscriptMapper {
     const PslMapping* fExonsMapping;            // exons as psl and genome mapping of exons.
     TransMapVector fVaiExonsTransMaps;          // transmap objects that are combined
     const FeatureTransMap* fViaExonsFeatureTransMap;   // two-level transmap, NULL if can't map (owned)
-    const Feature* fTargetGene;                     // target annotations for this transcript, if any, to help
-    const Feature* fTargetTranscript;               // selecting between multiple mappings.
+    const FeatureNode* fTargetGene;                     // target annotations for this transcript, if any, to help
+    const FeatureNode* fTargetTranscript;               // selecting between multiple mappings.
     static const bool debug = 0;
     
-    static FeatureVector getExons(const Feature* transcript);
-    PslMapping* allExonsTransMap(const Feature* transcript) const;
+    PslMapping* allExonsTransMap(const FeatureNode* transcript) const;
     static const TransMapVector makeViaExonsTransMap(const PslMapping* exonsMapping);
-    PslMapping* featurePslMap(const Feature* feature);
-    TransMappedFeature mapFeature(const Feature* feature);
-    TransMappedFeature mapFeatures(const Feature* feature);
-    ResultFeatures mapTranscriptFeature(const Feature* transcript);
+    PslMapping* featurePslMap(const FeatureNode* feature);
+    TransMappedFeature mapFeature(const FeatureNode* feature);
+    TransMappedFeature mapFeatures(const FeatureNode* feature);
+    ResultFeatureTrees mapTranscriptFeature(const FeatureNode* transcript);
 
     public:
     /* constructor, targetAnnotations can be NULL */
     TranscriptMapper(const TransMap* genomeTransMap,
-                     const Feature* transcript,
+                     const FeatureNode* transcript,
                      const AnnotationSet* targetAnnotations,
                      bool srcSeqInMapping,
                      ostream* transcriptPslFh);
@@ -55,7 +54,7 @@ class TranscriptMapper {
     /*
      * map one transcript's annotations.  Fill in transcript
      */
-    ResultFeatures mapTranscriptFeatures(const Feature* transcript);
+    ResultFeatureTrees mapTranscriptFeatures(const FeatureNode* transcript);
 };
 
 #endif

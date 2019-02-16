@@ -5,10 +5,10 @@
 #ifndef annotationSet_hh
 #define annotationSet_hh
 
-#include "gxfRecord.hh"
+#include "gxf.hh"
 #include <map>
 #include <stdexcept>
-#include "feature.hh"
+#include "featureTree.hh"
 struct genomeRangeTree;
 class GenomeSizeMap;
 class GxfWriter;
@@ -22,12 +22,12 @@ class AnnotationSet {
      * tree. */
     struct LocationLink {
         struct LocationLink *next;
-        Feature* feature;
+        FeatureNode* feature;
     };
  
        
     // map of gene or transcripts to features. Keep up to two for PAR
-    typedef map<const string, FeatureVector> FeatureMap;
+    typedef map<const string, FeatureNodeVector> FeatureMap;
     typedef FeatureMap::iterator FeatureMapIter;
     typedef FeatureMap::const_iterator FeatureMapConstIter;
 
@@ -38,7 +38,7 @@ class AnnotationSet {
     FeatureMap fNameFeatureMap;
 
     // list of all gene features found
-    FeatureVector fGenes;
+    FeatureNodeVector fGenes;
 
     // map of location to feature
     struct genomeRangeTree* fLocationMap;
@@ -49,18 +49,20 @@ class AnnotationSet {
     // optional table of chromosome sequence sizes
     const GenomeSizeMap* fGenomeSizes;
     
-    void addFeature(Feature* feature);
-    void addLocationMap(Feature* feature);
+    void addFeature(FeatureNode* feature);
+    void processRecord(GxfParser *gxfParser,
+                       GxfRecord* gxfRecord);
+    void addLocationMap(FeatureNode* feature);
     void buildLocationMap();
     void freeLocationMap();
-    bool isOverlappingGene(const Feature* gene,
-                           const Feature* overlappingFeature,
+    bool isOverlappingGene(const FeatureNode* gene,
+                           const FeatureNode* overlappingFeature,
                            float minSimilarity,
                            bool manualOnlyTranscripts);
 
-    Feature* getFeatureByKey(const string& key,
-                                     const FeatureMap& featureMap,
-                                     const string& seqIdForParCheck) const;
+    FeatureNode* getFeatureByKey(const string& key,
+                                 const FeatureMap& featureMap,
+                                 const string& seqIdForParCheck) const;
 
     /* check if a seqregion for seqid has been written, if so, return true,
      * otherwise record it and return false.  */
@@ -75,9 +77,9 @@ class AnnotationSet {
     void outputSeqRegion(const string& seqId,
                          int size,
                          GxfWriter& gxfFh);
-    void outputMappedSeqRegionIfNeed(const Feature* gene,
+    void outputMappedSeqRegionIfNeed(const FeatureNode* gene,
                                      GxfWriter& mappedGxfFh);
-    void outputFeature(const Feature* feature,
+    void outputFeature(const FeatureNode* feature,
                        GxfWriter& gxfFh) const;
 
     public:
@@ -95,30 +97,30 @@ class AnnotationSet {
     ~AnnotationSet();
 
     /* add a gene the maps */
-    void addGene(Feature* gene);
+    void addGene(FeatureNode* gene);
 
     /* get a gene or transcript with same base id or NULL.  special
      * handling for PARs. */
-    Feature* getFeatureById(const string& id,
+    FeatureNode* getFeatureById(const string& id,
                             const string& seqIdForParCheck) const;
 
     /* get a gene or transcript with same name or NULL.  special handling
      * for PARs. */
-    Feature* getFeatureByName(const string& name,
+    FeatureNode* getFeatureByName(const string& name,
                               const string& seqIdForParCheck) const;
 
     /* find overlapping features */
-    FeatureVector findOverlappingFeatures(const string& seqid,
+    FeatureNodeVector findOverlappingFeatures(const string& seqid,
                                           int start,
                                           int end);
     
     /* find overlapping genes with minimum similarity at the transcript level */
-    FeatureVector findOverlappingGenes(const Feature* gene,
+    FeatureNodeVector findOverlappingGenes(const FeatureNode* gene,
                                        float minSimilarity,
                                        bool manualOnlyTranscripts);
 
     /* get list of all gene features */
-    const FeatureVector& getGenes() const {
+    const FeatureNodeVector& getGenes() const {
         return fGenes;
     }
 

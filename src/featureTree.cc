@@ -31,7 +31,7 @@ static const char* automaticNonCodingGeneBiotypes[] = {
 
 /* is ensembl small non-coding gene */
 bool FeatureNode::isAutomaticSmallNonCodingGene() const {
-    if (fFeature->fSource != "ENSEMBL") {
+    if (fFeature->getSource() != "ENSEMBL") {
         return false;
     }
     const string& bioType = getTypeBiotype();
@@ -46,7 +46,7 @@ bool FeatureNode::isAutomaticSmallNonCodingGene() const {
 /* set the remap number of mappings attribute on this node.  not recursive,
  * since it's only set on gene/transcript */
 void FeatureNode::setNumMappingsAttr() {
-    fFeature->getAttrs().update(AttrVal(REMAP_NUM_MAPPINGS_ATTR, toString(fNumMappings)));
+    fFeature->getAttrs().update(AttrVal(REMAP_NUM_MAPPINGS_ATTR, ::toString(fNumMappings)));
 }
 
 /* recursively set the remap status attribute */
@@ -145,13 +145,13 @@ const string& GeneTree::getGtfParentType(const string& featureType) {
  */
 FeatureNode* GeneTree::findGtfParent(FeatureNode* geneTreeLeaf,
                                      const GxfFeature* feature) {
-    const string& parentType = getGtfParentType(feature->fType);
+    const string& parentType = getGtfParentType(feature->getType());
     FeatureNode* parent = geneTreeLeaf;
-    while ((parent != NULL) and (parent->fFeature->fType != parentType)) {
+    while ((parent != NULL) and (parent->fFeature->getType() != parentType)) {
         parent = parent->fParent;
     }
     if (parent == NULL) {
-        throw invalid_argument("parent node of type " + parentType + "  not found for type " + parent->fFeature->fType);
+        throw invalid_argument("parent node of type " + parentType + "  not found for type " + parent->fFeature->getType());
     }
     return parent;
 }
@@ -224,21 +224,21 @@ bool FeatureNode::allChildWithRemapStatus(unsigned remapStatusSet) const {
 }
 
 /* get the size of a transcript, in exons */
-int FeatureNode::getTranscriptExonSize() const {
+int FeatureNode::getTranscriptExonLength() const {
     assert(isTranscript());
-    int size = 0;
+    int length = 0;
     for (int iExon = 0; iExon < fChildren.size(); iExon++) {
         if (fChildren[iExon]->isExon()) {
-            size += fChildren[iExon]->fFeature->size();
+            length += fChildren[iExon]->fFeature->length();
         }
     }
-    return size;
+    return length;
 }
 
 /* count overlapping bases */
 int FeatureNode::getOverlapAmount(const FeatureNode* other) const {
-    int maxStart = max(other->fFeature->fStart, fFeature->fStart);
-    int minEnd = min(other->fFeature->fEnd, fFeature->fEnd);
+    int maxStart = max(other->fFeature->getStart(), fFeature->getStart());
+    int minEnd = min(other->fFeature->getEnd(), fFeature->getEnd());
     return (maxStart <= minEnd) ? (minEnd-maxStart)+1 : 0;
 }
 
@@ -265,7 +265,7 @@ float FeatureNode::getExonSimilarity(const FeatureNode* trans2) const {
             totalOverlap += countExonOverlap(fChildren[iFeat1], trans2);
         }
     }
-    return float(2*totalOverlap)/float(getTranscriptExonSize() + trans2->getTranscriptExonSize());
+    return float(2*totalOverlap)/float(getTranscriptExonLength() + trans2->getTranscriptExonLength());
 }
 
 /* get the maximum transcript similarity for a gene and a transcript  */
@@ -345,12 +345,17 @@ RemapStatus ResultFeatureTrees::calcBoundingFeatureRemapStatus(bool srcSeqInMapp
 }
 
 /* clone tree */
-FeatureNode* FeatureNode::clone() const {
+FeatureNode* FeatureNode::cloneTree() const {
     FeatureNode *newNode = new FeatureNode(fFeature->clone());
     for (int i = 0; i < fChildren.size(); i++) {
-        newNode->fChildren.push_back(fChildren[i]->clone());
+        newNode->fChildren.push_back(fChildren[i]->cloneTree());
     }
     return newNode;
+}
+
+/* clone on feature tree */
+FeatureNode* FeatureNode::cloneFeature() const {
+    return new FeatureNode(fFeature->clone());
 }
 
 /* print node for debugging */
@@ -365,6 +370,61 @@ void FeatureNode::dump(ostream& fh) const {
         fChildren[i]->dump(fh);
     }
 }
+
+/* compare chrom names to emulate GENCODE sorting */
+static bool chromLessThan(const string& a, const string& b) {
+    // chrom vs non-chrom; ucsc names have chr_accession, so check for that too
+    bool aIsChr = (a.find("chr") == 0) or (a.find("_") < 0);
+    bool bIsChr = (b.find("chr") == 0) or (b.find("_") < 0);
+    if (aIsChr and (not bIsChr)) {
+        return true;
+    } else if (bIsChr and (not aIsChr)) {
+        return false;
+    } else if ((not aIsChr) and (not bIsChr)) {
+        return aIsChr < bIsChr; // not a chrom
+    }
+    // autosomes, or X,Y, or M
+    bool aIsAuto = isdigit(a[3]);
+    bool bIsAuto = isdigit(b[3]);
+    if (aIsAuto and (not bIsAuto)) {
+        return true;
+    } else if (bIsAuto and (not aIsAuto)) {
+        return false;
+    }
+    
+    // put chrM last
+    bool aIsChrM = (a == "chrM");
+    bool bIsChrM = (b == "chrM");
+    if (aIsChrM and (not bIsChrM)) {
+        return false;
+    } else if (bIsChrM and (not aIsChrM)) {
+        return true;
+    } else if (aIsChrM and bIsChrM) {
+        return false;
+    }
+    // both chroms
+    if (a.size() != b.size()) {
+        return a.size() < b.size();  // chr10 vs chr1
+    }
+    return a < b;
+}
+
+/* sort the vector in a predictable order.  This is not necessary what
+ * will be in the GxF file by GENCODE conventions. */
+void FeatureNodeVector::sort() {
+    std::sort(begin(), end(),
+              [](const FeatureNode* a, const FeatureNode* b) -> bool {
+                  if (a->getSeqid() != b->getSeqid()) {
+                      return chromLessThan(a->getSeqid(), b->getSeqid());
+                  } else if (a->getStart() != b->getStart()) {
+                      return a->getStart() < b->getStart();
+                  } else {
+                      return a->getEnd() < b->getEnd();
+                  }
+              });
+}
+
+
 
 /*
  * Process a GTF record for a gene, which uses knowledge of
@@ -392,7 +452,7 @@ bool GeneTree::loadGeneRecord(GxfParser *gxfParser,
         return true;
     } else {
         GxfFeature* feature = dynamic_cast<GxfFeature*>(gxfRecord);
-        if (feature->fType == GxfFeature::GENE) {
+        if (feature->getType() == GxfFeature::GENE) {
             queuedRecords.push_back(gxfRecord); // next gene
             return false;
         } else {
@@ -434,7 +494,7 @@ void GeneTree::fixGxfAnnotations(FeatureNode* geneTreeRoot) {
  */
 FeatureNode* GeneTree::loadGene(GxfParser *gxfParser,
                                 GxfFeature* geneFeature) {
-    assert(geneFeature->fType == GxfFeature::GENE);
+    assert(geneFeature->getType() == GxfFeature::GENE);
 
     FeatureNode* geneTreeRoot = new FeatureNode(geneFeature);
     FeatureNode* geneTreeLeaf = geneTreeRoot;  // were we are currently working

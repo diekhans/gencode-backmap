@@ -3,7 +3,7 @@
  */
 #include "pslMapping.hh"
 #include <algorithm>
-#include "gxfRecord.hh"
+#include "featureTree.hh"
 #include <iostream>
 
 // FIXME: passing down features to this level in simple container is annoying.
@@ -13,8 +13,8 @@
 /* constructor, sort mapped PSLs */
 PslMapping::PslMapping(struct psl* srcPsl,
                        PslVector& mappedPsls,
-                       const GxfFeature* primaryTarget,
-                       const GxfFeature* secondaryTarget):
+                       const FeatureNode* primaryTarget,
+                       const FeatureNode* secondaryTarget):
     fSrcPsl(srcPsl),
     fMappedPsl(NULL),
     fMappedPsls(mappedPsls) {
@@ -101,12 +101,12 @@ void PslMapping::sortMappedPsls() {
 #else
 /* globals for use in comparison because qsort doesn't have a client data */
 static struct psl* gSrcPsl = NULL;
-static const GxfFeature* gPrimaryTarget = NULL;
-static const GxfFeature* gSecondaryTarget = NULL;
+static const FeatureNode* gPrimaryTarget = NULL;
+static const FeatureNode* gSecondaryTarget = NULL;
 
 /* compute fraction of overlap similarity for a psl and a target feature. */
 static float targetSimilarity(const struct psl *mappedPsl,
-                              const GxfFeature* targetFeature) {
+                              const FeatureNode* targetFeature) {
     if (targetFeature->getSeqid() != mappedPsl->tName) {
         return 0.0;  // different chrom
     }
@@ -115,13 +115,13 @@ static float targetSimilarity(const struct psl *mappedPsl,
     if (minEnd <= maxStart) {
         return 0.0;  // no overlap
     }
-    return float(2*(minEnd - maxStart)) / float((mappedPsl->tEnd-mappedPsl->tStart) + targetFeature->size());
+    return float(2*(minEnd - maxStart)) / float((mappedPsl->tEnd-mappedPsl->tStart) + targetFeature->length());
 }
 
 /* compare function based on target similarity. */
 static int targetSimilarityCmp(const struct psl *mappedPsl1,
                                const struct psl *mappedPsl2,
-                               const GxfFeature* targetFeature) {
+                               const FeatureNode* targetFeature) {
     // don't think we need an approximate compare, because it will be 0.0 if no overlap,
     // and don't know why very close overlap would happen
     float sim1 = targetSimilarity(mappedPsl1, targetFeature);
@@ -177,8 +177,8 @@ static int mapScoreCmp(const void *va, const void *vb) {
 }
 
 /* sort with best (lowest score) first */
-void PslMapping::sortMappedPsls(const GxfFeature* primaryTarget,
-                                const GxfFeature* secondaryTarget) {
+void PslMapping::sortMappedPsls(const FeatureNode* primaryTarget,
+                                const FeatureNode* secondaryTarget) {
     gSrcPsl = fSrcPsl;
     gPrimaryTarget = primaryTarget;
     gSecondaryTarget = secondaryTarget;

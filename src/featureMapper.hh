@@ -5,7 +5,7 @@
 #define featureMapper_hh
 #include <string>
 #include "remapStatus.hh"
-#include "feature.hh"
+#include "featureTree.hh"
 class TransMappedFeature;
 using namespace std;
 
@@ -13,7 +13,7 @@ using namespace std;
 class GxfFeature;
 class GxfFeatureVector;
 class PslCursor;
-class Feature;
+class FeatureNode;
 class PslMapping;
 
 
@@ -23,11 +23,11 @@ class PslMapping;
  */
 class FeatureMapper {
     private:
-    static Feature* mkMappedFeature(const GxfFeature* feature,
+    static FeatureNode* mkMappedFeature(const GxfFeature* feature,
                                         const PslCursor& srcPslCursor,
                                         const PslCursor& mappedPslCursor,
                                         int length);
-    static Feature* mkUnmappedFeature(const GxfFeature* feature,
+    static FeatureNode* mkUnmappedFeature(const GxfFeature* feature,
                                           const PslCursor& srcPslCursor,
                                           const PslCursor& mappedPslCursor,
                                           int length);
@@ -39,34 +39,34 @@ class FeatureMapper {
                            PslCursor& srcPslCursor,
                            PslCursor& mappedPslCursor,
                            TransMappedFeature& transMappedFeature);
-    static bool shouldSplitIds(const FeatureVector& features);
-    static void splitId(Feature* feature,
+    static bool shouldSplitIds(const FeatureNodeVector& features);
+    static void splitId(FeatureNode* feature,
                         int partIdx);
-    static void splitIds(FeatureVector& feature);
+    static void splitIds(FeatureNodeVector& feature);
     static void splitIds(TransMappedFeature& transMappedFeature);
-    static void processMappedFeature(const Feature* feature,
+    static void processMappedFeature(const FeatureNode* feature,
                                      const PslMapping* pslMapping,
                                      TransMappedFeature& transMappedFeature);
-    static void processUnmappedFeature(const Feature* feature,
+    static void processUnmappedFeature(const FeatureNode* feature,
                                        TransMappedFeature& transMappedFeature);
-    static Feature* findContaining(FeatureVector& parentFeatures,
-                                       Feature* childFeature);
-    static void updateParent(FeatureVector& parentFeatures,
-                             Feature* childFeature);
-    static void updateParents(FeatureVector& parentFeatures,
-                              FeatureVector& childFeatures);
+    static FeatureNode* findContaining(FeatureNodeVector& parentFeatures,
+                                       FeatureNode* childFeature);
+    static void updateParent(FeatureNodeVector& parentFeatures,
+                             FeatureNode* childFeature);
+    static void updateParents(FeatureNodeVector& parentFeatures,
+                              FeatureNodeVector& childFeatures);
     public:
     /* Map a single feature though an alignment of that feature.  The
      * pslMapping object will be NULL if source is not in mapping alignments
      * or when indirect mappings can't be done because initial mapping is
      * deleted. */
-    static TransMappedFeature map(const Feature* feature,
+    static TransMappedFeature map(const FeatureNode* feature,
                                const PslMapping* pslMapping);
 
     /* update Parent id for mapped or unmapped, if needed. Link Feature
      * objects. */
-    static void updateParent(Feature* parentFeature,
-                             Feature* childFeature);
+    static void updateParent(FeatureNode* parentFeature,
+                             FeatureNode* childFeature);
 
     /* validate parents and update Parent id for mapped and unmapped, in
      * needed. */
@@ -77,10 +77,10 @@ class FeatureMapper {
      * it's range is covered by contained ranges.  Omit new ranges if
      * unmapped.
      */
-    static Feature* mapBounding(const Feature* feature,
-                                const string& targetSeqid="",
-                                int targetStart=-1,
-                                int targetEnd=-1,
-                                const string& targetStrand=".");
+    static FeatureNode* mapBounding(const FeatureNode* feature,
+                                    const string& targetSeqid="",
+                                    int targetStart=-1,
+                                    int targetEnd=-1,
+                                    const string& targetStrand=".");
 };
 #endif

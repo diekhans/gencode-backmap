@@ -44,3 +44,5 @@ output/
 
 # override above rules
 !COPYING.LIB
+
+src/version.h

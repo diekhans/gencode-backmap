@@ -1,9 +1,10 @@
+
 /*
  * program to map gencode datafiles to older assemblies.
  */
 #include "jkinclude.hh"
 #include <getopt.h>
-#include "gxfRecord.hh"
+#include "gxf.hh"
 #include "typeOps.hh"
 #include "FIOStream.hh"
 #include "transMap.hh"
@@ -11,7 +12,7 @@
 #include "annotationSet.hh"
 #include "bedMap.hh"
 #include "globals.hh"
-#include "gxfIO.hh"
+#include "gxf.hh"
 #include "./version.h"
 
 /* verbose tracing enabled */
@@ -25,7 +26,7 @@ static bool checkGxfFormat(GxfFormat inFormat,
         return true;
     }
     GxfFormat gxfFormat = gxfFormatFromFileName(gxfFile);
-    if (not ((gxfFormat == inFormat) or (gxfFormat = DEV_NULL_FORMAT))) {
+    if (not ((gxfFormat == inFormat) or (gxfFormat == DEV_NULL_FORMAT))) {
         cerr << "Error: all input and output formats must be consistently GFF3 or GTF" << endl;
         return false;
     } else {
@@ -64,9 +65,12 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& transcriptPsls) {
     TransMap* genomeTransMap = TransMap::factoryFromFile(mappingAligns, swapMap);
     AnnotationSet srcAnnotations(inGxfFile);
-    AnnotationSet* targetAnnotations = (targetGxf.size() > 0) ? new AnnotationSet(targetGxf) : NULL;
-    AnnotationSet* previousMappedAnnotations = (previousMappedGxf.size() > 0) ? new AnnotationSet(previousMappedGxf) : NULL;
-    BedMap* targetPatchMap = (targetPatchBed.size() > 0) ? new BedMap(targetPatchBed) : NULL;
+    AnnotationSet* targetAnnotations = (targetGxf.size() > 0)
+        ? new AnnotationSet(targetGxf) : NULL;
+    AnnotationSet* previousMappedAnnotations = (previousMappedGxf.size() > 0)
+        ? new AnnotationSet(previousMappedGxf) : NULL;
+    BedMap* targetPatchMap = (targetPatchBed.size() > 0)
+        ? new BedMap(targetPatchBed) : NULL;
     GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile, parIdHackMethod);
     GxfWriter* unmappedGxfFh = (unmappedGxfFile.size() > 0)
         ? GxfWriter::factory(unmappedGxfFile, parIdHackMethod) : NULL;

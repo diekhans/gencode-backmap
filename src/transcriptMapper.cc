@@ -1,6 +1,6 @@
 #include "transcriptMapper.hh"
 #include "featureMapper.hh"
-#include "feature.hh"
+#include "featureTree.hh"
 #include "jkinclude.hh"
 #include "pslOps.hh"
 #include "pslMapping.hh"
@@ -11,20 +11,13 @@
 #include <stdexcept>
 #include <iostream>
 
-/* get exon features */
-FeatureVector TranscriptMapper::getExons(const Feature* transcript) {
-    FeatureVector exons;
-    transcript->getMatching(exons, [](const Feature* f) {
-            return f->getType() == GxfFeature::EXON;
-        });
-    return exons;
-}
-
 /* build transcript exons PSL to query and mapping to target genome.
  * Return NULL if no mappings for whatever reason.*/
-PslMapping* TranscriptMapper::allExonsTransMap(const Feature* transcript) const {
+PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcript) const {
     const string& qName(transcript->getAttr(GxfFeature::TRANSCRIPT_ID_ATTR)->getVal());
-    FeatureVector exons = getExons(transcript);
+    FeatureNodeVector exons;
+    transcript->getMatchingType(exons, GxfFeature::EXON);
+
     // get alignment of exons to srcGenome and to targetGenome
     PslMapping* exonsMapping = FeatureTransMap(fGenomeTransMap).mapFeatures(qName, exons);
     if (exonsMapping == NULL) {
@@ -52,14 +45,14 @@ const TransMapVector TranscriptMapper::makeViaExonsTransMap(const PslMapping* ex
 }
 
 /* get PSL of feature mapping */
-PslMapping* TranscriptMapper::featurePslMap(const Feature* feature) {
-    const AttrVal* idAttr = feature->findAttr(Feature::ID_ATTR);
+PslMapping* TranscriptMapper::featurePslMap(const FeatureNode* feature) {
+    const AttrVal* idAttr = feature->findAttr(GxfFeature::ID_ATTR);
     const string& featureId = (idAttr != NULL) ? idAttr->getVal() : "someFeature";
     return fViaExonsFeatureTransMap->mapFeature(featureId, feature);
 }
 
 /* map one feature, linking in a child feature. */
-TransMappedFeature TranscriptMapper::mapFeature(const Feature* feature) {
+TransMappedFeature TranscriptMapper::mapFeature(const FeatureNode* feature) {
     PslMapping* pslMapping = (fViaExonsFeatureTransMap != NULL) ? featurePslMap(feature) : NULL;
     TransMappedFeature transMappedFeature = FeatureMapper::map(feature, pslMapping);
     transMappedFeature.setRemapStatus(fSrcSeqInMapping);
@@ -68,7 +61,7 @@ TransMappedFeature TranscriptMapper::mapFeature(const Feature* feature) {
 }
 
 /* recursive map features below transcript */
-TransMappedFeature TranscriptMapper::mapFeatures(const Feature* feature) {
+TransMappedFeature TranscriptMapper::mapFeatures(const FeatureNode* feature) {
     TransMappedFeature transMappedFeature = mapFeature(feature);
     for (int iChild = 0; iChild < feature->getChildren().size(); iChild++) {
         TransMappedFeature childFeatures = mapFeatures(feature->getChild(iChild));
@@ -78,8 +71,8 @@ TransMappedFeature TranscriptMapper::mapFeatures(const Feature* feature) {
 }
 
 /* create a new transcript record that covers the alignment */
-ResultFeatures TranscriptMapper::mapTranscriptFeature(const Feature* transcript) {
-    ResultFeatures mappedTranscript(transcript);
+ResultFeatureTrees TranscriptMapper::mapTranscriptFeature(const FeatureNode* transcript) {
+    ResultFeatureTrees mappedTranscript(transcript);
     struct psl* mappedPsl = (fExonsMapping != NULL) ? fExonsMapping->getMappedPsl() : NULL;
     if (mappedPsl != NULL) {
         // transcript for mapped PSLs
@@ -100,7 +93,7 @@ ResultFeatures TranscriptMapper::mapTranscriptFeature(const Feature* transcript)
 
 /* constructor, targetAnnotations can be NULL */
 TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
-                                   const Feature* transcript,
+                                   const FeatureNode* transcript,
                                    const AnnotationSet* targetAnnotations,
                                    bool srcSeqInMapping,
                                    ostream* transcriptPslFh):
@@ -142,9 +135,9 @@ TranscriptMapper::~TranscriptMapper() {
 /*
  * map one transcript's annotations.  Fill in transcript
  */
-ResultFeatures TranscriptMapper::mapTranscriptFeatures(const Feature* transcript) {
+ResultFeatureTrees TranscriptMapper::mapTranscriptFeatures(const FeatureNode* transcript) {
     // project features via exons (including redoing exons)
-    ResultFeatures mappedTranscript = mapTranscriptFeature(transcript);
+    ResultFeatureTrees mappedTranscript = mapTranscriptFeature(transcript);
     TransMappedFeature mappedTranscriptSet(mappedTranscript);
     for (int iChild = 0; iChild < transcript->getChildren().size(); iChild++) {
         TransMappedFeature transMappedFeature = mapFeatures(transcript->getChild(iChild));

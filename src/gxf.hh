@@ -25,23 +25,20 @@ typedef enum {
     GXF_UNKNOWN_FORMAT,
     GFF3_FORMAT,
     GTF_FORMAT,
+    DEV_NULL_FORMAT,
 } GxfFormat;
+
+/*
+ * Method used to hack PAR ids to be unique when required by format.
+ */
+typedef enum {
+    PAR_ID_HACK_OLD,  // ENSTR method
+    PAR_ID_HACK_NEW   // _PAR_Y method
+} ParIdHackMethod;
 
 /* Get format from file name, or error */
 GxfFormat gxfFormatFromFileName(const string& fileName);
 
-
-/* Get a base id, deleting the version, if it exists.
- * deal with the ENSTR->ENST0 PAR hack
- */
-static inline string getBaseId(const string& id) {
-    size_t idot = id.find_last_of('.');
-    string baseId = (idot == string::npos) ? id : id.substr(0, idot);
-    if (stringStartsWith(baseId, "ENSGR") or stringStartsWith(baseId, "ENSTR")) {
-        baseId[4] = '0';
-    }
-    return baseId;
-}
 
 /*
  * GxF base record type.  Use instanceOf to determine actually type
@@ -123,11 +120,14 @@ class AttrVal {
     const string& getName() const {
         return fName;
     }
-    const string& getVal() const {
-        return fVals[0];
+    const string& getVal(int iVal=0) const {
+        return fVals[iVal];
     }
     const StringVector& getVals() const {
         return fVals;
+    }
+    int size() const {
+        return fVals.size();
     }
 };
 
@@ -253,11 +253,14 @@ public:
     static const string TRANSCRIPT_STATUS_ATTR;
     static const string TRANSCRIPT_HAVANA_ATTR;
     static const string EXON_ID_ATTR;
+    static const string EXON_NUMBER_ATTR;
+    static const string TAG_ATTR;
     
     /* source names */
     static const string SOURCE_HAVANA;
     static const string SOURCE_ENSEMBL;
-    
+
+    private:
     // columns parsed from file.
     const string fSeqid;
     const string fSource;
@@ -294,6 +297,36 @@ public:
     /* convert all columns, except attributes, to a string */
     string baseColumnsAsString() const;
     
+    /* accessors */
+    const string& getSeqid() const {
+        return fSeqid;
+    }
+    const string& getSource() const {
+        return fSource;
+    }
+    const string& getType() const {
+        return fType;
+    }
+    int getStart() const {
+        return fStart;
+    }
+    int getEnd() const {
+        return fEnd;
+    }
+    /* get the length of the feature */
+    int length() const {
+        return (fEnd - fStart)+1;
+    }
+    const string& getScore() const {
+        return fScore;
+    }
+    const string& getStrand() const {
+        return fStrand;
+    }
+    const string& getPhase() const {
+        return fPhase;
+    }
+
     /* get all attribute */
     const AttrVals& getAttrs() const {
         return fAttrs;
@@ -351,11 +384,6 @@ public:
      * id */
     const string& getTypeBiotype() const;
     
-    /* get the size of the feature */
-    int size() const {
-        return (fEnd - fStart)+1;
-    }
-
     /* does this feature overlap another */
     bool overlaps(const GxfFeature* other) const {
         if ((fSeqid != other->fSeqid) || (fStrand != other->fStrand)) {
@@ -391,10 +419,10 @@ class GxfFeatureVector: public vector<GxfFeature*> {
     void sort() {
         std::sort(begin(), end(),
                   [](const GxfFeature* a, const GxfFeature* b) -> bool {
-                      if (a->fStrand == "+") {
-                          return a->fStart > b->fStart;
+                      if (a->getStrand() == "+") {
+                          return a->getStart() > b->getStart();
                       } else {
-                          return a->fStart < b->fStart;
+                          return a->getStart() < b->getStart();
                       }   
                   });
     }
@@ -463,6 +491,7 @@ class GxfWriter {
     virtual GxfFormat getFormat() const = 0;
 
     static GxfWriter *factory(const string& fileName,
+                              ParIdHackMethod parIdHackMethod,
                               GxfFormat gxfFormat=GXF_UNKNOWN_FORMAT);
 
     /* copy a file to output, normally used for a header */

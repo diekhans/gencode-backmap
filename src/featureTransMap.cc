@@ -2,7 +2,7 @@
  * Mapping of GxF features using transmap
  */
 #include "featureTransMap.hh"
-#include "feature.hh"
+#include "featureTree.hh"
 #include "pslOps.hh"
 #include "pslMapping.hh"
 
@@ -10,7 +10,7 @@
  * Check assumption of feature order being increasing on positive strand and
  * decreasing on negative strand.
  */
-bool FeaturesToPsl::checkFeatureOrder(const FeatureVector& features) {
+bool FeaturesToPsl::checkFeatureOrder(const FeatureNodeVector& features) {
     for (int iFeat = 1; iFeat < features.size(); iFeat++) {
         if (features[0]->getStrand() == "+") {
             if (features[iFeat]->getStart() <= features[iFeat-1]->getEnd()) {
@@ -26,7 +26,7 @@ bool FeaturesToPsl::checkFeatureOrder(const FeatureVector& features) {
 }
 
 /** compute total size of features */
-int FeaturesToPsl::sumFeatureSizes(const FeatureVector& features) {
+int FeaturesToPsl::sumFeatureSizes(const FeatureNodeVector& features) {
     int sz = 0;
     for (size_t i = 0; i < features.size(); i++) {
         sz += (features[i]->getEnd() - features[i]->getStart())+1;
@@ -36,13 +36,13 @@ int FeaturesToPsl::sumFeatureSizes(const FeatureVector& features) {
 
 /* build blocks for for alignment. */
 void FeaturesToPsl::makePslBlocks(struct psl* psl,
-                                  const FeatureVector& features) {
+                                  const FeatureNodeVector& features) {
     assert(pslQStrand(psl) == '+');
     int qStart = 0;
     for (size_t iBlk = 0; iBlk < features.size(); iBlk++) {
-        const Feature* feature = features[iBlk];
+        const FeatureNode* feature = features[iBlk];
         pslAddBlock(psl, qStart,
-                    ((pslTStrand(psl) == '-') ? psl->tStarts[iBlk] = psl->tSize-feature->getEnd() : feature->getStart()-1),
+                    ((pslTStrand(psl) == '-') ? psl->tStarts[iBlk] = psl->tSize - feature->getEnd() : feature->getStart()-1),
                     (feature->getEnd() - feature->getStart())+1);
         qStart += psl->blockSizes[iBlk];
     }
@@ -51,7 +51,7 @@ void FeaturesToPsl::makePslBlocks(struct psl* psl,
 /* construct a PSL */
 struct psl* FeaturesToPsl::makeFeaturesPsl(const string& qName,
                                            int qSize, int tStart, int tEnd, int tSize,
-                                           const FeatureVector& features) {
+                                           const FeatureNodeVector& features) {
     char strand[3] = {'+', features[0]->getStrand()[0], '\0'};
 
     struct psl* psl = pslNew(toCharStr(qName), qSize, 0, qSize,
@@ -68,7 +68,7 @@ struct psl* FeaturesToPsl::makeFeaturesPsl(const string& qName,
  * ascending order.  */
 struct psl* FeaturesToPsl::toPsl(const string& qName,
                                  int tSize,
-                                 const FeatureVector& features) {
+                                 const FeatureNodeVector& features) {
     // this does a [1..n] to [0..n) conversion
     if (not checkFeatureOrder(features)) {
         throw invalid_argument("features not in expected order: " + qName);
@@ -119,7 +119,7 @@ PslVector FeatureTransMap::recursiveMapPsl(struct psl* srcPsl,
  * the input order of the features, even if this creates a negative target
  * strand. */
 PslMapping* FeatureTransMap::mapFeatures(const string& qName,
-                                         const FeatureVector& features) const {
+                                         const FeatureNodeVector& features) const {
     // target is mapping query, which needs to exist to create psl.
     if (not fTransMaps[0]->haveQuerySeq(features[0]->getSeqid())) {
         return NULL;
@@ -133,8 +133,8 @@ PslMapping* FeatureTransMap::mapFeatures(const string& qName,
 
 /* map a single feature */
 PslMapping* FeatureTransMap::mapFeature(const string& qName,
-                                        const Feature* feature) const {
-    FeatureVector features;
-    features.push_back(const_cast<Feature*>(feature));
+                                        const FeatureNode* feature) const {
+    FeatureNodeVector features;
+    features.push_back(const_cast<FeatureNode*>(feature));
     return mapFeatures(qName, features);
 }

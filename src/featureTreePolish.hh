@@ -5,7 +5,7 @@
 #define featureTreePolish_hh
 #include <assert.h>
 #include <map>
-#include "feature.hh"
+#include "featureTree.hh"
 class AnnotationSet;
 
 /*
@@ -19,89 +19,89 @@ class AnnotationSet;
 class FeatureTreePolish {
     private:
     // use to map old exon numbers to new exons in a transcript
-    typedef map<int, FeatureVector> ExonNumExonMap;
+    typedef map<int, FeatureNodeVector> ExonNumExonMap;
     typedef ExonNumExonMap::iterator ExonNumExonMapIter;
     typedef ExonNumExonMap::const_iterator ExonNumExonMapConstIter;
 
     // use to add mapping version number to exon ids
-    typedef map<string, FeatureVector> ExonIdExonMap;
+    typedef map<string, FeatureNodeVector> ExonIdExonMap;
     typedef ExonIdExonMap::iterator ExonIdExonMapIter;
     typedef ExonIdExonMap::const_iterator ExonIdExonMapConstIter;
 
     const AnnotationSet* fPreviousMappedAnotations; // maybe NULL
     
-    void renumberExon(Feature* exon,
+    void renumberExon(FeatureNode* exon,
                       int exonNum,
                       ExonNumExonMap& exonNumExonMap) const;
-    void renumberExons(Feature* transcript,
+    void renumberExons(FeatureNode* transcript,
                        ExonNumExonMap& exonNumExonMap) const;
-    Feature* findNewExon(Feature* feature,
+    FeatureNode* findNewExon(FeatureNode* feature,
                              int oldExonNum,
                              ExonNumExonMap& exonNumExonMap) const;
-    void renumberOtherFeature(Feature* feature,
+    void renumberOtherFeature(FeatureNode* feature,
                               ExonNumExonMap& exonNumExonMap) const;
-    void renumberOtherFeatures(Feature* feature,
+    void renumberOtherFeatures(FeatureNode* feature,
                                ExonNumExonMap& exonNumExonMap) const;
-    void renumberTranscriptExons(Feature* transcript) const;
-    void renumberGeneExons(Feature* gene) const;
-    bool isRemapped(const Feature* feature) const;
-    const Feature* getPrevMappedFeature(const Feature* newFeature) const;
-    int getFeatureMappingVersion(const Feature* prevFeature,
+    void renumberTranscriptExons(FeatureNode* transcript) const;
+    void renumberGeneExons(FeatureNode* gene) const;
+    bool isRemapped(const FeatureNode* feature) const;
+    const FeatureNode* getPrevMappedFeature(const FeatureNode* newFeature) const;
+    int getFeatureMappingVersion(const FeatureNode* prevFeature,
                                  bool featureSame) const;
     bool compareAttrVal(const AttrVal* prevAttr,
                         const AttrVal* newAttr,
                         int iValue,
                         bool isIdAttr) const;
-    bool compareAttrVals(const Feature* prevFeature,
-                         const Feature* newFeature,
+    bool compareAttrVals(const FeatureNode* prevFeature,
+                         const FeatureNode* newFeature,
                          const string& attrName,
                          bool isIdAttr) const;
-    bool compareAttrs(const Feature* prevFeature,
-                      const Feature* newFeature,
+    bool compareAttrs(const FeatureNode* prevFeature,
+                      const FeatureNode* newFeature,
                       const StringVector& attrNames,
                       bool isIdAttrs) const;
-    bool compareAttrs(const Feature* prevFeature,
-                      const Feature* newFeature,
+    bool compareAttrs(const FeatureNode* prevFeature,
+                      const FeatureNode* newFeature,
                       const StringVector& attrNames,
                       const StringVector& idAttrNames) const;
-    bool compareMappedFeatures(const Feature* prevFeature,
-                               const Feature* newFeature,
+    bool compareMappedFeatures(const FeatureNode* prevFeature,
+                               const FeatureNode* newFeature,
                                const StringVector& attrNames,
                                const StringVector& idAttrNames) const;
-    bool compareGeneFeatures(const Feature* prevFeature,
-                             const Feature* newFeature) const;
-    bool compareTranscriptFeatures(const Feature* prevFeature,
-                                   const Feature* newFeature) const;
-    bool compareOtherFeatures(const Feature* prevFeature,
-                              const Feature* newFeature) const;
-    bool compareMappedTranscripts(const Feature* prevTranscript,
-                                  const Feature* newTranscript) const;
-    bool compareMappedTranscriptsDescendants(const Feature* prevParent,
-                                             const Feature* newParent) const;
-    void setMappingVersionInId(Feature* feature,
+    bool compareGeneFeatures(const FeatureNode* prevFeature,
+                             const FeatureNode* newFeature) const;
+    bool compareTranscriptFeatures(const FeatureNode* prevFeature,
+                                   const FeatureNode* newFeature) const;
+    bool compareOtherFeatures(const FeatureNode* prevFeature,
+                              const FeatureNode* newFeature) const;
+    bool compareMappedTranscripts(const FeatureNode* prevTranscript,
+                                  const FeatureNode* newTranscript) const;
+    bool compareMappedTranscriptsDescendants(const FeatureNode* prevParent,
+                                             const FeatureNode* newParent) const;
+    void setMappingVersionInId(FeatureNode* feature,
                                const AttrVal* attr,
                                int mappingVersion) const;
-    void setMappingVersion(Feature* feature,
+    void setMappingVersion(FeatureNode* feature,
                            const string& idAttrName,
                            const string& havanaIdAttrName,
                            int mappingVersion) const;
-    void recursiveSetMappingVersion(Feature* feature,
+    void recursiveSetMappingVersion(FeatureNode* feature,
                                     const string& idAttrName,
                                     const string& havanaIdAttrName,
                                     int mappingVersion) const;
-    bool setTranscriptMappingVersion(Feature* transcript) const;
-    void collectExons(const Feature* root,
+    bool setTranscriptMappingVersion(FeatureNode* transcript) const;
+    void collectExons(const FeatureNode* root,
                       ExonIdExonMap& exonIdExonMap) const;
-    int getExonMappingVersion(FeatureVector& exonFeatures) const;
-    void setExonMappingVersion(Feature* exonFeature,
+    int getExonMappingVersion(FeatureNodeVector& exonFeatures) const;
+    void setExonMappingVersion(FeatureNode* exonFeature,
                                int mappingVersion) const;
     void setExonMappingVersion(const string& exonId,
-                               FeatureVector& exonFeatures,
-                               FeatureVector* prevExonFeatures) const;
-    void setExonsMappingVersions(const Feature* prevGene,
-                                 Feature* gene) const;
-    bool setTranscriptsMappingVersions(Feature* gene) const;
-    void setGeneMappingVersion(Feature* gene) const;
+                               FeatureNodeVector& exonFeatures,
+                               FeatureNodeVector* prevExonFeatures) const;
+    void setExonsMappingVersions(const FeatureNode* prevGene,
+                                 FeatureNode* gene) const;
+    bool setTranscriptsMappingVersions(FeatureNode* gene) const;
+    void setGeneMappingVersion(FeatureNode* gene) const;
     
     public:
 
@@ -111,7 +111,7 @@ class FeatureTreePolish {
     }
     
     /* last minute fix-ups */
-    void polishGene(Feature* gene) const;
+    void polishGene(FeatureNode* gene) const;
 };
 
 #endif

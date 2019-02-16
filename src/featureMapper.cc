@@ -1,6 +1,5 @@
 #include "featureMapper.hh"
-#include "feature.hh"
-#include "resultFeatures.hh"
+#include "featureTree.hh"
 #include "remapStatus.hh"
 #include "pslMapping.hh"
 #include "pslCursor.hh"
@@ -10,10 +9,10 @@
 /* 
  * create an feature for a full or partially mapped feature.
  */
-Feature* FeatureMapper::mkMappedFeature(const GxfFeature* feature,
-                                        const PslCursor& srcPslCursor,
-                                        const PslCursor& mappedPslCursor,
-                                        int length) {
+FeatureNode* FeatureMapper::mkMappedFeature(const GxfFeature* feature,
+                                            const PslCursor& srcPslCursor,
+                                            const PslCursor& mappedPslCursor,
+                                            int length) {
     assert(length > 0);
     int off = srcPslCursor.getQPos() - srcPslCursor.getQStart();
     Frame frame(Frame::fromPhaseStr(feature->getPhase()).incr(off));
@@ -23,13 +22,13 @@ Feature* FeatureMapper::mkMappedFeature(const GxfFeature* feature,
     mappedPslCursor.getTRangeStrand('+', length, &mappedTStart, &mappedTEnd);
 
     // add mapped feature. but don't update id now
-    Feature* mappedFeature
-        = featureFactory(string(mappedPslCursor.getPsl()->tName),
-                         feature->getSource(), feature->getType(),
-                         mappedTStart+1, mappedTEnd, feature->getScore(),
-                         charToString(pslTStrand(mappedPslCursor.getPsl())),
-                         frame.toPhaseStr(), feature->getAttrs());
-
+    FeatureNode* mappedFeature
+        = FeatureNode::factory(string(mappedPslCursor.getPsl()->tName),
+                               feature->getSource(), feature->getType(),
+                               mappedTStart+1, mappedTEnd, feature->getScore(),
+                               charToString(pslTStrand(mappedPslCursor.getPsl())),
+                               frame.toPhaseStr(), feature->getAttrs());
+                          
     // save original coordinates for this region
     int srcTStart, srcTEnd;
     srcPslCursor.getTRangeStrand('+', length, &srcTStart, &srcTEnd);
@@ -45,7 +44,7 @@ Feature* FeatureMapper::mkMappedFeature(const GxfFeature* feature,
  * The created feature is in source coordinates.
  * partIdx is used to make ID unique if split.
  */
-Feature* FeatureMapper::mkUnmappedFeature(const GxfFeature* feature,
+FeatureNode* FeatureMapper::mkUnmappedFeature(const GxfFeature* feature,
                                               const PslCursor& srcPslCursor,
                                               const PslCursor& mappedPslCursor,
                                               int length) {
@@ -59,10 +58,10 @@ Feature* FeatureMapper::mkUnmappedFeature(const GxfFeature* feature,
     assert((feature->getStart()-1 <= unmappedTStart) and (unmappedTEnd <= feature->getEnd()));
 
     // add unmapped feature. but don't update id now. 
-    Feature* unmappedFeature =
-        featureFactory(feature->getSeqid(), feature->getSource(), feature->getType(),
-                       unmappedTStart+1, unmappedTEnd, feature->getScore(), feature->getStrand(),
-                       frame.toPhaseStr(), feature->getAttrs());
+    FeatureNode* unmappedFeature =
+        FeatureNode::factory(feature->getSeqid(), feature->getSource(), feature->getType(),
+                             unmappedTStart+1, unmappedTEnd, feature->getScore(), feature->getStrand(),
+                             frame.toPhaseStr(), feature->getAttrs());
     return unmappedFeature;
 }
 
@@ -117,14 +116,14 @@ void FeatureMapper::mapFeature(const GxfFeature* feature,
 }
 
 /* Determine if an ID should be split into multiple unique ids. */
-bool FeatureMapper::shouldSplitIds(const FeatureVector& features) {
+bool FeatureMapper::shouldSplitIds(const FeatureNodeVector& features) {
     // FIXME: add check for discontinious ids.
     return (features.size() > 1) && features[0]->hasAttr(GxfFeature::ID_ATTR);
 }
 
 /* Assign a new id for a split attribute, save original id in remap_original_id
  */
-void FeatureMapper::splitId(Feature* feature,
+void FeatureMapper::splitId(FeatureNode* feature,
                             int partIdx) {
     const string& id = feature->getAttrValue(GxfFeature::ID_ATTR);
     feature->getAttrs().add(AttrVal(REMAP_ORIGINAL_ID_ATTR, id));
@@ -135,7 +134,7 @@ void FeatureMapper::splitId(Feature* feature,
  * Add remap_original_id attribute.
  * FIXME: this should not split discontinuous features.
  */
-void FeatureMapper::splitIds(FeatureVector& features) {
+void FeatureMapper::splitIds(FeatureNodeVector& features) {
     for (int iPart = 0; iPart < features.size(); iPart++) {
         splitId(features[iPart], iPart);
     }
@@ -152,25 +151,25 @@ void FeatureMapper::splitIds(TransMappedFeature& transMappedFeature) {
 }
 
 /* mapped features */
-void FeatureMapper::processMappedFeature(const Feature* feature,
+void FeatureMapper::processMappedFeature(const FeatureNode* feature,
                                          const PslMapping* pslMapping,
                                          TransMappedFeature& transMappedFeature) {
     PslCursor srcPslCursor(pslMapping->getSrcPsl());
     PslCursor mappedPslCursor(pslMapping->getMappedPsl());
-    mapFeature(feature, srcPslCursor, mappedPslCursor, transMappedFeature);
+    mapFeature(feature->getGxfFeature(), srcPslCursor, mappedPslCursor, transMappedFeature);
 }
 
 /* process unmapped feature, either sequence not in map, or no
  * mappings */
-void FeatureMapper::processUnmappedFeature(const Feature* feature,
+void FeatureMapper::processUnmappedFeature(const FeatureNode* feature,
                                            TransMappedFeature& transMappedFeature) {
-    transMappedFeature.addUnmapped(feature->clone());
+    transMappedFeature.addUnmapped(feature->cloneFeature());
 }
 
 /* Map a single feature though an alignment of that feature.  The pslMapping
  * object will be NULL if source is not in mapping alignments or when indirect
  * mappings can't be done because initial mapping is deleted. */
-TransMappedFeature FeatureMapper::map(const Feature* feature,
+TransMappedFeature FeatureMapper::map(const FeatureNode* feature,
                                       const PslMapping* pslMapping) {
     TransMappedFeature transMappedFeature(feature);
     if ((pslMapping == NULL) or not pslMapping->haveMappings()) {
@@ -183,8 +182,8 @@ TransMappedFeature FeatureMapper::map(const Feature* feature,
 }
 
 /* containing parent feature in a list, or error if not found */
-Feature* FeatureMapper::findContaining(FeatureVector& parentFeatures,
-                                           Feature* childFeature) {
+FeatureNode* FeatureMapper::findContaining(FeatureNodeVector& parentFeatures,
+                                           FeatureNode* childFeature) {
     for (int i = 0; i < parentFeatures.size(); i++) {
         if ((parentFeatures[i]->getStart() <= childFeature->getStart())
             and (childFeature->getEnd() <= parentFeatures[i]->getEnd())) {
@@ -196,8 +195,8 @@ Feature* FeatureMapper::findContaining(FeatureVector& parentFeatures,
 
 /* update Parent id for mapped or unmapped, if needed. Link Feature
  * objects. */
-void FeatureMapper::updateParent(Feature* parentFeature,
-                                 Feature* childFeature) {
+void FeatureMapper::updateParent(FeatureNode* parentFeature,
+                                 FeatureNode* childFeature) {
     parentFeature->getChildren().push_back(childFeature);
     const AttrVal* parentAttr = childFeature->getAttrs().find(GxfFeature::PARENT_ATTR);
     if (parentAttr != NULL) {
@@ -208,15 +207,15 @@ void FeatureMapper::updateParent(Feature* parentFeature,
 
 /* validate parents and update Parent id for mapped or unmapped, if
  * needed. Link Feature objects. */
-void FeatureMapper::updateParent(FeatureVector& parentFeatures,
-                                 Feature* childFeature) {
-    Feature* parentFeature = findContaining(parentFeatures, childFeature);
+void FeatureMapper::updateParent(FeatureNodeVector& parentFeatures,
+                                 FeatureNode* childFeature) {
+    FeatureNode* parentFeature = findContaining(parentFeatures, childFeature);
     updateParent(parentFeature, childFeature);
 }
 
 /* validate parents and update Parent id for mapped or unmapped, in needed. */
-void FeatureMapper::updateParents(FeatureVector& parentFeatures,
-                                  FeatureVector& childFeatures) {
+void FeatureMapper::updateParents(FeatureNodeVector& parentFeatures,
+                                  FeatureNodeVector& childFeatures) {
     for (int i = 0; i < childFeatures.size(); i++) {
         updateParent(parentFeatures, childFeatures[i]);
     }
@@ -237,19 +236,18 @@ void FeatureMapper::updateParents(TransMappedFeature& parentFeatures,
  * range is covered by contained ranges.  Omit new ranges if unmapped.
  * the total number of mappings.
  */
-Feature* FeatureMapper::mapBounding(const Feature* feature,
+FeatureNode* FeatureMapper::mapBounding(const FeatureNode* feature,
                                         const string& targetSeqid,
                                         int targetStart,
                                         int targetEnd,
                                         const string& targetStrand) {
     // FIXME: could parent update be here?
     if (targetStart >= 0) {
-        return featureFactory(targetSeqid,
-                              feature->getSource(), feature->getType(),
-                              targetStart+1, targetEnd, feature->getScore(),
-                              targetStrand, ".", feature->getAttrs());
+        return FeatureNode::factory(targetSeqid, feature->getSource(), feature->getType(),
+                                    targetStart+1, targetEnd, feature->getScore(),
+                                    targetStrand, ".", feature->getAttrs());
     } else {
         // clone only feature, not tree.
-        return feature->clone();
+        return feature->cloneFeature();
     }
 }
