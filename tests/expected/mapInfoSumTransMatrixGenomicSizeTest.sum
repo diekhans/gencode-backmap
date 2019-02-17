@@ -1,0 +1,6 @@
+mappingStatus	100	1000	10000	100000	1000000	total
+full_contig	9	12	36	23	0	80
+full_fragment	0	0	0	1	0	1
+none	0	5	13	12	1	31
+partial	0	1	7	2	0	10
+all	9	18	56	38	1	122

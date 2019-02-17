@@ -1,0 +1,5 @@
+targetStatus	targetSubst	count	freq
+na	no	31	0.25
+new	yes	12	0.10
+overlap	yes	79	0.65
+all	all	122	1.00

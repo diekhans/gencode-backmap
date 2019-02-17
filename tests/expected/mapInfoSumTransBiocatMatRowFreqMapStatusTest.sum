@@ -1,0 +1,5 @@
+biocat	full_contig	full_fragment	none	partial	total
+pseudo	0.90	0.00	0.10	0.00	1.00
+coding	0.64	0.02	0.19	0.15	1.00
+nonCoding	0.58	0.00	0.40	0.02	1.00
+problem	1.00	0.00	0.00	0.00	1.00

@@ -39,7 +39,7 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	cmpUcscSubstituteManOverlap \
 	gff3V29RegressTest \
-	ucscLiftEditTest regressTests
+	reportsTests ucscLiftEditTest regressTests
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} --unmappedGxf=output/$@.unmapped.gff3 data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
@@ -238,13 +238,60 @@ ucscLiftEditTest: mkdirs
 
 
 ###
-# reports tests
+# report program tests
 ###
-reportsTests: gencodeAttrsStatsTest
+reportsTests: mapInfoSumTests
 
-gencodeAttrsStatsTest: mkdirs
-	${gencodeAttrsStats} data/v25Lift37.attrs output/$@.stats
-	${diff} expected/$@.stats output/$@.stats
+# liftover has more wierd cases, so use for tests
+mapInfoSumTests: mapInfoSumGeneAllTest mapInfoSumGeneBiotypeTest mapInfoSumTransBiottypeTest \
+	mapInfoSumTransBiocatTest mapInfoSumTransBiocatMultimapTest \
+	mapInfoSumTransBiocatTest mapInfoSumTransMatrixGenomicSizeTest \
+	mapInfoSumTransBiocatMatrixMapStatusTest \
+	mapInfoSumTransBiocatMatRowFreqMapStatusTest \
+	mapInfoSumTransBiocatMatColFreqMapStatusTest \
+	mapInfoSumSubTargetTest
+
+mapInfoSumGeneAllTest: mkdirs
+	../bin/mapInfoSummary --mappingStatusGroup gene expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumGeneBiotypeTest: mkdirs
+	../bin/mapInfoSummary --mappingStatusGroup --biotypeGroup=biotype gene expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiottypeTest: mkdirs
+	../bin/mapInfoSummary --mappingStatusGroup --biotypeGroup=biotype trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiocatTest: mkdirs
+	../bin/mapInfoSummary --mappingStatusGroup --biotypeGroup=biocat trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiocatMultimapTest: mkdirs
+	../bin/mapInfoSummary --biotypeGroup=biocat --multimapGroup trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumTransMatrixGenomicSizeTest: mkdirs
+	../bin/mapInfoSummary --mappingStatusGroup  --matrixColumnKey=genomicSize trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiocatMatrixMapStatusTest: mkdirs
+	../bin/mapInfoSummary --matrixColumnKey=mappingStatus --biotypeGroup=biocat trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiocatMatRowFreqMapStatusTest: mkdirs
+	../bin/mapInfoSummary --rowFrequencies --matrixColumnKey=mappingStatus --biotypeGroup=biocat trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumTransBiocatMatColFreqMapStatusTest: mkdirs
+	../bin/mapInfoSummary --columnFrequencies --matrixColumnKey=mappingStatus --biotypeGroup=biocat trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+mapInfoSumSubTargetTest: mkdirs
+	../bin/mapInfoSummary --targetStatusGroup --substituteTargetGroup trans expected/gff3UcscTest.map-info output/$@.sum
+	${diff} expected/$@.sum output/$@.sum
+
+
 
 
 ##

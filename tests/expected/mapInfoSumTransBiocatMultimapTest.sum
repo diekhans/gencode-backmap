@@ -1,0 +1,7 @@
+biocat	multimap	count	freq
+pseudo	no	10	0.08
+coding	no	56	0.46
+coding	yes	3	0.02
+nonCoding	no	48	0.39
+problem	no	5	0.04
+all	all	122	1.00
