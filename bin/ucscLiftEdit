@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import sys, os
+import sys
+import os
 myBinDir = os.path.normpath(os.path.abspath(os.path.dirname(sys.argv[0])))
 sys.path.append(myBinDir + "/../lib")
 import argparse
@@ -8,7 +9,7 @@ from pycbio.ncbi.assembly import AssemblyReport
 from pycbio.sys import fileOps
 
 def parseArgs():
-    desc="""Convert a UCSC liftover chain file to use GENCODE sequence names.
+    desc = """Convert a UCSC liftover chain file to use GENCODE sequence names.
     Replaces the UCSC hg19 chrM with the coordinates of the GRCh37-lite chrM
 """
     parser = argparse.ArgumentParser(description=desc)
@@ -44,12 +45,12 @@ class ChainHeader(object):
         self.tStart = int(parts[10])
         self.tEnd = int(parts[11])
         self.score = int(parts[12])
-        
+
     def __str__(self):
         return " ".join(["chain", str(self.chainId), self.qName, str(self.qSize),
                          self.qStrand, str(self.qStart), str(self.qEnd), self.tName, str(self.tSize),
                          self.tStrand, str(self.tStart), str(self.tEnd), str(self.score)])
-        
+
 
 # GRCh38 ->GRCh37 lite mitochrondra chain (1 to 1), to replace hg19 chain
 chrMGrcHChain = """chain 16568 chrM 16569 + 0 16569 chrM 16569 + 0 16569 1
@@ -58,7 +59,7 @@ chrMGrcHChain = """chain 16568 chrM 16569 + 0 16569 chrM 16569 + 0 16569 1
 """
 chrMGrch38Size = 16569
 chrMHg19Size = 16571
-    
+
 class UcscLiftEdit(object):
     def __init__(self, queryAsm, targetAsm):
         self.queryAsm = queryAsm
@@ -66,16 +67,16 @@ class UcscLiftEdit(object):
 
     def __asmError(self, asm, msg):
         raise Exception(asm.metaData["Assembly Name"] + ": " + msg)
-        
+
     def __convertToGencodeSeqId(self, asm, name, length):
         "the specified sequence and verify the size and return gencode id"
         seq = asm.byUcscStyleName.get(name)
-        if seq == None:
+        if seq is None:
             self.__asmError(asm, "ucscStyleName not found: " + name)
         if seq.sequenceLength != length:
             self.__asmError(asm, "chain/assembly report length mismatch: %s %d vs %d" % (name, seq.sequenceLength, length))
         return getGencodeId(seq)
-        
+
     def __editChainHeader(self, chainHeader):
         chainHeader.qName = self.__convertToGencodeSeqId(self.queryAsm, chainHeader.qName, chainHeader.qSize)
         chainHeader.tName = self.__convertToGencodeSeqId(self.targetAsm, chainHeader.tName, chainHeader.tSize)
@@ -84,14 +85,14 @@ class UcscLiftEdit(object):
         """copy chain body after current header, stopping after blank
         line. Discard if outFh is None:"""
         for line in fileOps.iterLines(inFh):
-            if outFh != None:
+            if outFh is not None:
                 outFh.write(line + "\n")
             if len(line) == 0:
-                break # blank
+                break  # blank
 
     def __isMisfitMitochondria(self, chainHeader):
         return (chainHeader.qName == "chrM") and ((chainHeader.qSize == chrMHg19Size) or (chainHeader.tSize == chrMHg19Size))
-            
+
     def __processMisfitMitochondria(self, inFh, outFh):
         outFh.write(chrMGrcHChain)
         self.__copyChainBody(inFh)  # discard old
@@ -113,7 +114,8 @@ class UcscLiftEdit(object):
             if line.startswith("chain"):
                 self.__processNextChain(line, inFh, outFh)
             else:
-                outFh.write(line+"\n")
+                outFh.write(line + "\n")
+
 
 args = parseArgs()
 ucscLiftEdit = UcscLiftEdit(AssemblyReport(args.queryAssemblyReport), AssemblyReport(args.targetAssemblyReport))

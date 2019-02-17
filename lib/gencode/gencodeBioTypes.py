@@ -26,7 +26,7 @@ BioType = Enumeration("BioType", ("IG_C_gene", "IG_D_gene", "IG_J_gene", "IG_V_g
                                   "transcribed_unprocessed_pseudogene",
                                   "unitary_pseudogene",
                                   "transcribed_unitary_pseudogene",
-                                  "unprocessed_pseudogene", 
+                                  "unprocessed_pseudogene",
                                   ("overlapping_ncrna_3prime", "3prime_overlapping_ncrna"),
                                   "disrupted_domain",
                                   "sense_intronic", "sense_overlapping",
@@ -42,7 +42,7 @@ BioStatus = Enumeration("BioStatus", ("KNOWN", "PUTATIVE", "NOVEL", "UNKNOWN", "
 BioTag = Enumeration("BioTag", ("2way_pseudo_cons", "CCDS", "PAR", "exp_conf",
                                 "cds_end_NF", "cds_start_NF", "mRNA_end_NF",
                                 "mRNA_start_NF",
-                                ("not_organism_supported", "not_organism_supported", ("not_organism-supported",)), # alias is for typo in V7
+                                ("not_organism_supported", "not_organism_supported", ("not_organism-supported",)),  # alias is for typo in V7
                                 "pseudo_consens", "seleno", "non_ATG_start",
                                 "alternative_5_UTR", "alternative_3_UTR",
                                 "non_canonical_other", "non_canonical_U12",
@@ -156,7 +156,7 @@ bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.translated_unprocessed_pseudogene,
                             ])
 
-assert((len(bioTypesCoding)+len(bioTypesNonCoding)+len(bioTypesProblem)+len(bioTypesPseudo)) == len(BioType.values))
+assert((len(bioTypesCoding) + len(bioTypesNonCoding) + len(bioTypesProblem) + len(bioTypesPseudo)) == len(BioType.values))
 
 bioTypesTR = frozenset((BioType.TR_gene,
                         BioType.TR_C_gene,
@@ -180,7 +180,7 @@ bioTypesNonCodingCharacterized = frozenset([BioType.antisense,
                                             BioType.ribozyme,
                                             BioType.scaRNA,
                                             BioType.sRNA,
-                                            BioType.vaultRNA,])
+                                            BioType.vaultRNA])
 bioTypesNonCodingUncharacterized = frozenset([BioType.non_coding,
                                               BioType.lincRNA,
                                               BioType.processed_transcript,
@@ -189,8 +189,8 @@ bioTypesNonCodingUncharacterized = frozenset([BioType.non_coding,
                                               BioType.sense_intronic,
                                               BioType.sense_overlapping,
                                               BioType.known_ncrna,
-                                              BioType.macro_lncRNA,])
-assert(len(bioTypesNonCodingCharacterized)+len(bioTypesNonCodingUncharacterized) == len(bioTypesNonCoding))
+                                              BioType.macro_lncRNA])
+assert(len(bioTypesNonCodingCharacterized) + len(bioTypesNonCodingUncharacterized) == len(bioTypesNonCoding))
 
 # imported from external databases
 bioTypesNonCodingExternalDb = frozenset([BioType.miRNA,
@@ -219,4 +219,3 @@ class GencodeGenesException(PycbioException):
     "exception associated with Gencode Genes objects"
     def __init__(self, msg, cause=None):
         PycbioException.__init__(self, msg, cause)
-

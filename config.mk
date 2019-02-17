@@ -2,6 +2,8 @@ MACH = $(shell uname -m)
 SYS = $(shell uname -s)
 SHELL = /bin/bash
 
+PYTHON = python3
+
 # edit to set to UCSC browser kent/src
 KENTDIR = ${HOME}/kent/src
 

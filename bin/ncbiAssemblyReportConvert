@@ -1,10 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# Copyright 2006-2015 Mark Diekhans
 
-import sys, os
-myBinDir = os.path.normpath(os.path.abspath(os.path.dirname(sys.argv[0])))
-sys.path.append(myBinDir + "/../lib")
+from builtins import object
+import sys
+import os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 from pycbio.ncbi.assembly import AssemblyReport
+from pycbio.sys import PycbioException
 from pycbio.sys import fileOps
 
 ID_TYPE_SEQUENCE_NAME = "sequenceName"
@@ -12,67 +16,141 @@ ID_TYPE_GENBANK_ACCN = "genBankAccn"
 ID_TYPE_REFSEQ_ACCN = "refSeqAccn"
 ID_TYPE_UCSC_STYLE_NAME = "ucscStyleName"
 ID_TYPE_GENCODE = "gencode"
+ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN = "sequenceNameGenbankAccn"
 
-ID_TYPES = (ID_TYPE_SEQUENCE_NAME, ID_TYPE_GENBANK_ACCN, ID_TYPE_REFSEQ_ACCN, ID_TYPE_UCSC_STYLE_NAME, ID_TYPE_GENCODE)
+ID_TYPES = (ID_TYPE_SEQUENCE_NAME, ID_TYPE_GENBANK_ACCN, ID_TYPE_REFSEQ_ACCN, ID_TYPE_UCSC_STYLE_NAME, ID_TYPE_GENCODE, ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN)
 
 OUTPUT_LIFT = "lift"
 OUTPUT_SIZES = "sizes"
+OUTPUT_IDMAP = "idmap"
+
+INCLUDE_MAIN_CHROMS = "mainChroms"
+INCLUDE_MAIN_ASM = "mainAsm"
+
 
 def parseArgs():
-    desc="""Convert or extract information from an NCBI assembly report file.
+    usage = """
+Convert or extract information from an NCBI assembly report file.
 Id types based on columns in file, or special handling for gencode naming.
+
+Files are available from:
+    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
+
+Special id types:
+    - sequenceNameGenbankAccn - use sequenceName for primary assembly and genbank
+      accession for other sequences.
 """
-    parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--fromIdType', type=str, choices=ID_TYPES, help="from sequence id type")
-    parser.add_argument('--toIdType', type=str, choices=ID_TYPES, help="map to sequence id type")
-    parser.add_argument('outputType', type=str, choices = (OUTPUT_LIFT, OUTPUT_SIZES), help="type of output to create; one of lift or sizes")
-    parser.add_argument('assemblyReport', type=str, help="NCBI assembly report file")
-    parser.add_argument('outFile', type=str, help="output of the specified type")
+    parser = argparse.ArgumentParser(description=usage)
+    parser.add_argument('--fromIdType', type=str, choices=ID_TYPES,
+                        help="from sequence id type")
+    parser.add_argument('--toIdType', type=str, choices=ID_TYPES,
+                        help="map to sequence id type")
+    parser.add_argument('--include', type=str, choices=(INCLUDE_MAIN_CHROMS, INCLUDE_MAIN_ASM),
+                        help="only include sequence of this type")
+    parser.add_argument('outputType', type=str, choices=(OUTPUT_LIFT, OUTPUT_SIZES, OUTPUT_IDMAP),
+                        help="type of output to create; one of lift, sizes, or idmap")
+    parser.add_argument('assemblyReport', type=str,
+                        help="NCBI assembly report file")
+    parser.add_argument('outFile', type=str,
+                        help="output of the specified type")
     args = parser.parse_args()
-    if args.outputType == OUTPUT_LIFT:
-        if (args.fromIdType == None) or (args.toIdType == None):
+    if (args.outputType == OUTPUT_LIFT) or (args.outputType == OUTPUT_IDMAP):
+        if (args.fromIdType is None) or (args.toIdType is None):
             parser.error("output of " + OUTPUT_LIFT + " requires --fromIdType and --toIdType")
     elif args.outputType == OUTPUT_SIZES:
-        if args.fromIdType == None:
+        if args.fromIdType is None:
             parser.error("output of " + OUTPUT_SIZES + " requires --fromIdType")
-        if args.toIdType != None:
+        if args.toIdType is not None:
             parser.error("--toIdType not valid with output of " + OUTPUT_SIZES)
     return args
 
-def getGencodeId(seq):
-    """GENCODE uses UCSC name for primary chromosomes and mitochondia and GENBANK accessions
-    for others"""
-    if seq.sequenceRole == "assembled-molecule":
-        return seq.ucscStyleName
-    else:
-        return seq.genBankAccn
+
+def emptyIfNone(val):
+    return val if val is not None else ""
+
 
 def getId(seq, idType):
     "get the from a sequence record, given the type of id desired, or None if not defined"
     if idType == ID_TYPE_GENCODE:
-        return getGencodeId(seq)
+        return seq.gencodeName
+    elif idType == ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN:
+        return seq.sequenceNameGenbankAccn
     else:
         return getattr(seq, idType)
 
-def createLift(asmReport, fromIdType, toIdType, outFh):
+
+def createLiftRec(seq, fromIdType, toIdType, outFh):
+    fromId = getId(seq, fromIdType)
+    toId = getId(seq, toIdType)
+    if (fromId is not None) and (toId is not None):
+        fileOps.prRowv(outFh, 0, fromId, seq.sequenceLength, toId, seq.sequenceLength)
+
+
+def createLift(asmReport, filterFn, fromIdType, toIdType, outFh):
     "create a lift file for the two id types"
     for seq in asmReport.seqs:
-        fromId =  getId(seq, fromIdType)
-        toId =  getId(seq, toIdType)
-        if (fromId != None) and (toId != None):
-            fileOps.prRowv(outFh, 0, fromId, seq.sequenceLength, toId, seq.sequenceLength)
+        if filterFn(seq):
+            createLiftRec(seq, fromIdType, toIdType, outFh)
 
-def createSizes(asmReport, fromIdType, outFh):
+
+def createSizeRec(seq, fromIdType, outFh):
+    fromId = getId(seq, fromIdType)
+    if fromId is not None:
+        fileOps.prRowv(outFh, fromId, seq.sequenceLength)
+
+
+def createSizes(asmReport, filterFn, fromIdType, outFh):
     "create a size file for the id type"
     for seq in asmReport.seqs:
-        fromId = getId(seq, fromIdType)
-        if fromId != None:
-            fileOps.prRowv(outFh, fromId, seq.sequenceLength)
+        if filterFn(seq):
+            createSizeRec(seq, fromIdType, outFh)
 
-args = parseArgs()
-asmReport = AssemblyReport(args.assemblyReport)
-with open(args.outFile, "w") as outFh:
-    if args.outputType == OUTPUT_LIFT:
-        createLift(asmReport, args.fromIdType, args.toIdType, outFh)
-    elif args.outputType == OUTPUT_SIZES:
-        createSizes(asmReport, args.fromIdType, outFh)
+
+def createIdmapRec(seq, fromIdType, toIdType, outFh):
+    if getId(seq, fromIdType) is not None:
+        fileOps.prRowv(outFh, getId(seq, fromIdType), getId(seq, toIdType))
+
+
+def createIdmap(asmReport, filterFn, fromIdType, toIdType, outFh):
+    """create a TSV of sequence name mappings, including gencode"""
+    fileOps.prRowv(outFh, fromIdType, toIdType)
+    for seq in asmReport.seqs:
+        if filterFn(seq):
+            createIdmapRec(seq, fromIdType, toIdType, outFh)
+
+
+class IncludeFilter(object):
+    "filter to select records"
+    def __init__(self, include):
+        if include is None:
+            self.keep = None  # don't assume values
+        elif include == INCLUDE_MAIN_CHROMS:
+            self.keep = frozenset(["assembled-molecule"])
+        elif INCLUDE_MAIN_ASM:
+            self.keep = frozenset(["assembled-molecule",
+                                   "unlocalized-scaffold",
+                                   "unplaced-scaffold"])
+        else:
+            raise PycbioException("logic error, invalid include: {}".format(include))
+
+    def __call__(self, seq):
+        if self.keep is None:
+            return True
+        else:
+            return seq.sequenceRole in self.keep
+
+
+def main():
+    args = parseArgs()
+    asmReport = AssemblyReport(args.assemblyReport)
+    filterFn = IncludeFilter(args.include)
+    with open(args.outFile, "w") as outFh:
+        if args.outputType == OUTPUT_LIFT:
+            createLift(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
+        elif args.outputType == OUTPUT_SIZES:
+            createSizes(asmReport, filterFn, args.fromIdType, outFh)
+        elif args.outputType == OUTPUT_IDMAP:
+            createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
+
+
+main()
