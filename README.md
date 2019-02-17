@@ -119,6 +119,15 @@ the mapping information file.  The attributes and their values are:
     This is often mappings to a gene family members or pseudogenes.
 - `remap_substituted_missing_target` - target gene annotate was substituted
 
+### Requirements
+- a reasonable modern C++ compiler, tested with g++ (GCC) 4.8.5
+- python3, recommended running from a virtual environment
+  ```
+  python3 -m virtualenv gencode-venv
+  source gencode-venvvenv/bin/activate
+  pip install -r  requirements.txt
+  ```
+
 ### Usage
 
 The following files are needed to map using the UCSC liftover alignments:

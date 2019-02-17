@@ -8,10 +8,10 @@ install_aliases()
 import sys
 import csv
 import six
-from pycbio.sys import fileOps
-from pycbio.tsv.tsvRow import TsvRow
-from pycbio.tsv import TsvError
-from pycbio.sys import pycbioRaiseFrom
+from pycbio_local.sys import fileOps
+from pycbio_local.tsv.tsvRow import TsvRow
+from pycbio_local.tsv import TsvError
+from pycbio_local.sys import pycbioRaiseFrom
 
 csv.field_size_limit(sys.maxsize)
 

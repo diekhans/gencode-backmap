@@ -2,7 +2,7 @@
 """Parsing of NCBI assembly information files.
 """
 import six
-from pycbio.sys import PycbioException
+from pycbio_local.sys import PycbioException
 
 
 def _noneIfNa(name):

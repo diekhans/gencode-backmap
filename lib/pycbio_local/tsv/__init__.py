@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 """" TSV (Tab Separated File) parsing"""
 
-from pycbio.sys import PycbioException
+from pycbio_local.sys import PycbioException
 
 
 class TsvError(PycbioException):
@@ -12,14 +12,10 @@ class TsvError(PycbioException):
         super(TsvError, self).__init__(msg)
 
 
-from pycbio.tsv.tsvRow import TsvRow, tsvRowToDict
-from pycbio.tsv.tsvReader import TsvReader, strOrNoneType, intOrNoneType, printf_basic_dialect
-from pycbio.tsv.tsvTable import TsvTable
-from pycbio.tsv.tabFile import TabFile
-from pycbio.tsv.tabFile import TabFileReader
+from pycbio_local.tsv.tsvRow import TsvRow, tsvRowToDict
+from pycbio_local.tsv.tsvReader import TsvReader, strOrNoneType, intOrNoneType, printf_basic_dialect
 
 __all__ = (TsvError.__name__, TsvRow.__name__, TsvReader.__name__,
            "strOrNoneType", "intOrNoneType",
-           TsvTable.__name__, TabFile.__name__, TabFileReader.__name__,
            tsvRowToDict.__name__,
            printf_basic_dialect.__name__)

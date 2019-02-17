@@ -5,8 +5,8 @@
 # than methods
 # FIXME: need accessor functions for columns
 from builtins import range
-from pycbio.tsv import TsvError
-from pycbio.sys import pycbioRaiseFrom
+from pycbio_local.tsv import TsvError
+from pycbio_local.sys import pycbioRaiseFrom
 
 
 def tsvRowToDict(row):

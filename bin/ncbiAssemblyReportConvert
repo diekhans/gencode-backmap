@@ -7,9 +7,9 @@ import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
-from pycbio.ncbi.assembly import AssemblyReport
-from pycbio.sys import PycbioException
-from pycbio.sys import fileOps
+from pycbio_local.ncbi.assembly import AssemblyReport
+from pycbio_local.sys import PycbioException
+from pycbio_local.sys import fileOps
 
 ID_TYPE_SEQUENCE_NAME = "sequenceName"
 ID_TYPE_GENBANK_ACCN = "genBankAccn"

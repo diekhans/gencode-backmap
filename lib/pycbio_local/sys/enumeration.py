@@ -2,7 +2,7 @@
 from past.builtins import cmp
 from builtins import object
 import six
-from pycbio.sys.typeOps import isListLike
+from pycbio_local.sys.typeOps import isListLike
 
 # FIXME:
 # - could have user add value object direcrly instead of complex value tuples

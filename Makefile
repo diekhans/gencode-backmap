@@ -12,10 +12,10 @@ test:
 clean:
 	(cd src && ${MAKE} clean)
 	(cd tests && ${MAKE} clean)
-	rm -rf ${BINDIR}/gencode-backmap.dSYM objs TAGS
-
+	rm -rf bin/gencode-backmap.dSYM objs TAGS
+	rm -rf $$(find lib -name __pycache__)
 lint:
-	${PYTHON} flake8 ${pyprogs:%=bin/%} lib/gencode lib/pycbio
+	${PYTHON} flake8 ${pyprogs:%=bin/%} lib/gencode lib/pycbio_local
 
 
 etags:

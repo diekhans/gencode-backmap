@@ -2,7 +2,7 @@
 """Miscellaneous type operations"""
 # FIXME: move to other modules or move set in here.
 from builtins import range
-from pycbio.sys import PycbioException
+from pycbio_local.sys import PycbioException
 
 
 def isListLike(v):

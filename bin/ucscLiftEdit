@@ -5,8 +5,8 @@ import os
 myBinDir = os.path.normpath(os.path.abspath(os.path.dirname(sys.argv[0])))
 sys.path.append(myBinDir + "/../lib")
 import argparse
-from pycbio.ncbi.assembly import AssemblyReport
-from pycbio.sys import fileOps
+from pycbio_local.ncbi.assembly import AssemblyReport
+from pycbio_local.sys import fileOps
 
 def parseArgs():
     desc = """Convert a UCSC liftover chain file to use GENCODE sequence names.
