@@ -105,7 +105,9 @@ the mapping information file.  The attributes and their values are:
      are take from the target annotations if `--useTargetForAutoSmallNonCoding` is specified.
   - `automatic_gene` - Gene is a from an automatic process (ENSEMBL source).  These
      are take from the target annotations if `--useTargetForAutoGenes` is specified.
-     It is not recommended to use --useTargetForAutoGenes.
+     It is not recommended to use --useTargetForAutoGenes, instead use
+     --useTargetForAutoSmallNonCoding to exclude the automatic small ncRNAs, but to
+     get the other automatic genes mapped.
   - `pseudogene` - Pseuduogene annotations (excluding polymorphic).  These
      are take from the target annotations if `--useTargetForPseudoGenes` is specified.
      It is not recommended to use --useTargetForPseudoGenes.
@@ -175,8 +177,8 @@ use GENCODE names:
 
 Map the annotation files:
 ```
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gff3.gz --targetPatches=problemRegions.bed gencode.v29.annotation.gff3.gz   --previousMappedGxf=gencode.v28lift37.annotation.gff3.gz hg38ToHg19.over.gencode.chain gencode.v29lift37.annotation.gff3 gencode.v29lift37.map-info.tsv
-../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz --targetPatches=problemRegions.bed  --previousMappedGxf=gencode.v28lift37.annotation.gff3.gz gencode.v29.annotation.gtf.gz  hg38ToHg19.over.gencode.chain gencode.v29lift37.annotation.gtf
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gff3.gz --targetPatches=problemRegions.bed  --previousMappedGxf=gencode.v28lift37.annotation.gff3.gz  gencode.v29.annotation.gff3.gz hg38ToHg19.over.gencode.chain gencode.v29lift37.annotation.gff3 gencode.v29lift37.map-info.tsv
+../gencode-backmap/bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 --headerFile=liftGxfHeader.txt --targetGxf=gencode.v19.annotation.gtf.gz  --targetPatches=problemRegions.bed  --previousMappedGxf=gencode.v28lift37.annotation.gff3.gz gencode.v29.annotation.gtf.gz   hg38ToHg19.over.gencode.chain gencode.v29lift37.annotation.gtf
 ```
 
 Where `liftGxfHeader.txt` is the comments to add at the beginning of the output GFF3 or GTF files.

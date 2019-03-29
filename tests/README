@@ -22,4 +22,4 @@ Test data
 - data/gencode.v29.annotation.gff3
   - ENST00000427575.5 - didn't map, liftover is clean
   - ENST00000624084.2 - didn't map, mapped in v26lift37 but not v29lift37, not in V19
-  
+  - ENST00000397527.5 - 1-base gap in CDS mapping  
