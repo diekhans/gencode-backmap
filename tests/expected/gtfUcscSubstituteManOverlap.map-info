@@ -346,3 +346,5 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 53	targetCopy	trans	ENST00000384649.1		Y_RNA.589-201	misc_RNA	chr1	93851268	93851374	+	automatic_gene	0	na
 54	targetCopy	gene	ENSG00000264159.1		RN7SL866P	misc_RNA	chr19	3501316	3501587	+	automatic_gene	0	na
 54	targetCopy	trans	ENST00000578785.1		RN7SL866P-201	misc_RNA	chr19	3501316	3501587	+	automatic_gene	0	na
+55	targetCopy	gene	ENSG00000199953.1		RNA5SP443	rRNA	chr17	43404732	43404863	-	automatic_gene	0	na
+55	targetCopy	trans	ENST00000363083.1		RNA5SP443-201	rRNA	chr17	43404732	43404863	-	automatic_gene	0	na

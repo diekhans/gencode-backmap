@@ -106,7 +106,7 @@ the mapping information file.  The attributes and their values are:
   - `automatic_gene` - Gene is a from an automatic process (ENSEMBL source).  These
      are take from the target annotations if `--useTargetForAutoGenes` is specified.
      It is not recommended to use --useTargetForAutoGenes, instead use
-     --useTargetForAutoSmallNonCoding to exclude the automatic small ncRNAs, but to
+     --useTargetForAutoSmallNonCoding to exclude the automatic small ncRNAs, to
      get the other automatic genes mapped.
   - `pseudogene` - Pseuduogene annotations (excluding polymorphic).  These
      are take from the target annotations if `--useTargetForPseudoGenes` is specified.

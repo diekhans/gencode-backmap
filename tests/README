@@ -23,3 +23,6 @@ Test data
   - ENST00000427575.5 - didn't map, liftover is clean
   - ENST00000624084.2 - didn't map, mapped in v26lift37 but not v29lift37, not in V19
   - ENST00000397527.5 - 1-base gap in CDS mapping  
+  - ENST00000650192.1 - got both V19 and V29 versions;
+     - V29 ENST00000650192.1   AC003070.7
+     - V19 ENST00000363083.1   RNA5SP443
