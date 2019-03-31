@@ -29,7 +29,7 @@ endif
 
 
 ifeq (${SYS},Darwin)
-    CXX = g++-mp-4.9
+    CXX = g++-mp-7
     CXXFLAGS = -std=c++11 -Wall -Werror -Wno-sign-compare
     CXXDEBUG = -g -O0 -fno-default-inline -fno-inline
 else ifneq ($(wildcard /opt/rh/devtoolset-2/root/usr/bin/g++),)
