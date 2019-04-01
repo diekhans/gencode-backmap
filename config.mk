@@ -9,27 +9,8 @@ KENTDIR = ${HOME}/kent/src
 
 KENTINC = -I${KENTDIR}/inc -I${KENTDIR}/hg/inc
 KENTLIBDIR = ${KENTDIR}/lib/${MACH}
-KENTLIBS = ${KENTLIBDIR}/jkhgap.a ${KENTLIBDIR}/jkweb.a
+KENTLIBS = ${KENTLIBDIR}/jkhgap.a ${KENTLIBDIR}/jkweb.a ${KENTDIR}/htslib/libhts.a
 LIBS = -lssl -lcrypto -lz -lpthread
-
-# autodetect UCSC installation of htslib:
-ifeq (${HTSDIR},)
-    HTSDIR = /hive/groups/browser/htslib
-    ifneq ($(wildcard ${HTSDIR}),)
-        ifeq (${USE_HTS},)
-            USE_HTS=1
-            USE_TABIX=1
-            USE_SAMTABIX=1
-            SAMTABIXDIR = /hive/groups/browser/htslib
-            SAMTABIXLIB=/hive/groups/browser/htslib/libhts.a
-            HG_DEFS+=-DUSE_HTS
-        endif
-    endif
-endif
-ifneq (${SAMTABIXDIR},)
-    LIBS += ${SAMTABIXLIB}
-endif
-
 
 ifeq (${SYS},Darwin)
     CXX = g++-mp-7
