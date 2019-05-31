@@ -152,9 +152,9 @@ The following files are needed to map using the UCSC liftover alignments:
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_25/gencode.v25.annotation.gff3.gz
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_25/gencode.v25.basic.annotation.gtf.gz
 - GRC patch BED file for GRCh37 from UCSC.  Download from
-  - http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz
+  - http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz
 - GRC incident table from UCSC browser:
-  - http://genomewiki.ucsc.edu/images/6/67/Hg19.grcIncidentDb.bb
+  - http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
 - Previous GFF3 from (e.g. gencode.v28lift37.annotation.gff3.gz )
 
 
@@ -162,9 +162,9 @@ Remove bin column from patches and convert BigBed to bed and combine.
 This does not need to be redone each releases.
 
 ```
-   zcat altSeqPatchesP10.txt.gz | cut -f 2- > altSeqPatchesP10.bed
+   zcat hg19Patch13Patches.txt.gz | cut -f 2- > hg19Patch13Patches.bed
    bigBedToBed Hg19.grcIncidentDb.bb Hg19.grcIncidentDb.bed
-   cat altSeqPatchesP10.bed Hg19.grcIncidentDb.bed >problemRegions.bed
+   cat hg19Patch13Patches.bed Hg19.grcIncidentDb.bed >problemRegions.bed
 ```
 
 GENCODE uses different sequence naming for unplaced chromosome sequences than
@@ -172,7 +172,7 @@ UCSC.  Additionally, GENCODE annotates the GRCh37-lite chrM, while UCSC had
 incorporated a different chrM version.  Convert the UCSC alignments to
 use GENCODE names:
 ```
-../gencode-backmap/bin/ucscLiftEdit hg38ToHg19.over.chain.gz GCF_000001405.26_GRCh38_assembly_report.txt GCF_000001405.13_GRCh37_assembly_report.txt hg38ToHg19.over.gencode.chain
+../gencode-backmap/bin/ucscLiftEdit hg38ToHg19.over.chain.gz GCF_000001405.36_GRCh38.p10_assembly_report.txt GCF_000001405.13_GRCh37_assembly_report.txt hg38ToHg19.over.gencode.chain
 ```
 
 Map the annotation files:
