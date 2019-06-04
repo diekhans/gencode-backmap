@@ -127,6 +127,25 @@ string GeneMapper::featureDesc(const FeatureNode* gene) const {
         + " " + ((gene->getHavanaTypeId().size() > 0) ? gene->getHavanaTypeId() : "-") + ")";
 }
 
+/* does a name appear to be a fake gene name (generated from contigs)? */
+static bool isFakeGeneName(const string& geneName) {
+    // couldn't get C++ regexps to work
+    const char *fakeRe = "^[A-Z][A-Z]?[0-9]+\\.[0-9]+$";
+    return regexMatch(const_cast<char*>(geneName.c_str()), fakeRe);
+}
+
+/* Should geneName be used in matching.  Empty or fake contig name based are
+ * not used.  Don't use gene name for automatic non-coding, as some small
+ * non-coding genes has the same name for multiple instances
+ */
+static bool useGeneNameForMappingKey(const FeatureNode* gene) {
+    assert(gene->isGene());
+    const std::string& geneName = gene->getTypeName();
+    return (not gene->isAutomaticSmallNonCodingGene())
+        and (geneName.size() > 0)
+        and not isFakeGeneName(geneName);
+}
+
 /* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(const FeatureNode* feature) const {
     return fGenomeTransMap->haveQuerySeq(feature->getSeqid());
@@ -150,12 +169,9 @@ void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
     fMappedIdsNames.insert(getBaseId(gene->getTypeId()));
     debugRecordMapped(gene, "recordGeneMapped typeId", getBaseId(gene->getTypeId()));
     
-    // N.B.  Don't use gene name for automatic non-coding, as some small
-    // non-coding genes has the same name for multiple instances
-    // N.B. gene names with `.' are not always a version
-    if (not gene->isAutomaticSmallNonCodingGene()) {
+    if (useGeneNameForMappingKey(gene)) {
         fMappedIdsNames.insert(gene->getTypeName());
-        debugRecordMapped(gene, "recordGeneMapped typeName", getBaseId(gene->getTypeName()));
+        debugRecordMapped(gene, "recordGeneMapped typeName", gene->getTypeName());
     }
     if (gene->getHavanaTypeId() != "") {
         fMappedIdsNames.insert(getBaseId(gene->getHavanaTypeId()));
@@ -187,8 +203,8 @@ bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
         debugRecordMapped(gene, "checkGeneMapped found typeId", getBaseId(gene->getTypeId()));
         return true;
     }
-    if ((not gene->isAutomaticSmallNonCodingGene())
-        and fMappedIdsNames.find(getBaseId(gene->getTypeName())) != fMappedIdsNames.end()) {
+    if (useGeneNameForMappingKey(gene)
+        and fMappedIdsNames.find(gene->getTypeName()) != fMappedIdsNames.end()) {
         debugRecordMapped(gene, "checkGeneMapped found typeName", gene->getTypeName());
         return true;
 
@@ -206,10 +222,8 @@ bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
 /* check if transcript have already been mapped */
 bool GeneMapper::checkTranscriptMapped(const FeatureNode* transcript) const {
     assert(transcript->isTranscript());
-    if (fMappedIdsNames.find(getBaseId(transcript->getTypeId())) != fMappedIdsNames.end()) {
-        debugRecordMapped(transcript, "checkTranscriptMapped found typeId", getBaseId(transcript->getTypeId()));
-        return true;
-    }
+    bool found = (fMappedIdsNames.find(getBaseId(transcript->getTypeId())) != fMappedIdsNames.end());
+    debugRecordMapped(transcript, std::string("checkTranscriptMapped ") + (found ? "TRUE" : "FALSE")  + " typeId", getBaseId(transcript->getTypeId()));
     return false;
 }
 
@@ -532,7 +546,7 @@ FeatureNode* GeneMapper::buildUnmappedGeneFeature(const FeatureNode* srcGeneTree
 
 /* Build gene features */
 ResultFeatureTrees GeneMapper::buildGeneFeature(const FeatureNode* srcGeneTree,
-                                            ResultFeatureTreesVector& mappedTranscripts) const {
+                                                ResultFeatureTreesVector& mappedTranscripts) const {
     ResultFeatureTrees mappedGene(srcGeneTree);
     if (mappedTranscripts.haveMapped()) {
         mappedGene.mapped = buildMappedGeneFeature(srcGeneTree, mappedTranscripts);
@@ -668,6 +682,10 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          FeatureTreePolish& featureTreePolish,
                          ostream& mappingInfoFh,
                          ostream* transcriptPslFh) {
+    if (gVerbose) {
+        cerr << "mapGene: "  << featureDesc(srcGeneTree) << endl;
+    }
+    
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
     ResultFeatureTrees mappedGene = buildGeneFeature(srcGeneTree, mappedTranscripts);
     setGeneLevelMappingAttributes(&mappedGene);

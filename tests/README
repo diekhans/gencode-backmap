@@ -30,4 +30,5 @@ Test data
 - data/gencode.v31.annotation.gff3
   - Merged gene: ENST00000448113.1 and ENST00000424819.1 were in ENSG00000226155.1,
     they moved to ENSG00000224614.2 in V31 due to a transcript being merged with the
-    adjacent gene.
+    adjacent gene.  ENSG00000286004.1 was needed to trigger the bug since unstable
+    gene symbol "AC124944.3" was being checked.

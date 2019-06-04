@@ -39,7 +39,6 @@ typedef enum {
 /* Get format from file name, or error */
 GxfFormat gxfFormatFromFileName(const string& fileName);
 
-
 /*
  * GxF base record type.  Use instanceOf to determine actually type
  */
