@@ -259,6 +259,9 @@ public:
     static const string SOURCE_HAVANA;
     static const string SOURCE_ENSEMBL;
 
+    /* PAR modifier used to make ids unique */
+    static const string PAR_Y_SUFFIX;
+    
     private:
     // columns parsed from file.
     const string fSeqid;
@@ -367,6 +370,19 @@ public:
         }
     }
 
+    /* Does this node have the PAR tag for chrY? */
+    bool isParY() const {
+        const AttrVal* tagAttr = findAttr(GxfFeature::TAG_ATTR);
+        if (tagAttr != NULL) {
+            for (int i = 0; i < tagAttr->size(); i++) {
+                if (tagAttr->getVal(i) == "PAR") {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /* get the id based on feature type, or empty string if it doesn't have an
      * id */
     const string& getTypeId() const;

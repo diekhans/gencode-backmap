@@ -24,9 +24,9 @@ class AnnotationSet {
         struct LocationLink *next;
         FeatureNode* feature;
     };
- 
-       
-    // map of gene or transcripts to features. Keep up to two for PAR
+
+    // map of gene or transcripts to features.  If feature is in
+    // PAR-Y, suffix is added
     typedef map<const string, FeatureNodeVector> FeatureMap;
     typedef FeatureMap::iterator FeatureMapIter;
     typedef FeatureMap::const_iterator FeatureMapConstIter;
@@ -55,6 +55,9 @@ class AnnotationSet {
     void addLocationMap(FeatureNode* feature);
     void buildLocationMap();
     void freeLocationMap();
+    void dumpFeatureMap(const FeatureMap& featureMap,
+                        const string& label,
+                        ostream& fh) const;
     bool isOverlappingGene(const FeatureNode* gene,
                            const FeatureNode* overlappingFeature,
                            float minSimilarity,
@@ -102,12 +105,12 @@ class AnnotationSet {
     /* get a gene or transcript with same base id or NULL.  special
      * handling for PARs. */
     FeatureNode* getFeatureById(const string& id,
-                            const string& seqIdForParCheck) const;
-
+                                const string& seqIdForParCheck) const;
+    
     /* get a gene or transcript with same name or NULL.  special handling
      * for PARs. */
     FeatureNode* getFeatureByName(const string& name,
-                              const string& seqIdForParCheck) const;
+                                  const string& seqIdForParCheck) const;
 
     /* find overlapping features */
     FeatureNodeVector findOverlappingFeatures(const string& seqid,
@@ -129,8 +132,11 @@ class AnnotationSet {
         fGenes.sort();
     }
     
-    /* print for debugging */
+    /* print genes for debugging */
     void dump(ostream& fh) const;
+
+    /* print id maps for debugging */
+    void dumpIdMaps(ostream& fh) const;
 
     /* output genes */
     void write(GxfWriter& gxfFh);

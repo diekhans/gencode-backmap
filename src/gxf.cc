@@ -36,6 +36,7 @@ const string GxfFeature::TAG_ATTR = "tag";
 const string GxfFeature::SOURCE_HAVANA = "HAVANA";
 const string GxfFeature::SOURCE_ENSEMBL = "ENSEMBL";
 
+const string GxfFeature::PAR_Y_SUFFIX = "_PAR_Y";
 
 
 /* is a value quotes */
@@ -205,8 +206,8 @@ class GtfParser: public GxfParser {
     static string removeParUniqHack(const string& value) {
         if (stringStartsWith(value, "ENSGR") or stringStartsWith(value, "ENSTR")) {
             return value.substr(0, 4) + "0" + value.substr(5);
-        } else if (stringEndsWith(value, "_PAR_Y")) {
-            return value.substr(0, value.size()-6);
+        } else if (stringEndsWith(value, GxfFeature::PAR_Y_SUFFIX)) {
+            return value.substr(0, value.size() - GxfFeature::PAR_Y_SUFFIX.size());
         } else {
             return value;
         }
@@ -371,18 +372,6 @@ class GtfWriter: public GxfWriter {
 
     ParIdHackMethod fParIdHackMethod;
 
-    /* Does this record have the PAR Y */
-    bool hasParYTag(const AttrVals& attrVals) const {
-        const AttrVal* tagAttr = attrVals.find(GxfFeature::TAG_ATTR);
-        if (tagAttr != NULL) {
-            for (int i = 0; i < tagAttr->size(); i++) {
-                if (tagAttr->getVal(i) == "PAR") {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
     
     /* modify an id in the PAR */
     string addParUniqHack(const string& id) const {
@@ -437,8 +426,8 @@ class GtfWriter: public GxfWriter {
     }
     
     /* format attribute */
-    string formatAttrs(const AttrVals& attrVals) const {
-        bool isParY = hasParYTag(attrVals);
+    string formatAttrs(const AttrVals& attrVals,
+                       bool isParY) const {
         string strAttrs;
         for (int i = 0; i < attrVals.size(); i++) {
             if (includeAttr(attrVals[i])) {
@@ -464,7 +453,7 @@ class GtfWriter: public GxfWriter {
 
     /* format a feature line */
     virtual string formatFeature(const GxfFeature* feature) {
-        return feature->baseColumnsAsString() + formatAttrs(feature->getAttrs());
+        return feature->baseColumnsAsString() + formatAttrs(feature->getAttrs(), feature->isParY());
     }
 };
 

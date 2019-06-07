@@ -446,7 +446,8 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
         or (targetGene->isPseudogene() == mappedGene->src->isPseudogene())) {
         if (checkGeneTranscriptsMapped(targetGene)) {
             if (gVerbose) {
-                cerr << "shouldSubstituteTarget: all transcripts already mapped for target: " << featureDesc(targetGene) << endl;
+                cerr << "shouldSubstituteTarget: false: " << featureDesc(mappedGene->src)
+                     << ", all transcripts already mapped for target" << featureDesc(targetGene) << endl;
             }
             return false;
         }
@@ -466,6 +467,10 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
         }
         return !alreadyMapped;
 #else
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: true: " << featureDesc(mappedGene->src)
+                 << " with: " << featureDesc(targetGene) << endl;
+        }
         return true;
 #endif
     } else {
@@ -481,6 +486,12 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
 
 /* copy target gene to use instead of a mapping  */
 void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) {
+    if (gVerbose) {
+        cerr << "substituteTarget: " << featureDesc(mappedGene->src)
+             << " with: " << featureDesc(getTargetAnnotation(mappedGene->src))
+             << endl;
+    }
+    assert(mappedGene->target == NULL);
     mappedGene->target = getTargetAnnotation(mappedGene->src)->cloneTree();
 
     // Set flag in both trees
@@ -549,10 +560,12 @@ ResultFeatureTrees GeneMapper::buildGeneFeature(const FeatureNode* srcGeneTree,
                                                 ResultFeatureTreesVector& mappedTranscripts) const {
     ResultFeatureTrees mappedGene(srcGeneTree);
     if (mappedTranscripts.haveMapped()) {
+        assert(mappedGene.mapped == NULL);
         mappedGene.mapped = buildMappedGeneFeature(srcGeneTree, mappedTranscripts);
         
     }
     if (mappedTranscripts.haveUnmapped()) {
+        assert(mappedGene.unmapped == NULL);
         mappedGene.unmapped = buildUnmappedGeneFeature(srcGeneTree, mappedTranscripts);
     }
     if (mappedGene.mapped != NULL) {

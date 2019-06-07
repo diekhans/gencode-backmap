@@ -599,13 +599,14 @@ class GeneTree {
 };
 
 /* Get a base id, deleting the version, if it exists.
- * deal with the ENSTR->ENST0 PAR hack
  */
 static inline string getBaseId(const string& id) {
-    size_t idot = id.find_last_of('.');
-    string baseId = (idot == string::npos) ? id : id.substr(0, idot);
-    if (stringStartsWith(baseId, "ENSGR") or stringStartsWith(baseId, "ENSTR")) {
-        baseId[4] = '0';
+    assert(not (stringStartsWith(id, "ENSGR") or stringStartsWith(id, "ENSTR")));
+
+    string baseId = id;
+    size_t idot = baseId.find_last_of('.');
+    if (idot != string::npos) {
+        baseId.resize(idot);
     }
     return baseId;
 }

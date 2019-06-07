@@ -48,6 +48,9 @@ void AnnotationSet::addFeature(FeatureNode* feature) {
     assert(feature->isGeneOrTranscript());
     // record by id and name
     fIdFeatureMap[getBaseId(feature->getTypeId())].push_back(feature);
+    if (fIdFeatureMap[getBaseId(feature->getTypeId())].size() > 1) { // FIXME
+        cerr << "@@@@@ multiple ids" << getBaseId(feature->getTypeId()) << endl;
+    }
     if (feature->getHavanaTypeId() != "") {
         fIdFeatureMap[getBaseId(feature->getHavanaTypeId())].push_back(feature);
     }
@@ -90,8 +93,8 @@ void AnnotationSet::processRecord(GxfParser *gxfParser,
 
 /* get a target gene or transcript node from an index by name or id */
 FeatureNode* AnnotationSet::getFeatureByKey(const string& key,
-                                                const FeatureMap& featureMap,
-                                                const string& seqIdForParCheck) const {
+                                            const FeatureMap& featureMap,
+                                            const string& seqIdForParCheck) const {
     FeatureMapConstIter it = featureMap.find(key);
     if (it == featureMap.end()) {
         return NULL;
@@ -221,11 +224,31 @@ void AnnotationSet::outputFeature(const FeatureNode* feature,
     }
 }
 
-/* print for debugging */
+/* print genes for debugging */
 void AnnotationSet::dump(ostream& fh) const {
     for (int iGene = 0; iGene < fGenes.size(); iGene++) {
         fGenes[iGene]->dump(fh);
     }
+}
+
+/* dump one of the id/name maps */
+void AnnotationSet::dumpFeatureMap(const FeatureMap& featureMap,
+                                   const string& label,
+                                   ostream& fh) const {
+    fh << ">>> " << label << endl;
+    for (FeatureMapConstIter it = featureMap.begin(); it != featureMap.end(); it++) {
+        fh << it->first << ":";
+        for (int i = 0; i < it->second.size(); i++) {
+            fh << " " << it->second[i]->getTypeId();
+        }
+        fh << endl;
+    }
+}
+
+/* print id maps for debugging */
+void AnnotationSet::dumpIdMaps(ostream& fh) const {
+    dumpFeatureMap(fIdFeatureMap, "IdFeatureMap", fh);
+    dumpFeatureMap(fNameFeatureMap, "NameFeatureMap", fh);
 }
 
 /* output genes */
