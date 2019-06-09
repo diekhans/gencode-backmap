@@ -43,21 +43,41 @@ void AnnotationSet::freeLocationMap() {
     genomeRangeTreeFree(&fLocationMap);
 }
 
+/* generate key with PAR */
+string AnnotationSet::mkFeatureIdKey(const string& typeId,
+                                     bool isParY) const {
+    if (isParY) {
+        return typeId + GxfFeature::PAR_Y_SUFFIX;
+    } else {
+        return typeId;
+    }
+}
+
+/* insert feature in a map */
+void AnnotationSet::insertInFeatureMap(const string& key,
+                                       FeatureNode* feature,
+                                       FeatureMap& featureMap) {
+    if (featureMap.find(key) != featureMap.end()) {
+        // FIXME: make verbose option
+        cerr << "NOTES: key already in FeatureMap: " << key << endl;
+    }
+    featureMap[key].push_back(feature);
+}
+
 /* link a gene or transcript feature into the maps */
 void AnnotationSet::addFeature(FeatureNode* feature) {
     assert(feature->isGeneOrTranscript());
     // record by id and name
-    fIdFeatureMap[getBaseId(feature->getTypeId())].push_back(feature);
-    if (fIdFeatureMap[getBaseId(feature->getTypeId())].size() > 1) { // FIXME
-        cerr << "@@@@@ multiple ids" << getBaseId(feature->getTypeId()) << endl;
-    }
+    insertInFeatureMap(mkFeatureIdKey(feature->getTypeId(), feature->isParY()),
+                       feature, fIdFeatureMap);
     if (feature->getHavanaTypeId() != "") {
-        fIdFeatureMap[getBaseId(feature->getHavanaTypeId())].push_back(feature);
+        insertInFeatureMap(mkFeatureIdKey(feature->getHavanaTypeId(), feature->isParY()),
+                           feature, fIdFeatureMap);
     }
-    // save gene/transcript name, although not on small non-coding, as they are
-    // not unique.
-    if ((feature->getTypeName() != "") && (not feature->isAutomaticSmallNonCodingGene())) {
-        fNameFeatureMap[feature->getTypeName()].push_back(feature);
+    // save gene name when real and unique
+    if (feature->isGene() and useGeneNameForMappingKey(feature)) {
+        insertInFeatureMap(mkFeatureIdKey(feature->getTypeName(), feature->isParY()),
+                           feature, fNameFeatureMap);
     }
     if (fLocationMap != NULL) {
         addLocationMap(feature);
@@ -80,7 +100,7 @@ void AnnotationSet::addGene(FeatureNode* gene) {
 
 /* process a record, loading into table or discarding */
 void AnnotationSet::processRecord(GxfParser *gxfParser,
-                                      GxfRecord* gxfRecord) {
+                                  GxfRecord* gxfRecord) {
     if (instanceOf(gxfRecord, GxfFeature)) {
         GxfFeature* geneFeature = dynamic_cast<GxfFeature*>(gxfRecord);
         FeatureNode* geneTree = GeneTree::geneTreeFactory(gxfParser, geneFeature);
@@ -91,23 +111,21 @@ void AnnotationSet::processRecord(GxfParser *gxfParser,
 }
 
 
-/* get a target gene or transcript node from an index by name or id */
-FeatureNode* AnnotationSet::getFeatureByKey(const string& key,
-                                            const FeatureMap& featureMap,
-                                            const string& seqIdForParCheck) const {
+/* get a target gene or transcript node from an index by name or id.
+ * if the name or id is duplicated in the GxF, it can't be used as an index and
+ * NULL is returned.
+ */
+FeatureNode* AnnotationSet::getFeatureByKey(const string& baseId,
+                                           bool isParY,
+                                           const FeatureMap& featureMap) const {
+    string key = mkFeatureIdKey(baseId, isParY);
     FeatureMapConstIter it = featureMap.find(key);
     if (it == featureMap.end()) {
         return NULL;
-    } else if (it->second.size() == 2) {
-        if (it->second[0]->getSeqid() == seqIdForParCheck) {
-            return it->second[0];
-        } else if (it->second[1]->getSeqid() == seqIdForParCheck) {
-            return it->second[1];
-        } else {
-            throw logic_error("PAR target feature hack confused: " + key);
-        }
-    } else if (it->second.size() > 2) {
-        throw logic_error("too many nodes for key: " + key);
+    } else if (it->second.size() > 1) {
+        return NULL;
+    } else if (it->second[0]->isParY() != isParY) {
+        throw logic_error("PAR target feature hack confused: " + key);
     } else {
         return it->second[0];
     }
@@ -116,15 +134,15 @@ FeatureNode* AnnotationSet::getFeatureByKey(const string& key,
 /* get a target gene or transcript node with same base id or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
 FeatureNode* AnnotationSet::getFeatureById(const string& id,
-                                               const string& seqIdForParCheck) const {
-    return getFeatureByKey(getBaseId(id), fIdFeatureMap, seqIdForParCheck);
+                                           bool isParY) const {
+    return getFeatureByKey(getBaseId(id), isParY, fIdFeatureMap);
 }
 
 /* get a target gene or transcript node with same name or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
 FeatureNode* AnnotationSet::getFeatureByName(const string& name,
-                                                 const string& seqIdForParCheck) const {
-    return getFeatureByKey(name, fNameFeatureMap, seqIdForParCheck);
+                                             bool isParY) const {
+    return getFeatureByKey(name, isParY, fNameFeatureMap);
 }
 
 /* find overlapping features */

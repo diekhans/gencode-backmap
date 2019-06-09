@@ -127,25 +127,6 @@ string GeneMapper::featureDesc(const FeatureNode* gene) const {
         + " " + ((gene->getHavanaTypeId().size() > 0) ? gene->getHavanaTypeId() : "-") + ")";
 }
 
-/* does a name appear to be a fake gene name (generated from contigs)? */
-static bool isFakeGeneName(const string& geneName) {
-    // couldn't get C++ regexps to work
-    const char *fakeRe = "^[A-Z][A-Z]?[0-9]+\\.[0-9]+$";
-    return regexMatch(const_cast<char*>(geneName.c_str()), fakeRe);
-}
-
-/* Should geneName be used in matching.  Empty or fake contig name based are
- * not used.  Don't use gene name for automatic non-coding, as some small
- * non-coding genes has the same name for multiple instances
- */
-static bool useGeneNameForMappingKey(const FeatureNode* gene) {
-    assert(gene->isGene());
-    const std::string& geneName = gene->getTypeName();
-    return (not gene->isAutomaticSmallNonCodingGene())
-        and (geneName.size() > 0)
-        and not isFakeGeneName(geneName);
-}
-
 /* is the source sequence for a feature in the mapping at all? */
 bool GeneMapper::isSrcSeqInMapping(const FeatureNode* feature) const {
     return fGenomeTransMap->haveQuerySeq(feature->getSeqid());
@@ -409,7 +390,7 @@ void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
 bool GeneMapper::checkForPathologicalGeneRename(const ResultFeatureTrees* mappedGene,
                                                 const FeatureNode* targetGene) const {
     return (getBaseId(mappedGene->src->getTypeId()) != getBaseId(targetGene->getTypeId()))
-        and (fSrcAnnotations->getFeatureById(targetGene->getTypeId(), targetGene->getSeqid()) != NULL);
+        and (fSrcAnnotations->getFeatureById(targetGene->getTypeId(), targetGene->isParY()) != NULL);
 }
 
 /* should we substitute target version of gene?  */
@@ -619,15 +600,15 @@ const FeatureNode* GeneMapper::getTargetAnnotation(const FeatureNode* feature) c
     // havana id and transcript names are just a numbering withing the gene
     // and not stable.
     const FeatureNode* targetFeature = fTargetAnnotations->getFeatureById(getPreMappedId(feature->getTypeId()),
-                                                                      feature->getSeqid());
+                                                                      feature->isParY());
     if (feature->isGene()) {
         if ((targetFeature == NULL) and (feature->getHavanaTypeId() != "")) {
             targetFeature = fTargetAnnotations->getFeatureByName(getPreMappedId(feature->getHavanaTypeId()),
-                                                                 feature->getSeqid());
+                                                                 feature->isParY());
         }
-        if (targetFeature == NULL) {
+        if ((targetFeature == NULL) and useGeneNameForMappingKey(feature)) {
             targetFeature = fTargetAnnotations->getFeatureByName(feature->getTypeName(),
-                                                                 feature->getSeqid());
+                                                                 feature->isParY());
         }
     }
     return targetFeature;

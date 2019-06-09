@@ -25,8 +25,10 @@ class AnnotationSet {
         FeatureNode* feature;
     };
 
-    // map of gene or transcripts to features.  If feature is in
-    // PAR-Y, suffix is added
+    // map of gene or transcripts id or name feature object.  If feature is in
+    // PAR_Y, suffix is added to key.  A list is kept because occasionally
+    // gene names or HAVANA gene ids are duplicated incorrectly on multiple genes.
+    // it this case, we can't the result.
     typedef map<const string, FeatureNodeVector> FeatureMap;
     typedef FeatureMap::iterator FeatureMapIter;
     typedef FeatureMap::const_iterator FeatureMapConstIter;
@@ -34,7 +36,7 @@ class AnnotationSet {
     // map by base id of genes and transcripts (not exons).
     FeatureMap fIdFeatureMap;
 
-    // map by names of genes and transcripts
+    // map by names of genes  small non-coding RNAs are know to have non-unique names and are not included.
     FeatureMap fNameFeatureMap;
 
     // list of all gene features found
@@ -48,7 +50,12 @@ class AnnotationSet {
 
     // optional table of chromosome sequence sizes
     const GenomeSizeMap* fGenomeSizes;
-    
+
+    string mkFeatureIdKey(const string& typeId,
+                          bool isParY) const;
+    void insertInFeatureMap(const string& key,
+                            FeatureNode* feature,
+                            FeatureMap& featureMap);
     void addFeature(FeatureNode* feature);
     void processRecord(GxfParser *gxfParser,
                        GxfRecord* gxfRecord);
@@ -63,9 +70,9 @@ class AnnotationSet {
                            float minSimilarity,
                            bool manualOnlyTranscripts);
 
-    FeatureNode* getFeatureByKey(const string& key,
-                                 const FeatureMap& featureMap,
-                                 const string& seqIdForParCheck) const;
+    FeatureNode* getFeatureByKey(const string& baseKey,
+                                 bool isParY,
+                                 const FeatureMap& featureMap) const;
 
     /* check if a seqregion for seqid has been written, if so, return true,
      * otherwise record it and return false.  */
@@ -105,12 +112,12 @@ class AnnotationSet {
     /* get a gene or transcript with same base id or NULL.  special
      * handling for PARs. */
     FeatureNode* getFeatureById(const string& id,
-                                const string& seqIdForParCheck) const;
+                                bool isParY) const;
     
     /* get a gene or transcript with same name or NULL.  special handling
      * for PARs. */
     FeatureNode* getFeatureByName(const string& name,
-                                  const string& seqIdForParCheck) const;
+                                  bool isParY) const;
 
     /* find overlapping features */
     FeatureNodeVector findOverlappingFeatures(const string& seqid,

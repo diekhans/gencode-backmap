@@ -4,6 +4,7 @@
 #include "featureTree.hh"
 #include <iostream>
 #include <algorithm> 
+#include "jkinclude.hh"
 
 /* Remap status attribute name */
 const string REMAP_STATUS_ATTR = "remap_status";
@@ -515,5 +516,24 @@ FeatureNode* GeneTree::loadGene(GxfParser *gxfParser,
 FeatureNode* GeneTree::geneTreeFactory(GxfParser *gxfParser,
                                        GxfFeature* geneFeature) {
     return loadGene(gxfParser, geneFeature);
+}
+
+/* does a name appear to be a fake gene name (generated from contigs)? */
+bool isFakeGeneName(const string& geneName) {
+    // couldn't get C++ regexps to work
+    const char *fakeRe = "^[A-Z][A-Z]?[0-9]+\\.[0-9]+$";
+    return regexMatch(const_cast<char*>(geneName.c_str()), fakeRe);
+}
+
+/* Should geneName be used in matching.  Empty or fake contig name based are
+ * not used.  Don't use gene name for automatic non-coding, as some small
+ * non-coding genes has the same name for multiple instances
+ */
+bool useGeneNameForMappingKey(const FeatureNode* gene) {
+    assert(gene->isGene());
+    const std::string& geneName = gene->getTypeName();
+    return (not gene->isAutomaticSmallNonCodingGene())
+        and (geneName.size() > 0)
+        and not isFakeGeneName(geneName);
 }
 
