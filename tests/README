@@ -33,8 +33,6 @@ Test data
     adjacent gene.  ENSG00000286004.1 was needed to trigger the bug since unstable
     gene symbol "AC124944.3" was being checked.
 
-- data/gencode.v33.annotation.gff3
-
 - data/dup-transcripts.v33.gff3
   data/dup-transcripts.v19.gff3 
   data/dup-transcripts.v32lift37.gff3

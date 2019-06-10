@@ -244,6 +244,13 @@ gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
+# double mapping of transcript, detected with gff3ToGenePred
+gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v31.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
 ##
 ## lift edit
 ##
@@ -351,7 +358,7 @@ update: mappingChains problemRegions
 mappingChains: ucscMappingChains
 
 ucscMappingChains: tmp/testGrch38.gp
-	overlapSelect tmp/testGrch38.gp  /cluster/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
+	overlapSelect tmp/testGrch38.gp  /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
 	chainToPslBasic ${testUcscLiftOverChains} tmp/hg38ToHg19.over.psl
 	pslSwap tmp/hg38ToHg19.over.psl  tmp/hg19ToHg38.over.psl
 

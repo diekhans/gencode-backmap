@@ -420,6 +420,13 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
         }
         return false;
     }
+
+    // FIXME: tmp hack for V31 to avoid substitution of target when gene has merged
+    // this is being fixed properly in mast, but needed quickly
+    if (targetGene->getTypeId() == "ENSG00000226155.1") {
+        cerr << "NOTE: V31 hack, don't include target gene "  << targetGene->getTypeId() << endl;
+        return false;
+    }
     
     // allow for pseudogene biotype compatiblity between less and more
     // specific pseudogene biotypes
