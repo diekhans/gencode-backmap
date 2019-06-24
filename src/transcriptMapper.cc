@@ -1,7 +1,7 @@
+#include "jkinclude.hh"
 #include "transcriptMapper.hh"
 #include "featureMapper.hh"
 #include "featureTree.hh"
-#include "jkinclude.hh"
 #include "pslOps.hh"
 #include "pslMapping.hh"
 #include "frame.hh"

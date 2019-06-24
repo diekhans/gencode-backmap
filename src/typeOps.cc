@@ -1,8 +1,8 @@
+#include "jkinclude.hh"
 #include "typeOps.hh"
 #include <stdexcept>
 #include <errno.h>
 #include <stdlib.h>
-#include "jkinclude.hh"
 
 const string whitespace = " \t\n\r\f\v";
 

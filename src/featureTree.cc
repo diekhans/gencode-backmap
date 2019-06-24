@@ -1,6 +1,7 @@
 /*
  * Tree structure use to store genes
  */
+#include "jkinclude.hh"
 #include "featureTree.hh"
 #include <iostream>
 #include <algorithm> 

@@ -1,6 +1,7 @@
 /*
  * Post mapping corrections to feature tree.
  */
+#include "jkinclude.hh"
 #include "featureTreePolish.hh"
 #include <stdexcept>
 #include <algorithm>
