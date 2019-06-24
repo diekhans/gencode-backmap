@@ -1,5 +1,5 @@
-#include "bedMap.hh"
 #include "jkinclude.hh"
+#include "bedMap.hh"
 #include "typeOps.hh"
 
 /* constructor */

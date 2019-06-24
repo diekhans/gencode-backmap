@@ -1,8 +1,8 @@
 /*
  * transmap projection of annotations
  */
-#include "transMap.hh"
 #include "jkinclude.hh"
+#include "transMap.hh"
 #include "typeOps.hh"
 #include <iostream>
 

@@ -1,5 +1,6 @@
 /*
- * Bring in UCSC browser includes, dealing with C++ conflicts.  Just grab everything
+ * Bring in UCSC browser includes, dealing with C++ conflicts.  Just grab everything needed by any module..
+ * Including this first might prevent some conflicts with clang.
  */
 #ifndef jkinclude_hh
 #define jkinclude_hh
@@ -18,8 +19,8 @@ extern "C" {
 #include "regexHelper.h"
 #undef min
 #undef max
-#undef hash
 #undef new
+// must leave hash redefined for clang
 }
 
 #endif

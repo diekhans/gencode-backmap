@@ -3,10 +3,10 @@
  */
 #ifndef typeOps_hh
 #define typeOps_hh
+#include "jkinclude.hh"
 #include <string>
 #include <vector>
 #include <set>
-#include "jkinclude.hh"
 using namespace std;
 
 #include <typeinfo>

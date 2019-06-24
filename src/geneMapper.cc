@@ -1,6 +1,6 @@
+#include "jkinclude.hh"
 #include "geneMapper.hh"
 #include "featureMapper.hh"
-#include "jkinclude.hh"
 #include "featureTree.hh"
 #include "bedMap.hh"
 #include <fstream>
@@ -424,8 +424,12 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     // FIXME: tmp hack for V31 to avoid substitution of target when gene has merged
     // this is being fixed properly in mast, but needed quickly
     if (targetGene->getTypeId() == "ENSG00000226155.1") {
+#if 1
         cerr << "NOTE: V31 hack, don't include target gene "  << targetGene->getTypeId() << endl;
         return false;
+#else
+                cerr << "NOTE: V31 hack DISABLED "  << targetGene->getTypeId() << endl;
+#endif
     }
     
     // allow for pseudogene biotype compatiblity between less and more
