@@ -1,4 +1,3 @@
-#include "jkinclude.hh"
 #include "transcriptMapper.hh"
 #include "featureMapper.hh"
 #include "featureTree.hh"

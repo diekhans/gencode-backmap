@@ -3,9 +3,8 @@
  */
 #ifndef typeOps_hh
 #define typeOps_hh
-#include "jkinclude.hh"
-#include <string>
 #include <vector>
+#include <string>
 #include <set>
 using namespace std;
 

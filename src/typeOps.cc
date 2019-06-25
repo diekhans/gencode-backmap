@@ -1,4 +1,3 @@
-#include "jkinclude.hh"
 #include "typeOps.hh"
 #include <stdexcept>
 #include <errno.h>

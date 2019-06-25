@@ -14,6 +14,7 @@
 #include <queue>
 #include <stdexcept>
 #include <algorithm>
+#include <cassert>
 using namespace std;
 
 /* it seems so stupid to need to keep writing one-off GFF/GTF parsers */
