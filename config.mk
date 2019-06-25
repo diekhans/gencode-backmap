@@ -13,7 +13,7 @@ KENTLIBS = ${KENTLIBDIR}/jkhgap.a ${KENTLIBDIR}/jkweb.a ${KENTDIR}/htslib/libhts
 LIBS = -lssl -lcrypto -lz -lpthread
 
 ifeq (${SYS},Darwin)
-    USE_CLANG = yes
+    USE_CLANG = no
 else
     USE_CLANG = no
 endif
