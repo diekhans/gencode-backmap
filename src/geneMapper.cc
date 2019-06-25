@@ -1,4 +1,3 @@
-#include "jkinclude.hh"
 #include "geneMapper.hh"
 #include "featureMapper.hh"
 #include "featureTree.hh"

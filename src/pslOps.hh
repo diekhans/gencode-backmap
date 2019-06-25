@@ -3,9 +3,9 @@
  */
 #ifndef pslOps_hh
 #define pslOps_hh
-#include "jkinclude.hh"
 #include "typeOps.hh"
 #include <vector>
+#include "jkinclude.hh"
 
 /*
  * Vector of psls; doesn't own PSLs.

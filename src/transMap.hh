@@ -3,7 +3,6 @@
  */
 #ifndef transMap_hh
 #define transMap_hh
-#include "jkinclude.hh"
 #include <string>
 #include <map>
 #include "pslOps.hh"

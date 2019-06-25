@@ -5,10 +5,7 @@
 #ifndef jkinclude_hh
 #define jkinclude_hh
 extern "C" {
-#define min jkmin
-#define max jkmax
 #define hash jkhash
-#define new jknew
 #include "common.h"
 #include "psl.h"
 #include "pslTransMap.h"
@@ -21,6 +18,7 @@ extern "C" {
 #undef max
 #undef new
 // must leave hash redefined for clang
+#undef hash
 }
 
 #endif

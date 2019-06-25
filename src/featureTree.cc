@@ -1,7 +1,6 @@
 /*
  * Tree structure use to store genes
  */
-#include "jkinclude.hh"
 #include "featureTree.hh"
 #include <iostream>
 #include <algorithm> 
@@ -376,8 +375,8 @@ void FeatureNode::dump(ostream& fh) const {
 /* compare chrom names to emulate GENCODE sorting */
 static bool chromLessThan(const string& a, const string& b) {
     // chrom vs non-chrom; ucsc names have chr_accession, so check for that too
-    bool aIsChr = (a.find("chr") == 0) or (a.find("_") < 0);
-    bool bIsChr = (b.find("chr") == 0) or (b.find("_") < 0);
+    bool aIsChr = (a.find("chr") == 0) or (a.find("_") == string::npos);
+    bool bIsChr = (b.find("chr") == 0) or (b.find("_") == string::npos);
     if (aIsChr and (not bIsChr)) {
         return true;
     } else if (bIsChr and (not aIsChr)) {

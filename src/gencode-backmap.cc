@@ -2,7 +2,6 @@
 /*
  * program to map gencode datafiles to older assemblies.
  */
-#include "jkinclude.hh"
 #include <getopt.h>
 #include "gxf.hh"
 #include "typeOps.hh"

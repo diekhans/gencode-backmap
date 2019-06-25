@@ -12,11 +12,15 @@ KENTLIBDIR = ${KENTDIR}/lib/${MACH}
 KENTLIBS = ${KENTLIBDIR}/jkhgap.a ${KENTLIBDIR}/jkweb.a ${KENTDIR}/htslib/libhts.a
 LIBS = -lssl -lcrypto -lz -lpthread
 
-USE_CLANG = no
+ifeq (${SYS},Darwin)
+    USE_CLANG = yes
+else
+    USE_CLANG = no
+endif
 
 ifeq (${USE_CLANG}, yes)
     CXX = clang++
-    CXXFLAGS = -std=c++11 -Wall -Wno-sign-compare -Wno-format-security
+    CXXFLAGS = -std=c++11 -Wall -Werror -Wno-sign-compare -Wno-format-security
     CXXDEBUG = -g -O0 -fno-inline
 else
     # gcc

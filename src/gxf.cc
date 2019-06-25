@@ -1,8 +1,10 @@
 #include "gxf.hh"
+#include "jkinclude.hh"
 #include "FIOStream.hh"
 #include <typeinfo>
 #include <string>
 #include <vector>
+#include <cassert>
 #include "typeOps.hh"
 #include <stdexcept>
 
