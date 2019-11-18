@@ -157,16 +157,15 @@ void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
         fMappedIdsNames.insert(getBaseId(gene->getHavanaTypeId()));
         debugRecordMapped(gene, "recordGeneMapped havanaTypeId", getBaseId(gene->getHavanaTypeId()));
     }
-
-    for (size_t i = 0; i < gene->getChildren().size(); i++) {
-        recordTranscriptMapped(gene->getChild(i));
-    }
 }
 
 
 /* record transcript as being mapped */
 void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
     assert(transcript->isTranscript());
+    if (isTranscriptMapped(transcript)) {
+        throw logic_error("BUG: transcript base id has already been mapped: " + transcript->toString());
+    }
     fMappedIdsNames.insert(getBaseId(transcript->getTypeId()));
     debugRecordMapped(transcript, "recordTranscriptMapped typeId", getBaseId(transcript->getTypeId()));
     if (transcript->getHavanaTypeId() != "") {
@@ -222,18 +221,19 @@ bool GeneMapper::checkGeneTranscriptsMapped(const FeatureNode* gene) const {
 
 /* process one transcript */
 ResultFeatureTrees GeneMapper::processTranscript(const FeatureNode* transcript,
-                                                 ostream* transcriptPslFh) const {
+                                                 ostream* transcriptPslFh) {
     TranscriptMapper transcriptMapper(fGenomeTransMap, transcript, fTargetAnnotations,
                                       isSrcSeqInMapping(transcript), transcriptPslFh);
     ResultFeatureTrees mappedTranscript = transcriptMapper.mapTranscriptFeatures(transcript);
     TargetStatus targetStatus = getTargetAnnotationStatus(&mappedTranscript);
     mappedTranscript.setTargetStatus(targetStatus);
+    recordTranscriptMapped(transcript);
     return mappedTranscript;
 }
 
 /* process all transcripts of gene. */
 ResultFeatureTreesVector GeneMapper::processTranscripts(const FeatureNode* gene,
-                                                    ostream* transcriptPslFh) const {
+                                                        ostream* transcriptPslFh) {
     ResultFeatureTreesVector mappedTranscripts;
     for (size_t i = 0; i < gene->getChildren().size(); i++) {
         const FeatureNode* transcript = gene->getChild(i);
@@ -247,7 +247,7 @@ ResultFeatureTreesVector GeneMapper::processTranscripts(const FeatureNode* gene,
 
 /* find a matching gene or transcript given by id */
 FeatureNode* GeneMapper::findMatchingBoundingFeature(const FeatureNodeVector& features,
-                                                 const FeatureNode* feature) const {
+                                                     const FeatureNode* feature) const {
     assert(feature->isGeneOrTranscript());
     for (int i = 0; i < features.size(); i++)  {
         assert(features[i]->isGeneOrTranscript());
@@ -423,7 +423,7 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     // FIXME: tmp hack for V31 to avoid substitution of target when gene has merged
     // this is being fixed properly in mast, but needed quickly
     if (targetGene->getTypeId() == "ENSG00000226155.1") {
-#if 1
+#if 0
         cerr << "NOTE: V31 hack, don't include target gene "  << targetGene->getTypeId() << endl;
         return false;
 #else

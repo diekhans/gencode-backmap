@@ -69,16 +69,19 @@ class GeneMapper {
                            const string& desc,
                            const string& key = "") const;
     void recordGeneMapped(const FeatureNode* gene);
+    bool isTranscriptMapped(const FeatureNode* transcript) {
+        return fMappedIdsNames.find(getBaseId(transcript->getTypeId())) != fMappedIdsNames.end();
+    }
     void recordTranscriptMapped(const FeatureNode* transcript);
     bool checkGeneMapped(const FeatureNode* gene) const ;
     bool checkTranscriptMapped(const FeatureNode* transcript) const;
     bool checkGeneTranscriptsMapped(const FeatureNode* gene) const;
     ResultFeatureTrees processTranscript(const FeatureNode* transcript,
-                                     ostream* transcriptPslFh) const;
+                                     ostream* transcriptPslFh);
     ResultFeatureTreesVector processTranscripts(const FeatureNode* gene,
-                                            ostream* transcriptPslFh) const;
+                                            ostream* transcriptPslFh);
     FeatureNode* findMatchingBoundingFeature(const FeatureNodeVector& features,
-                                         const FeatureNode* srcFeature) const;
+                                             const FeatureNode* srcFeature) const;
     void copyMappingMetadata(const FeatureNode* origFeature,
                              FeatureNode* newFeature) const;
     void copyGeneMetadata(const FeatureNode* origGene,
