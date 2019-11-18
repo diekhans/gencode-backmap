@@ -2,8 +2,10 @@ ROOT = ..
 include ${ROOT}/config.mk
 
 ### IMPORTANT: test GFF3, if new are added changes thests
-GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3
-GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 data/gencode.v31.annotation.gff3
+GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
+	data/dup-transcripts.v19.gff3
+GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 \
+	data/gencode.v31.annotation.gff3 data/dup-transcripts.v33.gff3
 
 
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
