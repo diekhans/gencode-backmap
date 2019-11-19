@@ -157,7 +157,7 @@ void GeneMapper::debugRecordMapped(const FeatureNode* feature,
     if (gVerbose) {
         cerr << desc << " " << featureDesc(feature);
         if (key != "") {
-            cerr << " key: " << key;
+            cerr << " key: (" << key << ", " << feature->getSeqid() << ")";
         }
         cerr << endl;
     }
@@ -166,15 +166,15 @@ void GeneMapper::debugRecordMapped(const FeatureNode* feature,
 /* record gene and it's transcripts as being mapped */
 void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
     assert(gene->isGene());
-    fMappedIdsNames.insert(getBaseId(gene->getTypeId()));
+    fMappedIdsNames.addBaseId(gene->getTypeId(), gene->getSeqid());
     debugRecordMapped(gene, "recordGeneMapped typeId", getBaseId(gene->getTypeId()));
     
     if (useGeneNameForMappingKey(gene)) {
-        fMappedIdsNames.insert(gene->getTypeName());
+        fMappedIdsNames.addName(gene->getTypeName(), gene->getSeqid());
         debugRecordMapped(gene, "recordGeneMapped typeName", gene->getTypeName());
     }
     if (gene->getHavanaTypeId() != "") {
-        fMappedIdsNames.insert(getBaseId(gene->getHavanaTypeId()));
+        fMappedIdsNames.addBaseId(gene->getHavanaTypeId(), gene->getSeqid());
         debugRecordMapped(gene, "recordGeneMapped havanaTypeId", getBaseId(gene->getHavanaTypeId()));
     }
 
@@ -187,10 +187,10 @@ void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
 /* record transcript as being mapped */
 void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
     assert(transcript->isTranscript());
-    fMappedIdsNames.insert(getBaseId(transcript->getTypeId()));
+    fMappedIdsNames.addBaseId(transcript->getTypeId(), transcript->getSeqid());
     debugRecordMapped(transcript, "recordTranscriptMapped typeId", getBaseId(transcript->getTypeId()));
     if (transcript->getHavanaTypeId() != "") {
-        fMappedIdsNames.insert(getBaseId(transcript->getHavanaTypeId()));
+        fMappedIdsNames.addBaseId(transcript->getHavanaTypeId(), transcript->getSeqid());
         debugRecordMapped(transcript, "recordTranscriptMapped havanaTypeId", getBaseId(transcript->getHavanaTypeId()));
     }
 }
@@ -199,18 +199,18 @@ void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
 /* check if gene have been mapped */
 bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
     assert(gene->isGene());
-    if (fMappedIdsNames.find(getBaseId(gene->getTypeId())) != fMappedIdsNames.end()) {
+    if (fMappedIdsNames.haveBaseId(gene->getTypeId(), gene->getSeqid())) {
         debugRecordMapped(gene, "checkGeneMapped found typeId", getBaseId(gene->getTypeId()));
         return true;
     }
     if (useGeneNameForMappingKey(gene)
-        and fMappedIdsNames.find(gene->getTypeName()) != fMappedIdsNames.end()) {
+        and fMappedIdsNames.haveName(gene->getTypeName(), gene->getSeqid())) {
         debugRecordMapped(gene, "checkGeneMapped found typeName", gene->getTypeName());
         return true;
 
     }
     if (gene->getHavanaTypeId() != "") {
-        if (fMappedIdsNames.find(getBaseId(gene->getHavanaTypeId())) != fMappedIdsNames.end()) {
+        if (fMappedIdsNames.haveBaseId(gene->getHavanaTypeId(), gene->getSeqid())) {
             debugRecordMapped(gene, "checkGeneMapped found havanaTypeId", gene->getHavanaTypeId());
             return true;
         }
@@ -222,22 +222,35 @@ bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
 /* check if transcript have already been mapped */
 bool GeneMapper::checkTranscriptMapped(const FeatureNode* transcript) const {
     assert(transcript->isTranscript());
-    bool found = (fMappedIdsNames.find(getBaseId(transcript->getTypeId())) != fMappedIdsNames.end());
+    bool found = fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->getSeqid());
     debugRecordMapped(transcript, std::string("checkTranscriptMapped ") + (found ? "TRUE" : "FALSE")  + " typeId", getBaseId(transcript->getTypeId()));
-    return false;
+    return found;
 }
 
 /* check if all transcripts in a gene have already been mapped (doesn't check gene) */
-bool GeneMapper::checkGeneTranscriptsMapped(const FeatureNode* gene) const {
+bool GeneMapper::checkAllGeneTranscriptsMapped(const FeatureNode* gene) const {
     assert(gene->isGene());
     for (size_t i = 0; i < gene->getChildren().size(); i++) {
         if (not checkTranscriptMapped(gene->getChild(i))) {
-            debugRecordMapped(gene, "checkGeneTranscriptsMapped some transcripts not mapped");
+            debugRecordMapped(gene, "checkAllGeneTranscriptsMapped some transcripts not mapped");
             return false;
         }
     }
-    debugRecordMapped(gene, "checkGeneTranscriptsMapped all transcripts mapped");
+    debugRecordMapped(gene, "checkAllGeneTranscriptsMapped all transcripts mapped");
     return true;
+}
+
+/* check if any transcripts in a gene have already been mapped (doesn't check gene) */
+bool GeneMapper::checkAnyGeneTranscriptsMapped(const FeatureNode* gene) const {
+    assert(gene->isGene());
+    for (size_t i = 0; i < gene->getChildren().size(); i++) {
+        if (checkTranscriptMapped(gene->getChild(i))) {
+            debugRecordMapped(gene, "checkAnyGeneTranscriptsMapped some transcripts mapped");
+            return true;
+        }
+    }
+    debugRecordMapped(gene, "checkAnyGeneTranscriptsMapped no transcripts mapped");
+    return false;
 }
 
 /* process one transcript */
@@ -267,7 +280,7 @@ ResultFeatureTreesVector GeneMapper::processTranscripts(const FeatureNode* gene,
 
 /* find a matching gene or transcript given by id */
 FeatureNode* GeneMapper::findMatchingBoundingFeature(const FeatureNodeVector& features,
-                                                 const FeatureNode* feature) const {
+                                                     const FeatureNode* feature) const {
     assert(feature->isGeneOrTranscript());
     for (int i = 0; i < features.size(); i++)  {
         assert(features[i]->isGeneOrTranscript());
@@ -444,7 +457,7 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     // specific pseudogene biotypes
     if ((targetGene->getTypeBiotype() == mappedGene->src->getTypeBiotype())
         or (targetGene->isPseudogene() == mappedGene->src->isPseudogene())) {
-        if (checkGeneTranscriptsMapped(targetGene)) {
+        if (checkAnyGeneTranscriptsMapped(targetGene)) {
             if (gVerbose) {
                 cerr << "shouldSubstituteTarget: all transcripts already mapped for target: " << featureDesc(targetGene) << endl;
             }
@@ -753,12 +766,11 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
 bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
     if (gVerbose) {
-        cerr << "shouldIncludeTargetGene: " << featureDesc(targetGene)
-             << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene))
-             << " shouldMapGeneType: " << shouldMapGeneType(targetGene)
-             << " already mapped: " << checkGeneMapped(targetGene)
-             << " gene transcripts all mapped: " << checkGeneTranscriptsMapped(targetGene)
-             << endl;
+        cerr << "shouldIncludeTargetGene: " << featureDesc(targetGene) << endl
+             << "\tnoMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene)) << endl
+             << "\tshouldMapGeneType: " << shouldMapGeneType(targetGene) << endl
+             << "\talready mapped: " << checkGeneMapped(targetGene) << endl
+             << "\tany transcripts mapped: " << checkAnyGeneTranscriptsMapped(targetGene) << endl;
     }
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles
@@ -766,15 +778,16 @@ bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
         if (gVerbose) {
             cerr << "    shouldIncludeTargetGene: isSrcSeqInMapping: " << isSrcSeqInMapping(targetGene) << endl;
         }
-        return isSrcSeqInMapping(targetGene) and (not checkGeneMapped(targetGene)) and (not checkGeneTranscriptsMapped(targetGene));
+        return isSrcSeqInMapping(targetGene) and (not checkGeneMapped(targetGene)) and (not checkAnyGeneTranscriptsMapped(targetGene));
     }
     if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
         if (gVerbose) {
             cerr << "    shouldIncludeTargetGene: in patched region: "
                  << " overlaps mapping: " << checkTargetOverlappingMapped(targetGene, mappedSet) << endl;
         }
-        // don't use if there is a mapped with significant overlap
-        return (not checkGeneMapped(targetGene)) and (not checkGeneTranscriptsMapped(targetGene))
+        // don't use if there is a mapped with significant overlap or any of it's transcripts
+        // have been mapped
+        return (not checkGeneMapped(targetGene)) and (not checkAnyGeneTranscriptsMapped(targetGene))
             and (not checkTargetOverlappingMapped(targetGene, mappedSet));
     }
     return false;

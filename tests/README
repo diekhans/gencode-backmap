@@ -27,6 +27,9 @@ Test data
      - V29 ENST00000650192.1   AC003070.7
      - V19 ENST00000363083.1   RNA5SP443
 
+- data/idChange.v25.gff3
+  - ENST00000384889.1 is a MIR in MIR224 that was accidental put in GABRE in v25
+
 - data/gencode.v31.annotation.gff3
   - Merged gene: ENST00000448113.1 and ENST00000424819.1 were in ENSG00000226155.1,
     they moved to ENSG00000224614.2 in V31 due to a transcript being merged with the

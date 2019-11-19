@@ -29,6 +29,9 @@ using namespace std;
 /* vector of integers */
 typedef vector<int> IntVector;
 
+/* a pair of strings */
+typedef pair<string, string> StringPair;
+
 /* set of strings */
 typedef set<string> StringSet;
 
