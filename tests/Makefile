@@ -1,6 +1,16 @@
 ROOT = ..
 include ${ROOT}/config.mk
 
+SHELL = /bin/bash
+export SHELLOPTS = pipefail
+
+### IMPORTANT: test GFF3, if new are added update so chains are rebuilt
+GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
+	data/dup-transcripts.v19.gff3
+GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 \
+	data/gencode.v31.annotation.gff3 data/dup-transcripts.v33.gff3
+
+
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetGff3Arg = --targetGxf=data/gencode.v19.annotation.gff3
 targetSubstArg = --substituteMissingTargets=V19
@@ -38,7 +48,7 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	cmpUcscSubstituteManOverlap \
-	gff3V29RegressTest \
+	gff3V29RegressTest dupTranscriptsV33Test \
 	reportsTests ucscLiftEditTest regressTests
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
@@ -230,13 +240,20 @@ gff3V29RegressTest: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
-
 # double mapping of transcript, detected with gff3ToGenePred
 gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v31.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+
+# case where transcript moving between genes cause problems
+dupTranscriptsV33Test: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --targetGxf=data/dup-transcripts.v19.gff3 ${targetSubstArg} --previousMappedGxf=data/dup-transcripts.v32lift37.gff3 ${headerArg} data/dup-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
 
 ##
 ## lift edit
@@ -332,6 +349,11 @@ bigGtfUcscTest: mkdirs
 	gtfToGenePred output/$@.mapped.gtf /dev/null
 	gtfToGenePred output/$@.unmapped.gtf /dev/null
 
+##
+# update test data when annotations change
+##
+update: mappingChains problemRegions
+
 
 ##
 # commands to create new mapping chains when test set is changed
@@ -345,7 +367,7 @@ ucscMappingChains: tmp/testGrch38.gp
 	pslSwap tmp/hg38ToHg19.over.psl  tmp/hg19ToHg38.over.psl
 
 # need to only include first ##gff-version header
-tmp/testGrch38.gp: data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 data/gencode.v31.annotation.gff3
+tmp/testGrch38.gp: ${GRCh38_GFF3s}
 	@mkdir -p $(dir $@)
 	gff3ToGenePred <(awk 'NR==1||FNR>1{print $$0}' $^) $@
 
@@ -373,18 +395,18 @@ tmp/GCF_000001405.28.assembly.txt:
 # generate problem regions on GRCh37
 ##
 problemRegions: tmp/testGrch37.gp
-	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/altSeqPatchesP10.txt.gz | zcat | cut -f 2- > tmp/altSeqPatchesP10.bed
-	wget -nv -O tmp/Hg19.grcIncidentDb.bb http://genomewiki.ucsc.edu/images/6/67/Hg19.grcIncidentDb.bb
+	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz | zcat | cut -f 2- > tmp/hg19Patch13Patches.bed
+	wget -nv -O tmp/Hg19.grcIncidentDb.bb http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
 	bigBedToBed tmp/Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > tmp/Hg19.grcIncidentDb.bed
-	(cat tmp/altSeqPatchesP10.bed tmp/Hg19.grcIncidentDb.bed) | overlapSelect -inFmt=bed tmp/testGrch37.gp /dev/stdin data/problemRegions.bed
+	(cat tmp/hg19Patch13Patches.bed tmp/Hg19.grcIncidentDb.bed) | overlapSelect -inFmt=bed tmp/testGrch37.gp /dev/stdin data/problemRegions.bed
 
 # need to only include first ##gff-version header
-tmp/testGrch37.gp: data/gencode.v19.annotation.gff3 data/idChange.v19.gff3
+tmp/testGrch37.gp: ${GRCh37_GFF3s}
 	@mkdir -p $(dir $@)
-	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' data/gencode.v22.annotation.gff3 data/idChange.v25.gff3)  $@
+	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' $^) $@
 
 mkdirs:
 	@mkdir -p output
 
 clean:
-	rm -rf output
+	rm -rf output tmp
