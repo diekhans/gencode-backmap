@@ -4,7 +4,7 @@ include ${ROOT}/config.mk
 SHELL = /bin/bash
 export SHELLOPTS = pipefail
 
-### IMPORTANT: test GFF3, if new are added changes thests
+### IMPORTANT: test GFF3, if new are added update so chains are rebuilt
 GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
 	data/dup-transcripts.v19.gff3
 GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 \
@@ -48,7 +48,7 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	cmpUcscSubstituteManOverlap \
-	gff3V29RegressTest \
+	gff3V29RegressTest dupTranscriptsV33Test \
 	reportsTests ucscLiftEditTest regressTests
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
@@ -246,6 +246,14 @@ gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+
+# case where transcript moving between genes cause problems
+dupTranscriptsV33Test: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --targetGxf=data/dup-transcripts.v19.gff3 ${targetSubstArg} --previousMappedGxf=data/dup-transcripts.v32lift37.gff3 ${headerArg} data/dup-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
 
 ##
 ## lift edit
