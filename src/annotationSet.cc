@@ -68,10 +68,10 @@ void AnnotationSet::insertInFeatureMap(const string& key,
 void AnnotationSet::addFeature(FeatureNode* feature) {
     assert(feature->isGeneOrTranscript());
     // record by id and name
-    insertInFeatureMap(mkFeatureIdKey(feature->getTypeId(), feature->isParY()),
+    insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getTypeId()), feature->isParY()),
                        feature, fIdFeatureMap);
     if (feature->getHavanaTypeId() != "") {
-        insertInFeatureMap(mkFeatureIdKey(feature->getHavanaTypeId(), feature->isParY()),
+        insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getHavanaTypeId()), feature->isParY()),
                            feature, fIdFeatureMap);
     }
     // save gene name when real and unique

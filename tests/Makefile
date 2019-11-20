@@ -1,6 +1,9 @@
 ROOT = ..
 include ${ROOT}/config.mk
 
+SHELL = /bin/bash
+export SHELLOPTS = pipefail
+
 ### IMPORTANT: test GFF3, if new are added changes thests
 GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
 	data/dup-transcripts.v19.gff3
@@ -235,13 +238,6 @@ gff3V29RegressTest: mkdirs ${testGencodeLiftOverChains}
 	gff3ToGenePred output/$@.unmapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.unmapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.unmapped.gff3 output/$@.unmapped.gff3
-	${diff} expected/$@.map-info output/$@.map-info
-
-# double mapping of transcript, detected with gff3ToGenePred
-gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v31.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
-	gff3ToGenePred output/$@.mapped.gff3 /dev/null
-	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 # double mapping of transcript, detected with gff3ToGenePred

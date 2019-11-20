@@ -27,6 +27,26 @@ class GeneMapper {
         useTargetForPatchRegions  = 0x08
     };
     private:
+    /* set of (id, chrom) that have been mapped. Include chrom for PAR relief. */
+    class MappedIdSet: public set<StringPair> {
+        public:
+        void addBaseId(const string& fullid, const string& chrom) {
+            insert(StringPair(getBaseId(fullid), chrom));
+        }
+        void addName(const string& name, const string& chrom) {
+            insert(StringPair(name, chrom));
+        }
+
+        bool haveBaseId(const string& fullid, const string& chrom) const {
+            return find(StringPair(getBaseId(fullid), chrom)) != end();
+        }
+        bool haveName(const string& name, const string& chrom) const {
+            return find(StringPair(name, chrom)) != end();
+        }
+
+    };
+
+    
     const AnnotationSet* fSrcAnnotations; // source annotations
     const TransMap* fGenomeTransMap;  // genomic mapping
     const AnnotationSet* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
@@ -37,11 +57,11 @@ class GeneMapper {
     bool fOnlyManualForTargetSubstituteOverlap;  // only check manual transcripts when checking target/map overlap
 
     /* set of base ids (gene, transcript, havana) and gene names that have been
-     * mapped.  Used to prevent output of target genes types that are not being
+     * mapped.  The key is "ident chrom" to handle PAR cases.
+     * Used to prevent output of target genes types that are not being
      * mapped (automatic genes), when type or source changes are already mapped.
-     * N.B. Can't use AnnotationSet to track this, due to PAR mappings needing
-     * to be mapped twice. */
-    StringSet fMappedIdsNames;
+     */
+    MappedIdSet fMappedIdsNames;
     
     int fCurrentGeneNum;  /* used by output info log to logically group features together,
                            * increments each time a gene is process */ 
@@ -69,13 +89,11 @@ class GeneMapper {
                            const string& desc,
                            const string& key = "") const;
     void recordGeneMapped(const FeatureNode* gene);
-    bool isTranscriptMapped(const FeatureNode* transcript) {
-        return fMappedIdsNames.find(getBaseId(transcript->getTypeId())) != fMappedIdsNames.end();
-    }
     void recordTranscriptMapped(const FeatureNode* transcript);
     bool checkGeneMapped(const FeatureNode* gene) const ;
     bool checkTranscriptMapped(const FeatureNode* transcript) const;
-    bool checkGeneTranscriptsMapped(const FeatureNode* gene) const;
+    bool checkAllGeneTranscriptsMapped(const FeatureNode* gene) const;
+    bool checkAnyGeneTranscriptsMapped(const FeatureNode* gene) const;
     ResultFeatureTrees processTranscript(const FeatureNode* transcript,
                                      ostream* transcriptPslFh);
     ResultFeatureTreesVector processTranscripts(const FeatureNode* gene,
@@ -124,6 +142,12 @@ class GeneMapper {
                  FeatureTreePolish& featureTreePolish,
                  ostream& mappingInfoFh,
                  ostream* transcriptPslFh);
+    void maybeMapGene(const FeatureNode* srcGeneTree,
+                      AnnotationSet& mappedSet,
+                      AnnotationSet& unmappedSet,
+                      FeatureTreePolish& featureTreePolish,
+                      ostream& mappingInfoFh,
+                      ostream* transcriptPslFh);
     RemapStatus getNoMapRemapStatus(const FeatureNode* gene) const;
     bool shouldMapGeneType(const FeatureNode* gene) const;
     bool inTargetPatchRegion(const FeatureNode* targetGene);

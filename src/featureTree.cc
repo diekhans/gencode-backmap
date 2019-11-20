@@ -521,7 +521,9 @@ FeatureNode* GeneTree::geneTreeFactory(GxfParser *gxfParser,
 /* does a name appear to be a fake gene name (generated from contigs)? */
 bool isFakeGeneName(const string& geneName) {
     // couldn't get C++ regexps to work
-    const char *fakeRe = "^[A-Z][A-Z]?[0-9]+\\.[0-9]+$";
+    // this works for human GRCh38, and was check against GRCm38, however it is
+    // still not perfect.  Probably need to read in HGNC list.
+    const char *fakeRe = "^(AC|ABBA|AD|AF|AL|AJ|AL|AMYH|AUXG|AP|BX|CAAA|CR|CT|CU|FO|FP|FQ|GU|HM|KC|KF|KP|KU|L|LO|U|Z)[0-9][0-9][0-9][0-9]+\\.[0-9]+$";
     return regexMatch(const_cast<char*>(geneName.c_str()), fakeRe);
 }
 
