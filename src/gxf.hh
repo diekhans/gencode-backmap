@@ -40,7 +40,6 @@ typedef enum {
 /* Get format from file name, or error */
 GxfFormat gxfFormatFromFileName(const string& fileName);
 
-
 /*
  * GxF base record type.  Use instanceOf to determine actually type
  */
@@ -261,6 +260,9 @@ public:
     static const string SOURCE_HAVANA;
     static const string SOURCE_ENSEMBL;
 
+    /* PAR modifier used to make ids unique */
+    static const string PAR_Y_SUFFIX;
+    
     private:
     // columns parsed from file.
     const string fSeqid;
@@ -273,18 +275,14 @@ public:
     const string fPhase;
     AttrVals fAttrs;     // attribute maybe modified
 
+    // derived values from attributes
+    
+    
     public:
     /* construct a new feature object */
     GxfFeature(const string& seqid, const string& source, const string& type,
                int start, int end, const string& score, const string& strand,
-               const string& phase, const AttrVals& attrs):
-        fSeqid(seqid), fSource(source), fType(type),
-        fStart(start), fEnd(end),
-        fScore(score), fStrand(strand),
-        fPhase(phase), fAttrs(attrs) {
-        assert(strand.size() == 1);
-        assert(phase.size() == 1);
-    }
+               const string& phase, const AttrVals& attrs);
 
     /* clone the feature */
     GxfFeature* clone() const {
@@ -369,6 +367,19 @@ public:
         }
     }
 
+    /* Does this node have the PAR tag for chrY? */
+    bool isParY() const {
+        const AttrVal* tagAttr = findAttr(GxfFeature::TAG_ATTR);
+        if (tagAttr != NULL) {
+            for (int i = 0; i < tagAttr->size(); i++) {
+                if (tagAttr->getVal(i) == "PAR") {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /* get the id based on feature type, or empty string if it doesn't have an
      * id */
     const string& getTypeId() const;

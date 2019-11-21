@@ -9,6 +9,7 @@
 #include <ostream>
 #include "remapStatus.hh"
 
+
 // FIXME: add the substituted target stuff caused this to step into hacky
 
 /* Remap status attribute name */
@@ -137,6 +138,11 @@ class FeatureNode {
     /* does this feature overlap another */
     bool overlaps(const FeatureNode* other) const {
         return fFeature->overlaps(other->getGxfFeature());
+    }
+
+    /* Does this node have the PAR tag for chrY? */
+    bool isParY() const {
+        return fFeature->isParY();
     }
 
     /* get all attribute */
@@ -599,13 +605,14 @@ class GeneTree {
 };
 
 /* Get a base id, deleting the version, if it exists.
- * deal with the ENSTR->ENST0 PAR hack
  */
 static inline string getBaseId(const string& id) {
-    size_t idot = id.find_last_of('.');
-    string baseId = (idot == string::npos) ? id : id.substr(0, idot);
-    if (stringStartsWith(baseId, "ENSGR") or stringStartsWith(baseId, "ENSTR")) {
-        baseId[4] = '0';
+    assert(not (stringStartsWith(id, "ENSGR") or stringStartsWith(id, "ENSTR")));
+
+    string baseId = id;
+    size_t idot = baseId.find_last_of('.');
+    if (idot != string::npos) {
+        baseId.resize(idot);
     }
     return baseId;
 }
@@ -641,5 +648,15 @@ static inline int getMappingVersion(const string& id) {
         return stringToInt(id.substr(iun+1));
     }
 }
+
+/* does a name appear to be a fake gene name (generated from contigs)? */
+bool isFakeGeneName(const string& geneName);
+
+/* Should geneName be used in matching.  Empty or fake contig name based are
+ * not used.  Don't use gene name for automatic non-coding, as some small
+ * non-coding genes has the same name for multiple instances
+ */
+bool useGeneNameForMappingKey(const FeatureNode* gene);
+
 
 #endif

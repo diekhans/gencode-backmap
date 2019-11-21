@@ -13,6 +13,11 @@ extern "C" {
 #include "chain.h"
 #include "dnautil.h"
 #include "basicBed.h"
+#include "regexHelper.h"
+#undef min
+#undef max
+#undef new
+// must leave hash redefined for clang
 #undef hash
 }
 

@@ -59,7 +59,7 @@ void GeneMapper::outputInfo(const string& recType,
 }
 
 /*
- * Output information about source gene that was  mapped or failed mapping.
+ * Output information about source gene that was mapped or failed mapping.
  */
 void GeneMapper::outputSrcGeneInfo(const ResultFeatureTrees* mappedGene,
                                    ostream& mappingInfoFh) const {
@@ -137,7 +137,7 @@ void GeneMapper::debugRecordMapped(const FeatureNode* feature,
     if (gVerbose) {
         cerr << desc << " " << featureDesc(feature);
         if (key != "") {
-            cerr << " key: " << key;
+            cerr << " key: (" << key << ", " << feature->getSeqid() << ")";
         }
         cerr << endl;
     }
@@ -146,23 +146,33 @@ void GeneMapper::debugRecordMapped(const FeatureNode* feature,
 /* record gene and it's transcripts as being mapped */
 void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
     assert(gene->isGene());
-    fMappedIdsNames.insert(getBaseId(gene->getTypeId()));
+    fMappedIdsNames.addBaseId(gene->getTypeId(), gene->isParY());
     debugRecordMapped(gene, "recordGeneMapped typeId", getBaseId(gene->getTypeId()));
     
-    // N.B.  Don't use gene name for automatic non-coding, as some small
-    // non-coding genes has the same name for multiple instances
-    // N.B. gene names with `.' are not always a version
-    if (not gene->isAutomaticSmallNonCodingGene()) {
-        fMappedIdsNames.insert(gene->getTypeName());
-        debugRecordMapped(gene, "recordGeneMapped typeName", getBaseId(gene->getTypeName()));
+    if (useGeneNameForMappingKey(gene)) {
+        fMappedIdsNames.addName(gene->getTypeName(), gene->isParY());
+        debugRecordMapped(gene, "recordGeneMapped typeName", gene->getTypeName());
     }
     if (gene->getHavanaTypeId() != "") {
-        fMappedIdsNames.insert(getBaseId(gene->getHavanaTypeId()));
+        fMappedIdsNames.addBaseId(gene->getHavanaTypeId(), gene->isParY());
         debugRecordMapped(gene, "recordGeneMapped havanaTypeId", getBaseId(gene->getHavanaTypeId()));
     }
+}
 
-    for (size_t i = 0; i < gene->getChildren().size(); i++) {
-        recordTranscriptMapped(gene->getChild(i));
+
+/* remove record of gene and it's transcripts as being mapped */
+void GeneMapper::forgetGeneMapped(const FeatureNode* gene) {
+    assert(gene->isGene());
+    fMappedIdsNames.removeBaseId(gene->getTypeId(), gene->isParY());
+    debugRecordMapped(gene, "forgetGeneMapped typeId", getBaseId(gene->getTypeId()));
+    
+    if (useGeneNameForMappingKey(gene)) {
+        fMappedIdsNames.removeName(gene->getTypeName(), gene->isParY());
+        debugRecordMapped(gene, "forgetGeneMapped typeName", gene->getTypeName());
+    }
+    if (gene->getHavanaTypeId() != "") {
+        fMappedIdsNames.removeBaseId(gene->getHavanaTypeId(), gene->isParY());
+        debugRecordMapped(gene, "forgetGeneMapped havanaTypeId", getBaseId(gene->getHavanaTypeId()));
     }
 }
 
@@ -170,11 +180,26 @@ void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
 /* record transcript as being mapped */
 void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
     assert(transcript->isTranscript());
-    fMappedIdsNames.insert(getBaseId(transcript->getTypeId()));
+    if (fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->isParY())) {
+        //FIXME: throw logic_error("BUG: transcript base id has already been mapped: " + transcript->getTypeId());
+        cerr  << "WARNING: transcript base id has already been mapped: " + transcript->getTypeId() << endl;
+    }
+    fMappedIdsNames.addBaseId(transcript->getTypeId(), transcript->isParY());
     debugRecordMapped(transcript, "recordTranscriptMapped typeId", getBaseId(transcript->getTypeId()));
     if (transcript->getHavanaTypeId() != "") {
-        fMappedIdsNames.insert(getBaseId(transcript->getHavanaTypeId()));
+        fMappedIdsNames.addBaseId(transcript->getHavanaTypeId(), transcript->isParY());
         debugRecordMapped(transcript, "recordTranscriptMapped havanaTypeId", getBaseId(transcript->getHavanaTypeId()));
+    }
+}
+
+/* removed record of transcript as being mapped */
+void GeneMapper::forgetTranscriptMapped(const FeatureNode* transcript) {
+    assert(transcript->isTranscript());
+    fMappedIdsNames.removeBaseId(transcript->getTypeId(), transcript->isParY());
+    debugRecordMapped(transcript, "forgetTranscriptMapped typeId", getBaseId(transcript->getTypeId()));
+    if (transcript->getHavanaTypeId() != "") {
+        fMappedIdsNames.removeBaseId(transcript->getHavanaTypeId(), transcript->isParY());
+        debugRecordMapped(transcript, "forgetTranscriptMapped havanaTypeId", getBaseId(transcript->getHavanaTypeId()));
     }
 }
 
@@ -182,18 +207,18 @@ void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
 /* check if gene have been mapped */
 bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
     assert(gene->isGene());
-    if (fMappedIdsNames.find(getBaseId(gene->getTypeId())) != fMappedIdsNames.end()) {
+    if (fMappedIdsNames.haveBaseId(gene->getTypeId(), gene->isParY())) {
         debugRecordMapped(gene, "checkGeneMapped found typeId", getBaseId(gene->getTypeId()));
         return true;
     }
-    if ((not gene->isAutomaticSmallNonCodingGene())
-        and fMappedIdsNames.find(getBaseId(gene->getTypeName())) != fMappedIdsNames.end()) {
+    if (useGeneNameForMappingKey(gene)
+        and fMappedIdsNames.haveName(gene->getTypeName(), gene->isParY())) {
         debugRecordMapped(gene, "checkGeneMapped found typeName", gene->getTypeName());
         return true;
 
     }
     if (gene->getHavanaTypeId() != "") {
-        if (fMappedIdsNames.find(getBaseId(gene->getHavanaTypeId())) != fMappedIdsNames.end()) {
+        if (fMappedIdsNames.haveBaseId(gene->getHavanaTypeId(), gene->isParY())) {
             debugRecordMapped(gene, "checkGeneMapped found havanaTypeId", gene->getHavanaTypeId());
             return true;
         }
@@ -205,40 +230,52 @@ bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
 /* check if transcript have already been mapped */
 bool GeneMapper::checkTranscriptMapped(const FeatureNode* transcript) const {
     assert(transcript->isTranscript());
-    if (fMappedIdsNames.find(getBaseId(transcript->getTypeId())) != fMappedIdsNames.end()) {
-        debugRecordMapped(transcript, "checkTranscriptMapped found typeId", getBaseId(transcript->getTypeId()));
-        return true;
-    }
-    return false;
+    bool found = fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->isParY());
+    debugRecordMapped(transcript, std::string("checkTranscriptMapped ") + (found ? "TRUE" : "FALSE")  + " typeId", getBaseId(transcript->getTypeId()));
+    return found;
 }
 
 /* check if all transcripts in a gene have already been mapped (doesn't check gene) */
-bool GeneMapper::checkGeneTranscriptsMapped(const FeatureNode* gene) const {
+bool GeneMapper::checkAllGeneTranscriptsMapped(const FeatureNode* gene) const {
     assert(gene->isGene());
     for (size_t i = 0; i < gene->getChildren().size(); i++) {
         if (not checkTranscriptMapped(gene->getChild(i))) {
-            debugRecordMapped(gene, "checkGeneTranscriptsMapped some transcripts not mapped");
+            debugRecordMapped(gene, "checkAllGeneTranscriptsMapped some transcripts not mapped");
             return false;
         }
     }
-    debugRecordMapped(gene, "checkGeneTranscriptsMapped all transcripts mapped");
+    debugRecordMapped(gene, "checkAllGeneTranscriptsMapped all transcripts mapped");
     return true;
+}
+
+/* check if any transcripts in a gene have already been mapped (doesn't check gene) */
+bool GeneMapper::checkAnyGeneTranscriptsMapped(const FeatureNode* gene) const {
+    assert(gene->isGene());
+    for (size_t i = 0; i < gene->getChildren().size(); i++) {
+        if (checkTranscriptMapped(gene->getChild(i))) {
+            debugRecordMapped(gene, "checkAnyGeneTranscriptsMapped some transcripts mapped");
+            return true;
+        }
+    }
+    debugRecordMapped(gene, "checkAnyGeneTranscriptsMapped no transcripts mapped");
+    return false;
 }
 
 /* process one transcript */
 ResultFeatureTrees GeneMapper::processTranscript(const FeatureNode* transcript,
-                                                 ostream* transcriptPslFh) const {
+                                                 ostream* transcriptPslFh) {
     TranscriptMapper transcriptMapper(fGenomeTransMap, transcript, fTargetAnnotations,
                                       isSrcSeqInMapping(transcript), transcriptPslFh);
     ResultFeatureTrees mappedTranscript = transcriptMapper.mapTranscriptFeatures(transcript);
     TargetStatus targetStatus = getTargetAnnotationStatus(&mappedTranscript);
     mappedTranscript.setTargetStatus(targetStatus);
+    recordTranscriptMapped(transcript);
     return mappedTranscript;
 }
 
 /* process all transcripts of gene. */
 ResultFeatureTreesVector GeneMapper::processTranscripts(const FeatureNode* gene,
-                                                    ostream* transcriptPslFh) const {
+                                                        ostream* transcriptPslFh) {
     ResultFeatureTreesVector mappedTranscripts;
     for (size_t i = 0; i < gene->getChildren().size(); i++) {
         const FeatureNode* transcript = gene->getChild(i);
@@ -252,7 +289,7 @@ ResultFeatureTreesVector GeneMapper::processTranscripts(const FeatureNode* gene,
 
 /* find a matching gene or transcript given by id */
 FeatureNode* GeneMapper::findMatchingBoundingFeature(const FeatureNodeVector& features,
-                                                 const FeatureNode* feature) const {
+                                                     const FeatureNode* feature) const {
     assert(feature->isGeneOrTranscript());
     for (int i = 0; i < features.size(); i++)  {
         assert(features[i]->isGeneOrTranscript());
@@ -288,11 +325,15 @@ void GeneMapper::copyGeneMetadata(const FeatureNode* origGene,
 }
 
 /* force to unmapped */
-void GeneMapper::forceToUnmapped(ResultFeatureTrees* mappedGene) const {
+void GeneMapper::forceToUnmapped(ResultFeatureTrees* mappedGene) {
     // create copy and update attributes at gene/transcript level before freeing.
     FeatureNode* srcCopy = mappedGene->src->cloneTree();
     if (mappedGene->mapped != NULL) {
         copyGeneMetadata(mappedGene->mapped, srcCopy);
+        for (size_t i = 0; i < mappedGene->mapped->getChildren().size(); i++) {
+            forgetTranscriptMapped(mappedGene->mapped->getChild(i));
+        }
+        forgetGeneMapped(mappedGene->mapped);
     }
     if (mappedGene->unmapped != NULL) {
         copyGeneMetadata(mappedGene->unmapped, srcCopy);
@@ -300,6 +341,7 @@ void GeneMapper::forceToUnmapped(ResultFeatureTrees* mappedGene) const {
     srcCopy->rsetRemapStatusAttr();
     srcCopy->setNumMappingsAttr();
     srcCopy->rsetTargetStatusAttr();
+
     mappedGene->freeMapped();
     mappedGene->freeUnmapped();
     mappedGene->unmapped = srcCopy;
@@ -308,7 +350,7 @@ void GeneMapper::forceToUnmapped(ResultFeatureTrees* mappedGene) const {
 /* Recursively made features fulled unmapped, removing mapped and partially
  * mapped entries.  Used when we discover conflicts at the gene level. */
 void GeneMapper::forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
-                                                 RemapStatus remapStatus) const {
+                                                 RemapStatus remapStatus) {
     if (gVerbose) {
         cerr << "forceToUnmappedDueToRemapStatus " << featureDesc(mappedGene->src)
              << " " << remapStatusToStr(remapStatus) << endl;
@@ -321,7 +363,7 @@ void GeneMapper::forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
 /* Recursively made features fulled unmapped, removing mapped and partially
  * mapped entries.  Used when target status indicates a bad mapping */
 void GeneMapper::forceToUnmappedDueToTargetStatus(ResultFeatureTrees* mappedGene,
-                                                  TargetStatus targetStatus) const {
+                                                  TargetStatus targetStatus) {
     if (gVerbose) {
         cerr << "forceToUnmappedDueToTargetStatus " << featureDesc(mappedGene->src)
              << " " << targetStatusToStr(targetStatus) << endl;
@@ -394,7 +436,7 @@ void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
 bool GeneMapper::checkForPathologicalGeneRename(const ResultFeatureTrees* mappedGene,
                                                 const FeatureNode* targetGene) const {
     return (getBaseId(mappedGene->src->getTypeId()) != getBaseId(targetGene->getTypeId()))
-        and (fSrcAnnotations->getFeatureById(targetGene->getTypeId(), targetGene->getSeqid()) != NULL);
+        and (fSrcAnnotations->getFeatureById(targetGene->getTypeId(), targetGene->isParY()) != NULL);
 }
 
 /* should we substitute target version of gene?  */
@@ -428,11 +470,11 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     // FIXME: tmp hack for V31 to avoid substitution of target when gene has merged
     // this is being fixed properly in mast, but needed quickly
     if (targetGene->getTypeId() == "ENSG00000226155.1") {
-#if 1
+#if 0
         cerr << "NOTE: V31 hack, don't include target gene "  << targetGene->getTypeId() << endl;
         return false;
 #else
-                cerr << "NOTE: V31 hack DISABLED "  << targetGene->getTypeId() << endl;
+        cerr << "NOTE: V31 hack DISABLED "  << targetGene->getTypeId() << endl;
 #endif
     }
     
@@ -440,9 +482,10 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     // specific pseudogene biotypes
     if ((targetGene->getTypeBiotype() == mappedGene->src->getTypeBiotype())
         or (targetGene->isPseudogene() == mappedGene->src->isPseudogene())) {
-        if (checkGeneTranscriptsMapped(targetGene)) {
+        if (checkAllGeneTranscriptsMapped(targetGene)) {
             if (gVerbose) {
-                cerr << "shouldSubstituteTarget: all transcripts already mapped for target: " << featureDesc(targetGene) << endl;
+                cerr << "shouldSubstituteTarget: false: " << featureDesc(mappedGene->src)
+                     << ", some transcripts already mapped for target" << featureDesc(targetGene) << endl;
             }
             return false;
         }
@@ -462,6 +505,10 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
         }
         return !alreadyMapped;
 #else
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: true: " << featureDesc(mappedGene->src)
+                 << " with: " << featureDesc(targetGene) << endl;
+        }
         return true;
 #endif
     } else {
@@ -477,7 +524,16 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
 
 /* copy target gene to use instead of a mapping  */
 void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) {
+    if (gVerbose) {
+        cerr << "substituteTarget: " << featureDesc(mappedGene->src)
+             << " with: " << featureDesc(getTargetAnnotation(mappedGene->src))
+             << endl;
+    }
+    assert(mappedGene->target == NULL);
     mappedGene->target = getTargetAnnotation(mappedGene->src)->cloneTree();
+    for (int i = 0; i < mappedGene->target->getChildren().size(); i++) {
+        recordTranscriptMapped(mappedGene->target->getChild(i));
+    }
 
     // Set flag in both trees
     mappedGene->target->rsetSubstitutedMissingTargetAttr(fSubstituteTargetVersion);
@@ -487,6 +543,7 @@ void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) {
     if (mappedGene->unmapped != NULL) {
         mappedGene->unmapped->rsetSubstitutedMissingTargetAttr(fSubstituteTargetVersion);
     }
+
 }
 
 /* update gene bounds given a mapped transcript */
@@ -542,13 +599,15 @@ FeatureNode* GeneMapper::buildUnmappedGeneFeature(const FeatureNode* srcGeneTree
 
 /* Build gene features */
 ResultFeatureTrees GeneMapper::buildGeneFeature(const FeatureNode* srcGeneTree,
-                                            ResultFeatureTreesVector& mappedTranscripts) const {
+                                                ResultFeatureTreesVector& mappedTranscripts) const {
     ResultFeatureTrees mappedGene(srcGeneTree);
     if (mappedTranscripts.haveMapped()) {
+        assert(mappedGene.mapped == NULL);
         mappedGene.mapped = buildMappedGeneFeature(srcGeneTree, mappedTranscripts);
         
     }
     if (mappedTranscripts.haveUnmapped()) {
+        assert(mappedGene.unmapped == NULL);
         mappedGene.unmapped = buildUnmappedGeneFeature(srcGeneTree, mappedTranscripts);
     }
     if (mappedGene.mapped != NULL) {
@@ -602,15 +661,15 @@ const FeatureNode* GeneMapper::getTargetAnnotation(const FeatureNode* feature) c
     // havana id and transcript names are just a numbering withing the gene
     // and not stable.
     const FeatureNode* targetFeature = fTargetAnnotations->getFeatureById(getPreMappedId(feature->getTypeId()),
-                                                                      feature->getSeqid());
+                                                                          feature->isParY());
     if (feature->isGene()) {
         if ((targetFeature == NULL) and (feature->getHavanaTypeId() != "")) {
             targetFeature = fTargetAnnotations->getFeatureByName(getPreMappedId(feature->getHavanaTypeId()),
-                                                                 feature->getSeqid());
+                                                                 feature->isParY());
         }
-        if (targetFeature == NULL) {
+        if ((targetFeature == NULL) and useGeneNameForMappingKey(feature)) {
             targetFeature = fTargetAnnotations->getFeatureByName(feature->getTypeName(),
-                                                                 feature->getSeqid());
+                                                                 feature->isParY());
         }
     }
     return targetFeature;
@@ -678,6 +737,10 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
                          FeatureTreePolish& featureTreePolish,
                          ostream& mappingInfoFh,
                          ostream* transcriptPslFh) {
+    if (gVerbose) {
+        cerr << "mapGene: "  << featureDesc(srcGeneTree) << endl;
+    }
+    
     ResultFeatureTreesVector mappedTranscripts = processTranscripts(srcGeneTree, transcriptPslFh);
     ResultFeatureTrees mappedGene = buildGeneFeature(srcGeneTree, mappedTranscripts);
     setGeneLevelMappingAttributes(&mappedGene);
@@ -699,6 +762,37 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
     saveMapped(mappedGene, mappedSet);
     saveUnmapped(mappedGene, unmappedSet);
     mappedGene.free();
+}
+
+/*
+ * map and output one gene's annotations
+ */
+void GeneMapper::maybeMapGene(const FeatureNode* srcGeneTree,
+                              AnnotationSet& mappedSet,
+                              AnnotationSet& unmappedSet,
+                              FeatureTreePolish& featureTreePolish,
+                              ostream& mappingInfoFh,
+                              ostream* transcriptPslFh) {
+    if (gVerbose) {
+        cerr << endl << "mapGxf: " << featureDesc(srcGeneTree)
+             << " shouldMapGeneType: " << shouldMapGeneType(srcGeneTree)
+             << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(srcGeneTree))
+             << " " << srcGeneTree->getTypeId() << " " << srcGeneTree->getSource()
+             << endl;
+    }
+    if (shouldMapGeneType(srcGeneTree)) {
+        if (checkAnyGeneTranscriptsMapped(srcGeneTree)) {
+            // FIXME: should output special status
+            cerr << "WARNING: " << srcGeneTree->getTypeId() << " has transcript mapped in other genes" << endl;
+            outputInfo("mapSrc", "gene", srcGeneTree, REMAP_STATUS_ERROR, 0, TARGET_STATUS_ERROR, mappingInfoFh);
+            for (int i = 0; i < srcGeneTree->getChildren().size(); i++) {
+                outputInfo("mapSrc", "trans", srcGeneTree->getChild(i), REMAP_STATUS_ERROR, 0, TARGET_STATUS_ERROR, mappingInfoFh);
+            }
+        } else {
+            fCurrentGeneNum++;
+            mapGene(srcGeneTree, mappedSet, unmappedSet, featureTreePolish, mappingInfoFh, transcriptPslFh);
+        }
+    }
 }
 
 /* determine if this is a gene type that should not be mapped, returning
@@ -745,12 +839,11 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
 bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
     if (gVerbose) {
-        cerr << "shouldIncludeTargetGene: " << featureDesc(targetGene)
-             << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene))
-             << " shouldMapGeneType: " << shouldMapGeneType(targetGene)
-             << " already mapped: " << checkGeneMapped(targetGene)
-             << " gene transcripts all mapped: " << checkGeneTranscriptsMapped(targetGene)
-             << endl;
+        cerr << "shouldIncludeTargetGene: " << featureDesc(targetGene) << endl
+             << "\tnoMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene)) << endl
+             << "\tshouldMapGeneType: " << shouldMapGeneType(targetGene) << endl
+             << "\talready mapped: " << checkGeneMapped(targetGene) << endl
+             << "\tany transcripts mapped: " << checkAnyGeneTranscriptsMapped(targetGene) << endl;
     }
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles
@@ -758,15 +851,16 @@ bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
         if (gVerbose) {
             cerr << "    shouldIncludeTargetGene: isSrcSeqInMapping: " << isSrcSeqInMapping(targetGene) << endl;
         }
-        return isSrcSeqInMapping(targetGene) and (not checkGeneMapped(targetGene)) and (not checkGeneTranscriptsMapped(targetGene));
+        return isSrcSeqInMapping(targetGene) and (not checkGeneMapped(targetGene)) and (not checkAnyGeneTranscriptsMapped(targetGene));
     }
     if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
         if (gVerbose) {
             cerr << "    shouldIncludeTargetGene: in patched region: "
                  << " overlaps mapping: " << checkTargetOverlappingMapped(targetGene, mappedSet) << endl;
         }
-        // don't use if there is a mapped with significant overlap
-        return (not checkGeneMapped(targetGene)) and (not checkGeneTranscriptsMapped(targetGene))
+        // don't use if there is a mapped with significant overlap or any of it's transcripts
+        // have been mapped
+        return (not checkGeneMapped(targetGene)) and (not checkAnyGeneTranscriptsMapped(targetGene))
             and (not checkTargetOverlappingMapped(targetGene, mappedSet));
     }
     return false;
@@ -818,17 +912,7 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     const FeatureNodeVector& srcGenes = fSrcAnnotations->getGenes();
     outputInfoHeader(mappingInfoFh);
     for (int i = 0; i < srcGenes.size(); i++) {
-        if (gVerbose) {
-            cerr << endl << "mapGxf: " << featureDesc(srcGenes[i])
-                 << " shouldMapGeneType: " << shouldMapGeneType(srcGenes[i])
-                 << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(srcGenes[i]))
-                 << " " << srcGenes[i]->getTypeId() << " " << srcGenes[i]->getSource()
-                 << endl;
-        }
-        if (shouldMapGeneType(srcGenes[i])) {
-            fCurrentGeneNum++;
-            mapGene(srcGenes[i], mappedSet, unmappedSet, featureTreePolish, mappingInfoFh, transcriptPslFh);
-        }
+        maybeMapGene(srcGenes[i], mappedSet, unmappedSet, featureTreePolish, mappingInfoFh, transcriptPslFh);
     }
     if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {
         copyTargetGenes(mappedSet, mappingInfoFh);

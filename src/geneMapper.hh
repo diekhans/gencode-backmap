@@ -6,6 +6,7 @@
 #include "gxf.hh"
 #include "featureTree.hh"
 #include "typeOps.hh"
+#include <iostream>
 #include <set>
 class TransMap;
 class PslMapping;
@@ -27,6 +28,31 @@ class GeneMapper {
         useTargetForPatchRegions  = 0x08
     };
     private:
+    /* set of (baseId, isParY) or  (name, isParY) that have been mapped. */
+    class MappedIdSet: public set<pair<string, bool> > {
+        typedef pair<string, bool> Key;
+        public:
+        void addBaseId(const string& fullid, bool isParY) {
+            insert(Key(getBaseId(fullid), isParY));
+        }
+        bool haveBaseId(const string& fullid, bool isParY) const {
+            return find(Key(getBaseId(fullid), isParY)) != end();
+        }
+        void removeBaseId(const string& fullid, bool isParY) {
+            erase(Key(getBaseId(fullid), isParY));
+        }
+        void addName(const string& name, bool isParY) {
+            insert(Key(name, isParY));
+        }
+        bool haveName(const string& name, bool isParY) const {
+            return find(Key(name, isParY)) != end();
+        }
+        void removeName(const string& name, bool isParY) {
+            erase(Key(name, isParY));
+        }
+    };
+
+    
     const AnnotationSet* fSrcAnnotations; // source annotations
     const TransMap* fGenomeTransMap;  // genomic mapping
     const AnnotationSet* fTargetAnnotations; // targeted genes/transcripts, maybe NULL
@@ -37,11 +63,11 @@ class GeneMapper {
     bool fOnlyManualForTargetSubstituteOverlap;  // only check manual transcripts when checking target/map overlap
 
     /* set of base ids (gene, transcript, havana) and gene names that have been
-     * mapped.  Used to prevent output of target genes types that are not being
+     * mapped.  The key is "ident chrom" to handle PAR cases.
+     * Used to prevent output of target genes types that are not being
      * mapped (automatic genes), when type or source changes are already mapped.
-     * N.B. Can't use AnnotationSet to track this, due to PAR mappings needing
-     * to be mapped twice. */
-    StringSet fMappedIdsNames;
+     */
+    MappedIdSet fMappedIdsNames;
     
     int fCurrentGeneNum;  /* used by output info log to logically group features together,
                            * increments each time a gene is process */ 
@@ -69,25 +95,28 @@ class GeneMapper {
                            const string& desc,
                            const string& key = "") const;
     void recordGeneMapped(const FeatureNode* gene);
+    void forgetGeneMapped(const FeatureNode* gene);
     void recordTranscriptMapped(const FeatureNode* transcript);
+    void forgetTranscriptMapped(const FeatureNode* transcript);
     bool checkGeneMapped(const FeatureNode* gene) const ;
     bool checkTranscriptMapped(const FeatureNode* transcript) const;
-    bool checkGeneTranscriptsMapped(const FeatureNode* gene) const;
+    bool checkAllGeneTranscriptsMapped(const FeatureNode* gene) const;
+    bool checkAnyGeneTranscriptsMapped(const FeatureNode* gene) const;
     ResultFeatureTrees processTranscript(const FeatureNode* transcript,
-                                     ostream* transcriptPslFh) const;
+                                     ostream* transcriptPslFh);
     ResultFeatureTreesVector processTranscripts(const FeatureNode* gene,
-                                            ostream* transcriptPslFh) const;
+                                            ostream* transcriptPslFh);
     FeatureNode* findMatchingBoundingFeature(const FeatureNodeVector& features,
-                                         const FeatureNode* srcFeature) const;
+                                             const FeatureNode* srcFeature) const;
     void copyMappingMetadata(const FeatureNode* origFeature,
                              FeatureNode* newFeature) const;
     void copyGeneMetadata(const FeatureNode* origGene,
                           FeatureNode* newGene) const;
-    void forceToUnmapped(ResultFeatureTrees* mappedGene) const;
+    void forceToUnmapped(ResultFeatureTrees* mappedGene);
     void forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
-                                         RemapStatus remapStatus) const;
+                                         RemapStatus remapStatus);
     void forceToUnmappedDueToTargetStatus(ResultFeatureTrees* mappedGene,
-                                          TargetStatus targetStatus) const;
+                                          TargetStatus targetStatus);
     bool hasMixedMappedSeqStrand(const ResultFeatureTrees* mappedGene) const;
     bool hasTargetStatusNonOverlap(const ResultFeatureTrees* mappedGene) const;
     bool hasExcessiveSizeChange(const ResultFeatureTrees* mappedGene) const;
@@ -121,6 +150,12 @@ class GeneMapper {
                  FeatureTreePolish& featureTreePolish,
                  ostream& mappingInfoFh,
                  ostream* transcriptPslFh);
+    void maybeMapGene(const FeatureNode* srcGeneTree,
+                      AnnotationSet& mappedSet,
+                      AnnotationSet& unmappedSet,
+                      FeatureTreePolish& featureTreePolish,
+                      ostream& mappingInfoFh,
+                      ostream* transcriptPslFh);
     RemapStatus getNoMapRemapStatus(const FeatureNode* gene) const;
     bool shouldMapGeneType(const FeatureNode* gene) const;
     bool inTargetPatchRegion(const FeatureNode* targetGene);

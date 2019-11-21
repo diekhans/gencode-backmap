@@ -108,9 +108,9 @@ TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
     // for PAR requires sequence id.
     if (targetAnnotations != NULL) {
         fTargetGene = targetAnnotations->getFeatureById(transcript->getAttrValue(GxfFeature::GENE_ID_ATTR),
-                                                        transcript->getSeqid());
+                                                        transcript->isParY());
         fTargetTranscript = targetAnnotations->getFeatureById(transcript->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
-                                                              transcript->getSeqid());
+                                                              transcript->isParY());
     }
 
     // map all exons together, this will be used to project the other exons

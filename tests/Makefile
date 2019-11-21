@@ -196,7 +196,7 @@ gtfMappingVerPrevDiffMapTest: mkdirs ${testNcbiLiftOverChains}
 
 
 # edit to fix names and chrM (don't depend on mkdirs so it doesn't rebuild unless needed)
-${testGencodeLiftOverChains}: mkdirs ${testUcscLiftOverChains}
+${testGencodeLiftOverChains}: ${testUcscLiftOverChains}
 	@mkdir -p output
 	../bin/ucscLiftEdit ${testUcscLiftOverChains} data/GCF_000001405.28.assembly.txt data/GCF_000001405.25.assembly.txt ${testGencodeLiftOverChains}
 
