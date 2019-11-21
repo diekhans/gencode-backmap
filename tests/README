@@ -40,3 +40,6 @@ Test data
   data/dup-transcripts.v19.gff3 
   data/dup-transcripts.v32lift37.gff3
   - test cases where multiple instances of an transcript id were add to the output
+    v19: ENSG00000233067.2 / ENST00000608254.1 ENST00000455399.1
+    v33: ENSG00000233067.4 / ENST00000669979.1
+         ENSG00000288546.1 / ENST00000608254.1 ENST00000455399.1

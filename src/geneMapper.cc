@@ -181,7 +181,8 @@ void GeneMapper::forgetGeneMapped(const FeatureNode* gene) {
 void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
     assert(transcript->isTranscript());
     if (fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->isParY())) {
-        throw logic_error("BUG: transcript base id has already been mapped: " + transcript->getTypeId());
+        //FIXME: throw logic_error("BUG: transcript base id has already been mapped: " + transcript->getTypeId());
+        cerr  << "WARNING: transcript base id has already been mapped: " + transcript->getTypeId() << endl;
     }
     fMappedIdsNames.addBaseId(transcript->getTypeId(), transcript->isParY());
     debugRecordMapped(transcript, "recordTranscriptMapped typeId", getBaseId(transcript->getTypeId()));
@@ -781,8 +782,12 @@ void GeneMapper::maybeMapGene(const FeatureNode* srcGeneTree,
     }
     if (shouldMapGeneType(srcGeneTree)) {
         if (checkAnyGeneTranscriptsMapped(srcGeneTree)) {
-            // FIXME: should store a status
+            // FIXME: should output special status
             cerr << "WARNING: " << srcGeneTree->getTypeId() << " has transcript mapped in other genes" << endl;
+            outputInfo("mapSrc", "gene", srcGeneTree, REMAP_STATUS_ERROR, 0, TARGET_STATUS_ERROR, mappingInfoFh);
+            for (int i = 0; i < srcGeneTree->getChildren().size(); i++) {
+                outputInfo("mapSrc", "trans", srcGeneTree->getChild(i), REMAP_STATUS_ERROR, 0, TARGET_STATUS_ERROR, mappingInfoFh);
+            }
         } else {
             fCurrentGeneNum++;
             mapGene(srcGeneTree, mappedSet, unmappedSet, featureTreePolish, mappingInfoFh, transcriptPslFh);

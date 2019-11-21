@@ -20,7 +20,8 @@ typedef enum {
     REMAP_STATUS_AUTO_SMALL_NCRNA  = 0x080,  // automatic small non-coding RNA
     REMAP_STATUS_AUTOMATIC_GENE    = 0x180,  // automatic gene annotation not mapped
     REMAP_STATUS_PSEUDOGENE        = 0x200,  // pseudogene annotation not mapped
-    REMAP_STATUS_INELIGIBLE        = 0x400,   // ineligible for mapping
+    REMAP_STATUS_INELIGIBLE        = 0x400,  // ineligible for mapping
+    REMAP_STATUS_ERROR             = 0x800,  // other error
 } RemapStatus;
 
 /* Convert a remap status to a string  */
@@ -33,7 +34,8 @@ typedef enum {
     TARGET_STATUS_NEW,        // new gene/transcript
     TARGET_STATUS_LOST,       // gene/transcript not mapped
     TARGET_STATUS_OVERLAP,    // gene/transcript overlaps
-    TARGET_STATUS_NONOVERLAP  // gene/transcript doesn't overlaps
+    TARGET_STATUS_NONOVERLAP, // gene/transcript doesn't overlaps
+    TARGET_STATUS_ERROR       // other error
 } TargetStatus;
 
 /* convert a target status to a string  */
