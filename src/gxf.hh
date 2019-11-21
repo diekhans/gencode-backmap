@@ -275,18 +275,14 @@ public:
     const string fPhase;
     AttrVals fAttrs;     // attribute maybe modified
 
+    // derived values from attributes
+    
+    
     public:
     /* construct a new feature object */
     GxfFeature(const string& seqid, const string& source, const string& type,
                int start, int end, const string& score, const string& strand,
-               const string& phase, const AttrVals& attrs):
-        fSeqid(seqid), fSource(source), fType(type),
-        fStart(start), fEnd(end),
-        fScore(score), fStrand(strand),
-        fPhase(phase), fAttrs(attrs) {
-        assert(strand.size() == 1);
-        assert(phase.size() == 1);
-    }
+               const string& phase, const AttrVals& attrs);
 
     /* clone the feature */
     GxfFeature* clone() const {

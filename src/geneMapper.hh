@@ -6,6 +6,7 @@
 #include "gxf.hh"
 #include "featureTree.hh"
 #include "typeOps.hh"
+#include <iostream>
 #include <set>
 class TransMap;
 class PslMapping;
@@ -27,23 +28,28 @@ class GeneMapper {
         useTargetForPatchRegions  = 0x08
     };
     private:
-    /* set of (id, chrom) that have been mapped. Include chrom for PAR relief. */
-    class MappedIdSet: public set<StringPair> {
+    /* set of (baseId, isParY) or  (name, isParY) that have been mapped. */
+    class MappedIdSet: public set<pair<string, bool> > {
+        typedef pair<string, bool> Key;
         public:
-        void addBaseId(const string& fullid, const string& chrom) {
-            insert(StringPair(getBaseId(fullid), chrom));
+        void addBaseId(const string& fullid, bool isParY) {
+            insert(Key(getBaseId(fullid), isParY));
         }
-        void addName(const string& name, const string& chrom) {
-            insert(StringPair(name, chrom));
+        bool haveBaseId(const string& fullid, bool isParY) const {
+            return find(Key(getBaseId(fullid), isParY)) != end();
         }
-
-        bool haveBaseId(const string& fullid, const string& chrom) const {
-            return find(StringPair(getBaseId(fullid), chrom)) != end();
+        void removeBaseId(const string& fullid, bool isParY) {
+            erase(Key(getBaseId(fullid), isParY));
         }
-        bool haveName(const string& name, const string& chrom) const {
-            return find(StringPair(name, chrom)) != end();
+        void addName(const string& name, bool isParY) {
+            insert(Key(name, isParY));
         }
-
+        bool haveName(const string& name, bool isParY) const {
+            return find(Key(name, isParY)) != end();
+        }
+        void removeName(const string& name, bool isParY) {
+            erase(Key(name, isParY));
+        }
     };
 
     
@@ -89,7 +95,9 @@ class GeneMapper {
                            const string& desc,
                            const string& key = "") const;
     void recordGeneMapped(const FeatureNode* gene);
+    void forgetGeneMapped(const FeatureNode* gene);
     void recordTranscriptMapped(const FeatureNode* transcript);
+    void forgetTranscriptMapped(const FeatureNode* transcript);
     bool checkGeneMapped(const FeatureNode* gene) const ;
     bool checkTranscriptMapped(const FeatureNode* transcript) const;
     bool checkAllGeneTranscriptsMapped(const FeatureNode* gene) const;
@@ -104,11 +112,11 @@ class GeneMapper {
                              FeatureNode* newFeature) const;
     void copyGeneMetadata(const FeatureNode* origGene,
                           FeatureNode* newGene) const;
-    void forceToUnmapped(ResultFeatureTrees* mappedGene) const;
+    void forceToUnmapped(ResultFeatureTrees* mappedGene);
     void forceToUnmappedDueToRemapStatus(ResultFeatureTrees* mappedGene,
-                                         RemapStatus remapStatus) const;
+                                         RemapStatus remapStatus);
     void forceToUnmappedDueToTargetStatus(ResultFeatureTrees* mappedGene,
-                                          TargetStatus targetStatus) const;
+                                          TargetStatus targetStatus);
     bool hasMixedMappedSeqStrand(const ResultFeatureTrees* mappedGene) const;
     bool hasTargetStatusNonOverlap(const ResultFeatureTrees* mappedGene) const;
     bool hasExcessiveSizeChange(const ResultFeatureTrees* mappedGene) const;

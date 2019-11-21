@@ -316,35 +316,37 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 38	targetCopy	trans	ENST00000516131.1		SNORA15.3-201	snoRNA	chr22	19237396	19237489	+	automatic_gene	0	na
 39	targetCopy	gene	ENSG00000228572.2	OTTHUMG00000046372.2	LL0YNC03-29C1.1	pseudogene	chrX	170410	171758	+	pseudogene	0	na
 39	targetCopy	trans	ENST00000431238.2	OTTHUMT00000107057.2	LL0YNC03-29C1.1-001	unprocessed_pseudogene	chrX	170410	171758	+	pseudogene	0	na
-40	targetCopy	gene	ENSG00000210049.1		MT-TF	Mt_tRNA	chrM	577	647	+	automatic_gene	0	na
-40	targetCopy	trans	ENST00000387314.1		MT-TF-201	Mt_tRNA	chrM	577	647	+	automatic_gene	0	na
-41	targetCopy	gene	ENSG00000210184.1		MT-TS2	Mt_tRNA	chrM	12207	12265	+	automatic_gene	0	na
-41	targetCopy	trans	ENST00000387449.1		MT-TS2-201	Mt_tRNA	chrM	12207	12265	+	automatic_gene	0	na
-42	targetCopy	gene	ENSG00000210191.1		MT-TL2	Mt_tRNA	chrM	12266	12336	+	automatic_gene	0	na
-42	targetCopy	trans	ENST00000387456.1		MT-TL2-201	Mt_tRNA	chrM	12266	12336	+	automatic_gene	0	na
-43	targetCopy	gene	ENSG00000198786.2		MT-ND5	protein_coding	chrM	12337	14148	+	automatic_gene	0	na
-43	targetCopy	trans	ENST00000361567.2		MT-ND5-201	protein_coding	chrM	12337	14148	+	automatic_gene	0	na
-44	targetCopy	gene	ENSG00000198695.2		MT-ND6	protein_coding	chrM	14149	14673	-	automatic_gene	0	na
-44	targetCopy	trans	ENST00000361681.2		MT-ND6-201	protein_coding	chrM	14149	14673	-	automatic_gene	0	na
-45	targetCopy	gene	ENSG00000210194.1		MT-TE	Mt_tRNA	chrM	14674	14742	-	automatic_gene	0	na
-45	targetCopy	trans	ENST00000387459.1		MT-TE-201	Mt_tRNA	chrM	14674	14742	-	automatic_gene	0	na
-46	targetCopy	gene	ENSG00000198727.2		MT-CYB	protein_coding	chrM	14747	15887	+	automatic_gene	0	na
-46	targetCopy	trans	ENST00000361789.2		MT-CYB-201	protein_coding	chrM	14747	15887	+	automatic_gene	0	na
-47	targetCopy	gene	ENSG00000210195.2		MT-TT	Mt_tRNA	chrM	15888	15953	+	automatic_gene	0	na
-47	targetCopy	trans	ENST00000387460.2		MT-TT-201	Mt_tRNA	chrM	15888	15953	+	automatic_gene	0	na
-48	targetCopy	gene	ENSG00000210196.2		MT-TP	Mt_tRNA	chrM	15956	16023	-	automatic_gene	0	na
-48	targetCopy	trans	ENST00000387461.2		MT-TP-201	Mt_tRNA	chrM	15956	16023	-	automatic_gene	0	na
-49	targetCopy	gene	ENSG00000265300.1		AC007731.1	miRNA	chr22	20837512	20837603	-	automatic_gene	0	na
-49	targetCopy	trans	ENST00000578704.1		AC007731.1-201	miRNA	chr22	20837512	20837603	-	automatic_gene	0	na
-50	targetCopy	gene	ENSG00000270325.1	OTTHUMG00000184913.1	CTC-559E9.12	pseudogene	chr19	19967784	19968336	+	pseudogene	0	na
-50	targetCopy	trans	ENST00000603714.1	OTTHUMT00000469329.1	CTC-559E9.12-001	processed_pseudogene	chr19	19967784	19968336	+	pseudogene	0	na
-51	targetCopy	gene	ENSG00000207213.1		Y_RNA	misc_RNA	chr1	11059919	11060002	-	automatic_gene	0	na
-51	targetCopy	trans	ENST00000384484.1		Y_RNA.550-201	misc_RNA	chr1	11059919	11060002	-	automatic_gene	0	na
-52	targetCopy	gene	ENSG00000252802.1		Y_RNA	misc_RNA	chr1	26920431	26920532	-	automatic_gene	0	na
-52	targetCopy	trans	ENST00000516993.1		Y_RNA.794-201	misc_RNA	chr1	26920431	26920532	-	automatic_gene	0	na
-53	targetCopy	gene	ENSG00000207379.1		Y_RNA	misc_RNA	chr1	93851268	93851374	+	automatic_gene	0	na
-53	targetCopy	trans	ENST00000384649.1		Y_RNA.589-201	misc_RNA	chr1	93851268	93851374	+	automatic_gene	0	na
-54	targetCopy	gene	ENSG00000264159.1		RN7SL866P	misc_RNA	chr19	3501316	3501587	+	automatic_gene	0	na
-54	targetCopy	trans	ENST00000578785.1		RN7SL866P-201	misc_RNA	chr19	3501316	3501587	+	automatic_gene	0	na
-55	targetCopy	gene	ENSG00000199953.1		RNA5SP443	rRNA	chr17	43404732	43404863	-	automatic_gene	0	na
-55	targetCopy	trans	ENST00000363083.1		RNA5SP443-201	rRNA	chr17	43404732	43404863	-	automatic_gene	0	na
+40	targetCopy	gene	ENSG00000228572.2	OTTHUMG00000046372.2	LL0YNC03-29C1.1	pseudogene	chrY	120410	121758	+	pseudogene	0	na
+40	targetCopy	trans	ENST00000431238.2	OTTHUMT00000107057.2	LL0YNC03-29C1.1-001	unprocessed_pseudogene	chrY	120410	121758	+	pseudogene	0	na
+41	targetCopy	gene	ENSG00000210049.1		MT-TF	Mt_tRNA	chrM	577	647	+	automatic_gene	0	na
+41	targetCopy	trans	ENST00000387314.1		MT-TF-201	Mt_tRNA	chrM	577	647	+	automatic_gene	0	na
+42	targetCopy	gene	ENSG00000210184.1		MT-TS2	Mt_tRNA	chrM	12207	12265	+	automatic_gene	0	na
+42	targetCopy	trans	ENST00000387449.1		MT-TS2-201	Mt_tRNA	chrM	12207	12265	+	automatic_gene	0	na
+43	targetCopy	gene	ENSG00000210191.1		MT-TL2	Mt_tRNA	chrM	12266	12336	+	automatic_gene	0	na
+43	targetCopy	trans	ENST00000387456.1		MT-TL2-201	Mt_tRNA	chrM	12266	12336	+	automatic_gene	0	na
+44	targetCopy	gene	ENSG00000198786.2		MT-ND5	protein_coding	chrM	12337	14148	+	automatic_gene	0	na
+44	targetCopy	trans	ENST00000361567.2		MT-ND5-201	protein_coding	chrM	12337	14148	+	automatic_gene	0	na
+45	targetCopy	gene	ENSG00000198695.2		MT-ND6	protein_coding	chrM	14149	14673	-	automatic_gene	0	na
+45	targetCopy	trans	ENST00000361681.2		MT-ND6-201	protein_coding	chrM	14149	14673	-	automatic_gene	0	na
+46	targetCopy	gene	ENSG00000210194.1		MT-TE	Mt_tRNA	chrM	14674	14742	-	automatic_gene	0	na
+46	targetCopy	trans	ENST00000387459.1		MT-TE-201	Mt_tRNA	chrM	14674	14742	-	automatic_gene	0	na
+47	targetCopy	gene	ENSG00000198727.2		MT-CYB	protein_coding	chrM	14747	15887	+	automatic_gene	0	na
+47	targetCopy	trans	ENST00000361789.2		MT-CYB-201	protein_coding	chrM	14747	15887	+	automatic_gene	0	na
+48	targetCopy	gene	ENSG00000210195.2		MT-TT	Mt_tRNA	chrM	15888	15953	+	automatic_gene	0	na
+48	targetCopy	trans	ENST00000387460.2		MT-TT-201	Mt_tRNA	chrM	15888	15953	+	automatic_gene	0	na
+49	targetCopy	gene	ENSG00000210196.2		MT-TP	Mt_tRNA	chrM	15956	16023	-	automatic_gene	0	na
+49	targetCopy	trans	ENST00000387461.2		MT-TP-201	Mt_tRNA	chrM	15956	16023	-	automatic_gene	0	na
+50	targetCopy	gene	ENSG00000265300.1		AC007731.1	miRNA	chr22	20837512	20837603	-	automatic_gene	0	na
+50	targetCopy	trans	ENST00000578704.1		AC007731.1-201	miRNA	chr22	20837512	20837603	-	automatic_gene	0	na
+51	targetCopy	gene	ENSG00000270325.1	OTTHUMG00000184913.1	CTC-559E9.12	pseudogene	chr19	19967784	19968336	+	pseudogene	0	na
+51	targetCopy	trans	ENST00000603714.1	OTTHUMT00000469329.1	CTC-559E9.12-001	processed_pseudogene	chr19	19967784	19968336	+	pseudogene	0	na
+52	targetCopy	gene	ENSG00000207213.1		Y_RNA	misc_RNA	chr1	11059919	11060002	-	automatic_gene	0	na
+52	targetCopy	trans	ENST00000384484.1		Y_RNA.550-201	misc_RNA	chr1	11059919	11060002	-	automatic_gene	0	na
+53	targetCopy	gene	ENSG00000252802.1		Y_RNA	misc_RNA	chr1	26920431	26920532	-	automatic_gene	0	na
+53	targetCopy	trans	ENST00000516993.1		Y_RNA.794-201	misc_RNA	chr1	26920431	26920532	-	automatic_gene	0	na
+54	targetCopy	gene	ENSG00000207379.1		Y_RNA	misc_RNA	chr1	93851268	93851374	+	automatic_gene	0	na
+54	targetCopy	trans	ENST00000384649.1		Y_RNA.589-201	misc_RNA	chr1	93851268	93851374	+	automatic_gene	0	na
+55	targetCopy	gene	ENSG00000264159.1		RN7SL866P	misc_RNA	chr19	3501316	3501587	+	automatic_gene	0	na
+55	targetCopy	trans	ENST00000578785.1		RN7SL866P-201	misc_RNA	chr19	3501316	3501587	+	automatic_gene	0	na
+56	targetCopy	gene	ENSG00000199953.1		RNA5SP443	rRNA	chr17	43404732	43404863	-	automatic_gene	0	na
+56	targetCopy	trans	ENST00000363083.1		RNA5SP443-201	rRNA	chr17	43404732	43404863	-	automatic_gene	0	na

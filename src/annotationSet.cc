@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "transMap.hh"
+#include "globals.hh"
 #include "gxf.hh"
 
 // FIXME: should writer in featureIO
@@ -58,8 +59,9 @@ void AnnotationSet::insertInFeatureMap(const string& key,
                                        FeatureNode* feature,
                                        FeatureMap& featureMap) {
     if (featureMap.find(key) != featureMap.end()) {
-        // FIXME: make verbose option
-        cerr << "NOTES: key already in FeatureMap: " << key << endl;
+        if (gVerbose) {
+            cerr << "NOTE: key already in FeatureMap: " << key << endl;
+        }
     }
     featureMap[key].push_back(feature);
 }
