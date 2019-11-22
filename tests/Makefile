@@ -8,8 +8,8 @@ export SHELLOPTS = pipefail
 GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
 	data/dup-transcripts.v19.gff3
 GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 \
-	data/gencode.v31.annotation.gff3 data/dup-transcripts.v33.gff3
-
+	data/gencode.v31.annotation.gff3 data/dup-transcripts.v33.gff3 \
+	data/gapped-transcripts.v33.gff3
 
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetGff3Arg = --targetGxf=data/gencode.v19.annotation.gff3
@@ -49,7 +49,8 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	cmpUcscSubstituteManOverlap \
 	gff3V29RegressTest dupTranscriptsV33Test \
-	reportsTests ucscLiftEditTest regressTests
+	reportsTests ucscLiftEditTest regressTests \
+	gapTest
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} --unmappedGxf=output/$@.unmapped.gff3 data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
@@ -250,6 +251,13 @@ gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}
 # case where transcript moving between genes cause problems
 dupTranscriptsV33Test: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --targetGxf=data/dup-transcripts.v19.gff3 ${targetSubstArg} --previousMappedGxf=data/dup-transcripts.v32lift37.gff3 ${headerArg} data/dup-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
+# gaps in transcripts due to alignment issues
+gapTest: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${headerArg} data/gapped-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
