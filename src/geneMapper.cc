@@ -66,7 +66,7 @@ void GeneMapper::outputSrcGeneInfo(const ResultFeatureTrees* mappedGene,
     assert(mappedGene->src != NULL);
     const FeatureNode* srcGene = mappedGene->src;
     outputInfo("mapSrc", "gene", srcGene, srcGene->getRemapStatus(), 0, srcGene->getTargetStatus(), mappingInfoFh);
-    for (int i = 0; i < srcGene->getChildren().size(); i++) {
+    for (int i = 0; i < srcGene->getNumChildren(); i++) {
         const FeatureNode* srcTrans = srcGene->getChild(i);
         outputInfo("mapSrc", "trans", srcTrans, srcTrans->getRemapStatus(), 0, srcTrans->getTargetStatus(), mappingInfoFh);
     }
@@ -83,7 +83,7 @@ void GeneMapper::outputMappedGeneInfo(const ResultFeatureTrees* mappedGene,
     outputInfo("map", "gene", mapGene, mapGene->getRemapStatus(), mapGene->getNumMappings(), mapGene->getTargetStatus(), mappingInfoFh);
 
     // transcripts
-    for (int i = 0; i < mapGene->getChildren().size(); i++) {
+    for (int i = 0; i < mapGene->getNumChildren(); i++) {
         const FeatureNode* mapTrans = mapGene->getChild(i);
         outputInfo("map", "trans", mapTrans, mapTrans->getRemapStatus(), mapGene->getNumMappings(), mapTrans->getTargetStatus(), mappingInfoFh);
     }
@@ -100,7 +100,7 @@ void GeneMapper::outputUnmappedGeneInfo(const ResultFeatureTrees* mappedGene,
     outputInfo("unmap", "gene", unmapGene, unmapGene->getRemapStatus(), unmapGene->getNumMappings(), unmapGene->getTargetStatus(), mappingInfoFh);
 
     // transcripts
-    for (int i = 0; i < unmapGene->getChildren().size(); i++) {
+    for (int i = 0; i < unmapGene->getNumChildren(); i++) {
         const FeatureNode* unmapTrans = unmapGene->getChild(i);
         outputInfo("unmap", "trans", unmapTrans, unmapTrans->getRemapStatus(), unmapTrans->getNumMappings(), unmapTrans->getTargetStatus(), mappingInfoFh);
     }
@@ -114,7 +114,7 @@ void GeneMapper::outputTargetGeneInfo(const ResultFeatureTrees* mappedGene,
                                       ostream& mappingInfoFh) const {
     const FeatureNode* targetGene = mappedGene->target;
     outputInfo(targetAction, "gene", targetGene, targetGene->getRemapStatus(), 0, targetGene->getTargetStatus(), mappingInfoFh);
-    for (int i = 0; i < targetGene->getChildren().size(); i++) {
+    for (int i = 0; i < targetGene->getNumChildren(); i++) {
         const FeatureNode* targetTrans = targetGene->getChild(i);
         outputInfo(targetAction, "trans", targetTrans, targetTrans->getRemapStatus(), 0, targetTrans->getTargetStatus(), mappingInfoFh);
     }
@@ -238,7 +238,7 @@ bool GeneMapper::checkTranscriptMapped(const FeatureNode* transcript) const {
 /* check if all transcripts in a gene have already been mapped (doesn't check gene) */
 bool GeneMapper::checkAllGeneTranscriptsMapped(const FeatureNode* gene) const {
     assert(gene->isGene());
-    for (size_t i = 0; i < gene->getChildren().size(); i++) {
+    for (size_t i = 0; i < gene->getNumChildren(); i++) {
         if (not checkTranscriptMapped(gene->getChild(i))) {
             debugRecordMapped(gene, "checkAllGeneTranscriptsMapped some transcripts not mapped");
             return false;
@@ -251,7 +251,7 @@ bool GeneMapper::checkAllGeneTranscriptsMapped(const FeatureNode* gene) const {
 /* check if any transcripts in a gene have already been mapped (doesn't check gene) */
 bool GeneMapper::checkAnyGeneTranscriptsMapped(const FeatureNode* gene) const {
     assert(gene->isGene());
-    for (size_t i = 0; i < gene->getChildren().size(); i++) {
+    for (size_t i = 0; i < gene->getNumChildren(); i++) {
         if (checkTranscriptMapped(gene->getChild(i))) {
             debugRecordMapped(gene, "checkAnyGeneTranscriptsMapped some transcripts mapped");
             return true;
@@ -277,7 +277,7 @@ ResultFeatureTrees GeneMapper::processTranscript(const FeatureNode* transcript,
 ResultFeatureTreesVector GeneMapper::processTranscripts(const FeatureNode* gene,
                                                         ostream* transcriptPslFh) {
     ResultFeatureTreesVector mappedTranscripts;
-    for (size_t i = 0; i < gene->getChildren().size(); i++) {
+    for (size_t i = 0; i < gene->getNumChildren(); i++) {
         const FeatureNode* transcript = gene->getChild(i);
         if (transcript->getType() != GxfFeature::TRANSCRIPT) {
             throw logic_error("gene record has child that is not of type transcript: " + transcript->toString());
@@ -315,7 +315,7 @@ void GeneMapper::copyGeneMetadata(const FeatureNode* origGene,
     copyMappingMetadata(origGene, newGene);
 
     // copy transcript metadata
-    for (size_t i = 0; i < newGene->getChildren().size(); i++) {
+    for (size_t i = 0; i < newGene->getNumChildren(); i++) {
         FeatureNode* newTranscript = newGene->getChild(i);
         const FeatureNode* origTranscript = findMatchingBoundingFeature(origGene->getChildren(), newTranscript);
         if (origTranscript != NULL) {
@@ -330,7 +330,7 @@ void GeneMapper::forceToUnmapped(ResultFeatureTrees* mappedGene) {
     FeatureNode* srcCopy = mappedGene->src->cloneTree();
     if (mappedGene->mapped != NULL) {
         copyGeneMetadata(mappedGene->mapped, srcCopy);
-        for (size_t i = 0; i < mappedGene->mapped->getChildren().size(); i++) {
+        for (size_t i = 0; i < mappedGene->mapped->getNumChildren(); i++) {
             forgetTranscriptMapped(mappedGene->mapped->getChild(i));
         }
         forgetGeneMapped(mappedGene->mapped);
@@ -375,7 +375,7 @@ void GeneMapper::forceToUnmappedDueToTargetStatus(ResultFeatureTrees* mappedGene
 
 /* check if gene contains transcripts with different mapped seqid/strand  */
 bool GeneMapper::hasMixedMappedSeqStrand(const ResultFeatureTrees* mappedGene) const {
-    int numTranscripts = (mappedGene->mapped != NULL) ? mappedGene->mapped->getChildren().size() : 0;
+    int numTranscripts = (mappedGene->mapped != NULL) ? mappedGene->mapped->getNumChildren() : 0;
     string seqid, strand;
     for (int i = 0; i < numTranscripts; i++) {
         const FeatureNode* transcript = mappedGene->mapped->getChild(i);
@@ -399,7 +399,7 @@ bool GeneMapper::hasTargetStatusNonOverlap(const ResultFeatureTrees* mappedGene)
         // however the only transcript is `new'.
         return true;
     }
-    for (int i = 0; i < mappedGene->mapped->getChildren().size(); i++) {
+    for (int i = 0; i < mappedGene->mapped->getNumChildren(); i++) {
         if (mappedGene->mapped->getChild(i)->getTargetStatus() == TARGET_STATUS_NONOVERLAP) {
             return true;
         }
@@ -411,7 +411,7 @@ bool GeneMapper::hasTargetStatusNonOverlap(const ResultFeatureTrees* mappedGene)
  * threshold*/
 bool GeneMapper::hasExcessiveSizeChange(const ResultFeatureTrees* mappedGene) const {
     if (mappedGene->mapped == NULL) {
-        return 0;  // not mapped
+        return false;  // not mapped
     } else {
         int srcGeneLength = mappedGene->src->length();
         int mappedGeneLength = mappedGene->mapped->length();
@@ -421,7 +421,7 @@ bool GeneMapper::hasExcessiveSizeChange(const ResultFeatureTrees* mappedGene) co
 
 /* set the number of mappings of the gene  */
 void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
-    for (int i = 0; i < mappedGeneTree->getChildren().size(); i++) {
+    for (int i = 0; i < mappedGeneTree->getNumChildren(); i++) {
         mappedGeneTree->setNumMappings(max(mappedGeneTree->getNumMappings(), mappedGeneTree->getChild(i)->getNumMappings()));
     }
 }
@@ -531,7 +531,7 @@ void GeneMapper::substituteTarget(ResultFeatureTrees* mappedGene) {
     }
     assert(mappedGene->target == NULL);
     mappedGene->target = getTargetAnnotation(mappedGene->src)->cloneTree();
-    for (int i = 0; i < mappedGene->target->getChildren().size(); i++) {
+    for (int i = 0; i < mappedGene->target->getNumChildren(); i++) {
         recordTranscriptMapped(mappedGene->target->getChild(i));
     }
 
@@ -785,7 +785,7 @@ void GeneMapper::maybeMapGene(const FeatureNode* srcGeneTree,
             // FIXME: should output special status
             cerr << "WARNING: " << srcGeneTree->getTypeId() << " has transcript mapped in other genes" << endl;
             outputInfo("mapSrc", "gene", srcGeneTree, REMAP_STATUS_ERROR, 0, TARGET_STATUS_ERROR, mappingInfoFh);
-            for (int i = 0; i < srcGeneTree->getChildren().size(); i++) {
+            for (int i = 0; i < srcGeneTree->getNumChildren(); i++) {
                 outputInfo("mapSrc", "trans", srcGeneTree->getChild(i), REMAP_STATUS_ERROR, 0, TARGET_STATUS_ERROR, mappingInfoFh);
             }
         } else {

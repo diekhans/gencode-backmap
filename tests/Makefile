@@ -370,9 +370,9 @@ update: mappingChains problemRegions
 mappingChains: ucscMappingChains
 
 ucscMappingChains: tmp/testGrch38.gp
-	overlapSelect tmp/testGrch38.gp  /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
+	overlapSelect tmp/testGrch38.gp /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
 	chainToPslBasic ${testUcscLiftOverChains} tmp/hg38ToHg19.over.psl
-	pslSwap tmp/hg38ToHg19.over.psl  tmp/hg19ToHg38.over.psl
+	pslSwap tmp/hg38ToHg19.over.psl tmp/hg19ToHg38.over.psl
 
 # need to only include first ##gff-version header
 tmp/testGrch38.gp: ${GRCh38_GFF3s}

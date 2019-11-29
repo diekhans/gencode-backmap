@@ -43,27 +43,37 @@ class TransMap {
    
     private:
     void mapAlnsAdd(struct psl *mapPsl);
-    struct psl* chainToPsl(struct chain *ch,
-                           bool swapMap);
-    void loadMapChains(const string& chainFile,
-                       bool swapMap);
     void mapPslPair(struct psl *inPsl,
                     struct psl *mapPsl,
                     PslVector& allMappedPsls) const;
+
+    /* is a mapping alignment file a chain or psl? */
+    static bool isChainMappingAlign(const string& fileName) {
+        if (stringEndsWith(fileName, ".chain") or stringEndsWith(fileName, ".chain.gz")) {
+            return true;
+        } else if (stringEndsWith(fileName, ".psl") or stringEndsWith(fileName, ".psl.gz")) {
+            return false;
+        } else {
+            errAbort(toCharStr("Error: expected mapping alignments file with an extension of .chain, .chain.gz, .psl, or .psl.gz: " + fileName));
+            return false;
+        }
+    }
 
     /* constructor */
     TransMap();
 
     public:
-    /* is a mapping alignment file a chain or psl? */
-    static bool isChainMappingAlign(const string& fileName);
+    /* consumes PSLs */
+    static TransMap* factoryFromPsls(struct psl** psls,
+                                     bool swapMap);
+
+    /* clones PSL */
+    static TransMap* factoryFromPsl(struct psl* psl,
+                                    bool swapMap);
 
     /* factory from a chain file */
     static TransMap* factoryFromChainFile(const string& chainFile,
                                       bool swapMap);
-    /* factory from a list of psls */
-    static TransMap* factoryFromPsls(struct psl* psls,
-                                     bool swapMap);
     /* factory from a  psl file */
     static TransMap* factoryFromPslFile(const string& pslFile,
                                         bool swapMap);

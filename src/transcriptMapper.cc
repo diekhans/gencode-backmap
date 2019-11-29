@@ -38,8 +38,8 @@ PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcript) co
 /* create transMap objects used to do two level mapping via exons. */
 const TransMapVector TranscriptMapper::makeViaExonsTransMap(const PslMapping* exonsMapping) {
     TransMapVector transMaps;
-    transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->getSrcPsl(), true)); // swap map genomeA to exons
-    transMaps.push_back(TransMap::factoryFromPsls(exonsMapping->getMappedPsl(), false)); // exons to genomeB
+    transMaps.push_back(TransMap::factoryFromPsl(exonsMapping->getSrcPsl(), true)); // swap map genomeA to exons
+    transMaps.push_back(TransMap::factoryFromPsl(exonsMapping->getMappedPsl(), false)); // exons to genomeB
     return transMaps;
 }
 
@@ -62,7 +62,7 @@ TransMappedFeature TranscriptMapper::mapFeature(const FeatureNode* feature) {
 /* recursive map features below transcript */
 TransMappedFeature TranscriptMapper::mapFeatures(const FeatureNode* feature) {
     TransMappedFeature transMappedFeature = mapFeature(feature);
-    for (int iChild = 0; iChild < feature->getChildren().size(); iChild++) {
+    for (int iChild = 0; iChild < feature->getNumChildren(); iChild++) {
         TransMappedFeature childFeatures = mapFeatures(feature->getChild(iChild));
         FeatureMapper::updateParents(transMappedFeature, childFeatures);
     }
@@ -138,7 +138,7 @@ ResultFeatureTrees TranscriptMapper::mapTranscriptFeatures(const FeatureNode* tr
     // project features via exons (including redoing exons)
     ResultFeatureTrees mappedTranscript = mapTranscriptFeature(transcript);
     TransMappedFeature mappedTranscriptSet(mappedTranscript);
-    for (int iChild = 0; iChild < transcript->getChildren().size(); iChild++) {
+    for (int iChild = 0; iChild < transcript->getNumChildren(); iChild++) {
         TransMappedFeature transMappedFeature = mapFeatures(transcript->getChild(iChild));
         FeatureMapper::updateParents(mappedTranscriptSet, transMappedFeature);
     }

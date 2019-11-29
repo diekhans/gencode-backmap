@@ -88,6 +88,9 @@ class FeatureNode {
     const FeatureNodeVector& getChildren() const {
         return fChildren;
     }
+    const size_t getNumChildren() const {
+        return fChildren.size();
+    }
     FeatureNode* getChild(int iChild) {
         return fChildren[iChild];
     }

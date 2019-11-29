@@ -22,7 +22,7 @@ void AnnotationSet::buildLocationMap() {
     fLocationMap = genomeRangeTreeNew();
     for (int iGene = 0; iGene < fGenes.size(); iGene++) {
         addLocationMap(fGenes[iGene]);
-        for (size_t iTrans = 0; iTrans < fGenes[iGene]->getChildren().size(); iTrans++) {
+        for (size_t iTrans = 0; iTrans < fGenes[iGene]->getNumChildren(); iTrans++) {
             addLocationMap(fGenes[iGene]->getChild(iTrans));
         }
     }
@@ -91,7 +91,7 @@ void AnnotationSet::addGene(FeatureNode* gene) {
     assert(gene->isGene());
     fGenes.push_back(gene);
     addFeature(gene);
-    for (size_t i = 0; i < gene->getChildren().size(); i++) {
+    for (size_t i = 0; i < gene->getNumChildren(); i++) {
         FeatureNode* transcript = gene->getChild(i);
         if (transcript->getType() != GxfFeature::TRANSCRIPT) {
             throw logic_error("gene record has child that is not of type transcript: " + transcript->toString());
@@ -239,7 +239,7 @@ void AnnotationSet::outputMappedSeqRegionIfNeed(const FeatureNode* gene,
 void AnnotationSet::outputFeature(const FeatureNode* feature,
                                   GxfWriter& gxfFh) const {
     gxfFh.write(feature->getGxfFeature());
-    for (size_t i = 0; i < feature->getChildren().size(); i++) {
+    for (size_t i = 0; i < feature->getNumChildren(); i++) {
         outputFeature(feature->getChild(i), gxfFh);
     }
 }
