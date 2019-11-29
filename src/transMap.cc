@@ -13,55 +13,11 @@ static void *slCatReversed(void *va, void *vb) {
 }
 
 /* is a mapping alignment file a chain or psl? */
-bool TransMap::isChainMappingAlign(const string& fileName) {
-    if (stringEndsWith(fileName, ".chain") or stringEndsWith(fileName, ".chain.gz")) {
-        return true;
-    } else if (stringEndsWith(fileName, ".psl") or stringEndsWith(fileName, ".psl.gz")) {
-        return false;
-    } else {
-        errAbort(toCharStr("Error: expected mapping alignments file with an extension of .chain, .chain.gz, .psl, or .psl.gz: " + fileName));
-        return false;
-    }
-    
-}
-
 /* add a map align object to the genomeRangeTree */
 void TransMap::mapAlnsAdd(struct psl *mapPsl) {
     genomeRangeTreeAddVal(fMapAlns, mapPsl->qName, mapPsl->qStart, mapPsl->qEnd, mapPsl, slCatReversed);
     fQuerySizes.add(mapPsl->qName, mapPsl->qSize);
     fTargetSizes.add(mapPsl->tName, mapPsl->tSize);
-}
-
-/* convert a chain to a psl, ignoring match counts, etc */
-struct psl* TransMap::chainToPsl(struct chain *ch,
-                                 bool swapMap) {
-    int qStart = ch->qStart, qEnd = ch->qEnd;
-    if (ch->qStrand == '-') {
-        reverseIntRange(&qStart, &qEnd, ch->qSize);
-    }
-    char strand[2] = {ch->qStrand, '\0'};
-    struct psl* psl = pslNew(ch->qName, ch->qSize, qStart, qEnd,
-                             ch->tName, ch->tSize, ch->tStart, ch->tEnd,
-                             strand, slCount(ch->blockList), 0);
-    int iBlk = 0;
-    for (struct cBlock *cBlk = ch->blockList; cBlk != NULL; cBlk = cBlk->next, iBlk++) {
-        pslAddBlock(psl, cBlk->qStart, cBlk->tStart, (cBlk->tEnd - cBlk->tStart));
-    }
-    if (swapMap)
-        pslSwap(psl, FALSE);
-    return psl;
-}
-
-/* read a chain file, convert to mapAln object and genomeRangeTree by query locations. */
-void TransMap::loadMapChains(const string& chainFile,
-                             bool swapMap) {
-    struct chain *ch;
-    struct lineFile *chLf = lineFileOpen(toCharStr(chainFile), TRUE);
-    while ((ch = chainRead(chLf)) != NULL) {
-        mapAlnsAdd(chainToPsl(ch, swapMap));
-        chainFree(&ch);
-    }
-    lineFileClose(&chLf);
 }
 
 /* constructor */
@@ -116,32 +72,77 @@ PslVector TransMap::mapPsl(struct psl* inPsl) const {
     return mappedPsls;
 }
 
-/* factory from a chain file */
-TransMap* TransMap::factoryFromChainFile(const string& chainFile,
-                                         bool swapMap) {
-    TransMap* transMap = new TransMap();
-    transMap->loadMapChains(chainFile, swapMap);
-    return transMap;
+/* convert a chain to a psl, ignoring match counts, etc */
+static struct psl* chainToPsl(struct chain *ch) {
+    int qStart = ch->qStart, qEnd = ch->qEnd;
+    if (ch->qStrand == '-') {
+        reverseIntRange(&qStart, &qEnd, ch->qSize);
+    }
+    char strand[2] = {ch->qStrand, '\0'};
+    struct psl* psl = pslNew(ch->qName, ch->qSize, qStart, qEnd,
+                             ch->tName, ch->tSize, ch->tStart, ch->tEnd,
+                             strand, slCount(ch->blockList), 0);
+    int iBlk = 0;
+    for (struct cBlock *cBlk = ch->blockList; cBlk != NULL; cBlk = cBlk->next, iBlk++) {
+        pslAddBlock(psl, cBlk->qStart, cBlk->tStart, (cBlk->tEnd - cBlk->tStart));
+    }
+    return psl;
+}
+
+static void swapPsls(struct psl** psls) {
+    struct psl* swappedPsls = NULL;
+    struct psl* psl;
+    while ((psl = static_cast<struct psl*>(slPopHead(psls))) != NULL) {
+        pslSwap(psl, FALSE);
+        slAddHead(&swappedPsls, psl);
+    }
+    slReverse(&swappedPsls);
+    *psls = swappedPsls;
 }
 
 /* factory from a list of psls */
-TransMap* TransMap::factoryFromPsls(struct psl* psls,
+TransMap* TransMap::factoryFromPsls(struct psl** psls,
                                     bool swapMap) {
+    if (swapMap) {
+        swapPsls(psls);
+    }
+    slSort(psls, pslCmpTarget);
+    
     TransMap* transMap = new TransMap();
-    for (struct psl* psl = psls; psl != NULL; psl = psl->next) {
-        struct psl* pslCp = pslClone(psl);
-        if (swapMap)
-            pslSwap(pslCp, FALSE);
-        transMap->mapAlnsAdd(pslCp);
+    struct psl* psl;
+    while ((psl = static_cast<struct psl*>(slPopHead(psls))) != NULL) {
+        transMap->mapAlnsAdd(psl);
     }
     return transMap;
 }
-    
+
+/* clones PSL */
+TransMap* TransMap::factoryFromPsl(struct psl* psl,
+                                   bool swapMap) {
+    struct psl* psls = pslClone(psl);
+    return factoryFromPsls(&psls, swapMap);
+}
+
 /* factory from a psl file */
 TransMap* TransMap::factoryFromPslFile(const string& pslFile,
                                        bool swapMap) {
     struct psl* psls = pslLoadAll(toCharStr(pslFile));
-    TransMap* transMap = factoryFromPsls(psls, swapMap);
-    pslFreeList(&psls);
-    return transMap;
+    return factoryFromPsls(&psls, swapMap);
 }
+
+
+/* factory from a chain file */
+TransMap* TransMap::factoryFromChainFile(const string& chainFile,
+                                         bool swapMap) {
+    struct psl* psls = NULL;
+    struct chain *ch;
+    struct lineFile *chLf = lineFileOpen(toCharStr(chainFile), TRUE);
+    while ((ch = chainRead(chLf)) != NULL) {
+        slAddHead(&psls, chainToPsl(ch));
+        chainFree(&ch);
+    }
+    lineFileClose(&chLf);
+    return factoryFromPsls(&psls, swapMap);
+}
+
+

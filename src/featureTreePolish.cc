@@ -6,24 +6,25 @@
 #include <algorithm>
 #include "annotationSet.hh"
 #include <iostream>
+#include "frame.hh"
 
-const bool DEBUG = false;
+static const bool DEBUG = false;
 
-/* renumber ab exon */
-void FeatureTreePolish::renumberExon(FeatureNode* exon,
-                                     int exonNum,
-                                     ExonNumExonMap& exonNumExonMap) const {
+/* renumber an exon */
+static void renumberExon(FeatureNode* exon,
+                         int exonNum,
+                         FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
     int oldExonNum = stringToInt(exon->getAttrs().get(GxfFeature::EXON_NUMBER_ATTR)->getVal());
     exonNumExonMap[oldExonNum].push_back(exon);
     exon->getAttrs().update(AttrVal(GxfFeature::EXON_NUMBER_ATTR, toString(exonNum)));
 }
 
 /* renumber all exons in a transcript */
-void FeatureTreePolish::renumberExons(FeatureNode* transcript,
-                                      ExonNumExonMap& exonNumExonMap) const {
+static void renumberExons(FeatureNode* transcript,
+                          FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
     int exonNum = 1;
     // exons are always in genomic order.
-    for (int i = 0; i < transcript->getChildren().size(); i++) {
+    for (int i = 0; i < transcript->getNumChildren(); i++) {
         if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
             renumberExon(transcript->getChild(i), exonNum++, exonNumExonMap);
         }
@@ -31,9 +32,9 @@ void FeatureTreePolish::renumberExons(FeatureNode* transcript,
 }
 
 /* find the new exon containing a feature given the old exon number */
-FeatureNode* FeatureTreePolish::findNewExon(FeatureNode* feature,
-                                        int oldExonNum,
-                                        ExonNumExonMap& exonNumExonMap) const {
+static FeatureNode* findNewExon(FeatureNode* feature,
+                                int oldExonNum,
+                                FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
     for (int i = 0; i < exonNumExonMap[oldExonNum].size(); i++) {
         if (feature->overlaps(exonNumExonMap[oldExonNum][i])) {
             return exonNumExonMap[oldExonNum][i];
@@ -43,8 +44,8 @@ FeatureNode* FeatureTreePolish::findNewExon(FeatureNode* feature,
 }
 
 /* change a non-exon feature to their exon numbers */
-void FeatureTreePolish::renumberOtherFeature(FeatureNode* feature,
-                                             ExonNumExonMap& exonNumExonMap) const {
+static void renumberOtherFeature(FeatureNode* feature,
+                                 FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
     const AttrVal* exonNumAttr = feature->getAttrs().find(GxfFeature::EXON_NUMBER_ATTR);;
     if (exonNumAttr != NULL) {
         FeatureNode* newExon = findNewExon(feature, stringToInt(exonNumAttr->getVal()), exonNumExonMap);
@@ -54,9 +55,9 @@ void FeatureTreePolish::renumberOtherFeature(FeatureNode* feature,
 }
 
 /* recursively change non-exons features to match the news exon numbers */
-void FeatureTreePolish::renumberOtherFeatures(FeatureNode* feature,
-                                              ExonNumExonMap& exonNumExonMap) const {
-    for (int i = 0; i < feature->getChildren().size(); i++) {
+static void renumberOtherFeatures(FeatureNode* feature,
+                                  FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
+    for (int i = 0; i < feature->getNumChildren(); i++) {
         if (feature->getChild(i)->getType() != GxfFeature::EXON) {
             renumberOtherFeature(feature->getChild(i), exonNumExonMap);
         }
@@ -65,41 +66,30 @@ void FeatureTreePolish::renumberOtherFeatures(FeatureNode* feature,
 }
 
 /* renumber all features in a transcript */
-void FeatureTreePolish::renumberTranscriptExons(FeatureNode* transcript) const {
+static void renumberTranscriptExons(FeatureNode* transcript) {
     assert(transcript->getType() == GxfFeature::TRANSCRIPT);
-    ExonNumExonMap exonNumExonMap;
+    FeatureTreePolish::ExonNumExonMap exonNumExonMap;
     renumberExons(transcript, exonNumExonMap);
     renumberOtherFeatures(transcript, exonNumExonMap);
 }
 
 /* renumber all exons in a gene */
-void FeatureTreePolish::renumberGeneExons(FeatureNode* gene) const {
-    for (int i = 0; i < gene->getChildren().size(); i++) {
+static void renumberGeneExons(FeatureNode* gene) {
+    for (int i = 0; i < gene->getNumChildren(); i++) {
         renumberTranscriptExons(gene->getChild(i));
     }
 }
 
 /* Is a feature remapped */
-bool FeatureTreePolish::isRemapped(const FeatureNode* feature) const {
+static bool isRemapped(const FeatureNode* feature) {
     return (feature->findAttr(REMAP_STATUS_ATTR) != NULL)
         and (feature->findAttr(REMAP_SUBSTITUTED_MISSING_TARGET_ATTR) == NULL);
 }
 
-/* find a gene or transcript previously mapped feature by id, or NULL if not
- * mapped or no previous */
-const FeatureNode* FeatureTreePolish::getPrevMappedFeature(const FeatureNode* newFeature) const {
-    if (fPreviousMappedAnotations == NULL) {
-        return NULL;
-    } else {
-        return fPreviousMappedAnotations->getFeatureById(newFeature->getTypeId(),
-                                                         newFeature->isParY());
-    }
-}
-
 /* compute mapping version given a possible-null previous feature and
  * if it's considered the same */
-int FeatureTreePolish::getFeatureMappingVersion(const FeatureNode* prevFeature,
-                                                bool featureSame) const {
+static int getFeatureMappingVersion(const FeatureNode* prevFeature,
+                                    bool featureSame) {
     if ((prevFeature == NULL) || (not isRemapped(prevFeature))) {
         return 1;  // first mapped version
     } else {
@@ -118,10 +108,10 @@ int FeatureTreePolish::getFeatureMappingVersion(const FeatureNode* prevFeature,
 }
 
 /* compare one value */
-bool FeatureTreePolish::compareAttrVal(const AttrVal* prevAttr,
-                                       const AttrVal* newAttr,
-                                       int iValue,
-                                       bool isIdAttr) const {
+static bool compareAttrVal(const AttrVal* prevAttr,
+                           const AttrVal* newAttr,
+                           int iValue,
+                           bool isIdAttr) {
     if (isIdAttr) {
         return (getPreMappedId(prevAttr->getVal(iValue)) == getPreMappedId(newAttr->getVal(iValue)));
     } else {
@@ -132,10 +122,10 @@ bool FeatureTreePolish::compareAttrVal(const AttrVal* prevAttr,
 
 /* compare two feature attribute values. If it's an id attribute, it's compared 
 * without mapping versions */
-bool FeatureTreePolish::compareAttrVals(const FeatureNode* prevFeature,
-                                        const FeatureNode* newFeature,
-                                        const string& attrName,
-                                        bool isIdAttr) const {
+static bool compareAttrVals(const FeatureNode* prevFeature,
+                            const FeatureNode* newFeature,
+                            const string& attrName,
+                            bool isIdAttr) {
     const AttrVal* prevAttr = prevFeature->getAttrs().find(attrName);
     const AttrVal* newAttr = newFeature->getAttrs().find(attrName);
     if ((prevAttr == NULL) and (newAttr == NULL)) {
@@ -155,10 +145,10 @@ bool FeatureTreePolish::compareAttrVals(const FeatureNode* prevFeature,
 }
 
 /* compare a list of two feature attribute/values */
-bool FeatureTreePolish::compareAttrs(const FeatureNode* prevFeature,
-                                     const FeatureNode* newFeature,
-                                     const StringVector& attrNames,
-                                     bool isIdAttrs) const {
+static bool compareAttrs(const FeatureNode* prevFeature,
+                         const FeatureNode* newFeature,
+                         const StringVector& attrNames,
+                         bool isIdAttrs) {
     for (int i = 0; i < attrNames.size(); i++) {
         if (not compareAttrVals(prevFeature, newFeature, attrNames[i], isIdAttrs)) {
             return false;
@@ -168,20 +158,20 @@ bool FeatureTreePolish::compareAttrs(const FeatureNode* prevFeature,
 }
 
 /* compare a list of two feature attribute/values */
-bool FeatureTreePolish::compareAttrs(const FeatureNode* prevFeature,
-                                     const FeatureNode* newFeature,
-                                     const StringVector& attrNames,
-                                     const StringVector& idAttrNames) const {
+static bool compareAttrs(const FeatureNode* prevFeature,
+                         const FeatureNode* newFeature,
+                         const StringVector& attrNames,
+                         const StringVector& idAttrNames) {
     return compareAttrs(prevFeature, newFeature, attrNames, false)
         and compareAttrs(prevFeature, newFeature, idAttrNames, true);
 }
 
 
 /* compare a mapped feature with previous mapped feature.  This is not recursive */
-bool FeatureTreePolish::compareMappedFeatures(const FeatureNode* prevFeature,
-                                              const FeatureNode* newFeature,
-                                              const StringVector& attrNames,
-                                              const StringVector& idAttrNames) const {
+static bool compareMappedFeatures(const FeatureNode* prevFeature,
+                                  const FeatureNode* newFeature,
+                                  const StringVector& attrNames,
+                                  const StringVector& idAttrNames) {
     bool same = (prevFeature->getSource() == newFeature->getSource())
         and (prevFeature->getStart() == newFeature->getStart())
         and (prevFeature->getEnd() == newFeature->getEnd())
@@ -197,8 +187,8 @@ bool FeatureTreePolish::compareMappedFeatures(const FeatureNode* prevFeature,
 
 /* compare a mapped gene Feature with previous mapped gene.  This is not
  * recursive */
-bool FeatureTreePolish::compareGeneFeatures(const FeatureNode* prevFeature,
-                                            const FeatureNode* newFeature) const {
+static bool compareGeneFeatures(const FeatureNode* prevFeature,
+                                const FeatureNode* newFeature) {
     static const StringVector attrNames = {
         GxfFeature::GENE_NAME_ATTR,
         GxfFeature::GENE_TYPE_ATTR,
@@ -212,29 +202,10 @@ bool FeatureTreePolish::compareGeneFeatures(const FeatureNode* prevFeature,
     return compareMappedFeatures(prevFeature, newFeature, attrNames, idAttrNames);
 }
 
-/* compare a mapped transcript Feature with previous mapped transcript.  This
- * is not recursive */
-bool FeatureTreePolish::compareTranscriptFeatures(const FeatureNode* prevFeature,
-                                                  const FeatureNode* newFeature) const {
-    static const StringVector attrNames = {
-        GxfFeature::GENE_NAME_ATTR,
-        GxfFeature::TRANSCRIPT_NAME_ATTR,
-        GxfFeature::TRANSCRIPT_TYPE_ATTR,
-        GxfFeature::TRANSCRIPT_STATUS_ATTR,
-        GxfFeature::TRANSCRIPT_HAVANA_ATTR,
-        GxfFeature::TAG_ATTR
-    };
-    static const StringVector idAttrNames = {
-        GxfFeature::GENE_ID_ATTR,
-        GxfFeature::TRANSCRIPT_HAVANA_ATTR,
-    };
-    return compareMappedFeatures(prevFeature, newFeature, attrNames, idAttrNames);
-}
-
 /* compare a mapped feature of other types (CDS, exon, etc). with previous
  * mapped features.  This is not recursive */
-bool FeatureTreePolish::compareOtherFeatures(const FeatureNode* prevFeature,
-                                             const FeatureNode* newFeature) const {
+static bool compareOtherFeatures(const FeatureNode* prevFeature,
+                                             const FeatureNode* newFeature) {
     static const StringVector attrNames = {
         GxfFeature::EXON_NUMBER_ATTR,
         GxfFeature::TAG_ATTR
@@ -247,11 +218,11 @@ bool FeatureTreePolish::compareOtherFeatures(const FeatureNode* prevFeature,
 
 /* recursively compare descendant features of a transcript with previous mapped
  * transcript.  Parent should have already been checked */
-bool FeatureTreePolish::compareMappedTranscriptsDescendants(const FeatureNode* prevParent,
-                                                            const FeatureNode* newParent) const {
-    if (prevParent->getChildren().size() != newParent->getChildren().size()) {
+static bool compareMappedTranscriptsDescendants(const FeatureNode* prevParent,
+                                                const FeatureNode* newParent) {
+    if (prevParent->getNumChildren() != newParent->getNumChildren()) {
         return false;
-    } else if (prevParent->getChildren().size() == 0) {
+    } else if (prevParent->getNumChildren() == 0) {
         return true;
     } else {
         // compare children sorted 
@@ -272,32 +243,19 @@ bool FeatureTreePolish::compareMappedTranscriptsDescendants(const FeatureNode* p
     }
 }
 
-/* recursively compare features of a transcript with previous mapped
- * transcript. */
-bool FeatureTreePolish::compareMappedTranscripts(const FeatureNode* prevTranscript,
-                                                 const FeatureNode* newTranscript) const {
-    assert(prevTranscript->getType() == GxfFeature::TRANSCRIPT);
-
-    if (not compareTranscriptFeatures(prevTranscript, newTranscript)) {
-        return false;
-    } else {
-        return compareMappedTranscriptsDescendants(prevTranscript, newTranscript);
-    }
-}
-
 /* add a mapping version to an id */
-void FeatureTreePolish::setMappingVersionInId(FeatureNode* feature,
-                                              const AttrVal* attr,
-                                              int mappingVersion) const {
+static void setMappingVersionInId(FeatureNode* feature,
+                                  const AttrVal* attr,
+                                  int mappingVersion) {
     feature->getAttrs().update(AttrVal(attr->getName(),
                                        attr->getVal() + "_" + toString(mappingVersion)));
 }
 
 /* set mapping version in attributes */
-void FeatureTreePolish::setMappingVersion(FeatureNode* feature,
-                                          const string& idAttrName,
-                                          const string& havanaIdAttrName,
-                                          int mappingVersion) const {
+static void setMappingVersion(FeatureNode* feature,
+                              const string& idAttrName,
+                              const string& havanaIdAttrName,
+                              int mappingVersion) {
     const AttrVal* idAttr = feature->getAttr(idAttrName);
     setMappingVersionInId(feature, idAttr, mappingVersion);
     const AttrVal* havanaIdAttr = feature->findAttr(havanaIdAttrName);
@@ -307,13 +265,24 @@ void FeatureTreePolish::setMappingVersion(FeatureNode* feature,
 }
 
 /* recursively set mapping version in attributes */
-void FeatureTreePolish::recursiveSetMappingVersion(FeatureNode* feature,
-                                                   const string& idAttrName,
-                                                   const string& havanaIdAttrName,
-                                                   int mappingVersion) const {
+static void recursiveSetMappingVersion(FeatureNode* feature,
+                                       const string& idAttrName,
+                                       const string& havanaIdAttrName,
+                                       int mappingVersion) {
     setMappingVersion(feature, idAttrName, havanaIdAttrName, mappingVersion);
-    for (int i = 0; i < feature->getChildren().size(); i++) {
+    for (int i = 0; i < feature->getNumChildren(); i++) {
         recursiveSetMappingVersion(feature->getChild(i), idAttrName, havanaIdAttrName, mappingVersion);
+    }
+}
+
+/* find a gene or transcript previously mapped feature by id, or NULL if not
+ * mapped or no previous */
+const FeatureNode* FeatureTreePolish::getPrevMappedFeature(const FeatureNode* newFeature) const {
+    if (fPreviousMappedAnotations == NULL) {
+        return NULL;
+    } else {
+        return fPreviousMappedAnotations->getFeatureById(newFeature->getTypeId(),
+                                                         newFeature->isParY());
     }
 }
 
@@ -333,9 +302,9 @@ bool FeatureTreePolish::setTranscriptMappingVersion(FeatureNode* transcript) con
 /*
  * recursive collect exons by pre-mapped id.
  */
-void FeatureTreePolish::collectExons(const FeatureNode* root,
-                                     ExonIdExonMap& exonIdExonMap) const {
-    for (int i = 0; i < root->getChildren().size(); i++) {
+static void collectExons(const FeatureNode* root,
+                         FeatureTreePolish::ExonIdExonMap& exonIdExonMap) {
+    for (int i = 0; i < root->getNumChildren(); i++) {
         const FeatureNode* child = root->getChild(i);
         if (child->isExon()) {
             exonIdExonMap[getPreMappedId(child->getTypeId())].push_back(const_cast<FeatureNode*>(child));
@@ -347,7 +316,7 @@ void FeatureTreePolish::collectExons(const FeatureNode* root,
 /* get the exon mapping version for all exon records.  This is the
  * maximum exon mapping version, or 1 if all exons are passed through.
  */
-int FeatureTreePolish::getExonMappingVersion(FeatureNodeVector& exonFeatures) const {
+static int getExonMappingVersion(FeatureNodeVector& exonFeatures)  {
     int maxMappingVersion = 1;
     for (int i = 0; i < exonFeatures.size(); i++) {
         int mappingVersion = getMappingVersion(exonFeatures[i]->getAttrValue(GxfFeature::EXON_ID_ATTR));
@@ -357,16 +326,16 @@ int FeatureTreePolish::getExonMappingVersion(FeatureNodeVector& exonFeatures) co
 }
 
 /* Added mapping version numbers to a exon feature */
-void FeatureTreePolish::setExonMappingVersion(FeatureNode* exonFeature,
-                                              int mappingVersion) const {
+static void setExonMappingVersion(FeatureNode* exonFeature,
+                                  int mappingVersion) {
     const AttrVal* idAttr = exonFeature->getAttr(GxfFeature::EXON_ID_ATTR);
     setMappingVersionInId(exonFeature, idAttr, mappingVersion);
 }
 
 /* Added mapping version numbers to a set of exons feeatures with the same id */
-void FeatureTreePolish::setExonMappingVersion(const string& exonId,
-                                              FeatureNodeVector& exonFeatures,
-                                              FeatureNodeVector* prevExonFeatures) const {
+static void setExonMappingVersion(const string& exonId,
+                                  FeatureNodeVector& exonFeatures,
+                                  FeatureNodeVector* prevExonFeatures) {
     int mappingVersion = (prevExonFeatures != NULL)
         ? getExonMappingVersion(*prevExonFeatures) : 1;
     for (int i = 0; i < exonFeatures.size(); i++) {
@@ -377,16 +346,16 @@ void FeatureTreePolish::setExonMappingVersion(const string& exonId,
 }
 
 /* Added mapping version numbers to all exons */
-void FeatureTreePolish::setExonsMappingVersions(const FeatureNode* prevGene,
-                                                FeatureNode* gene) const {
+static void setExonsMappingVersions(const FeatureNode* prevGene,
+                                    FeatureNode* gene) {
     // exon id scope is gene
-    ExonIdExonMap prevExonIdExonMap, exonIdExonMap;
+    FeatureTreePolish::ExonIdExonMap prevExonIdExonMap, exonIdExonMap;
     if (prevGene != NULL) {
         collectExons(prevGene, prevExonIdExonMap);
     }
     collectExons(gene, exonIdExonMap);
-    for (ExonIdExonMapIter exonIdIter = exonIdExonMap.begin(); exonIdIter != exonIdExonMap.end(); exonIdIter++) {
-        ExonIdExonMapIter prevExonIdIter = prevExonIdExonMap.find(exonIdIter->first);
+    for (FeatureTreePolish::ExonIdExonMapIter exonIdIter = exonIdExonMap.begin(); exonIdIter != exonIdExonMap.end(); exonIdIter++) {
+        FeatureTreePolish::ExonIdExonMapIter prevExonIdIter = prevExonIdExonMap.find(exonIdIter->first);
         FeatureNodeVector* prevExonFeatures = (prevExonIdIter != prevExonIdExonMap.end()) ? &prevExonIdIter->second : NULL;
         setExonMappingVersion(exonIdIter->first, exonIdIter->second, prevExonFeatures);
     }
@@ -395,7 +364,7 @@ void FeatureTreePolish::setExonsMappingVersions(const FeatureNode* prevGene,
 /* Added mapping version numbers to transcripts of a gene */
 bool FeatureTreePolish::setTranscriptsMappingVersions(FeatureNode* gene) const {
     bool transcriptsSame = true;
-    for (int i = 0; i < gene->getChildren().size(); i++) {
+    for (int i = 0; i < gene->getNumChildren(); i++) {
         if (isRemapped(gene->getChild(i))) {
             if (not setTranscriptMappingVersion(gene->getChild(i))) {
                 transcriptsSame = false;
