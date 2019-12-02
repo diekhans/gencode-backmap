@@ -236,6 +236,8 @@ public:
     static const string CDS;
     static const string START_CODON;
     static const string UTR;
+    static const string FIVE_PRIME_UTR;
+    static const string THREE_PRIME_UTR;
     static const string STOP_CODON;
     static const string STOP_CODON_REDEFINED_AS_SELENOCYSTEINE;
 

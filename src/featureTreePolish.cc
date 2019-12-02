@@ -7,76 +7,345 @@
 #include "annotationSet.hh"
 #include <iostream>
 #include "frame.hh"
+#include "globals.hh"
 
 static const bool DEBUG = false;
 
-/* renumber an exon */
-static void renumberExon(FeatureNode* exon,
-                         int exonNum,
-                         FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
-    int oldExonNum = stringToInt(exon->getAttrs().get(GxfFeature::EXON_NUMBER_ATTR)->getVal());
-    exonNumExonMap[oldExonNum].push_back(exon);
-    exon->getAttrs().update(AttrVal(GxfFeature::EXON_NUMBER_ATTR, toString(exonNum)));
+/* Gap closing in mappings:
+ * Looked at fixing in mapping alignments, however there can be some complex alignment
+ * indel patterns that result in relatively simple gapped mappings, so we fix after the
+ * fact instead.
+ */
+static const int maxCloseGapSize = 6;
+
+/* node, feature and index in transcript */
+class NodeIndex {
+    public:
+    FeatureNode* feat;
+    int idx;
+
+    NodeIndex(FeatureNode* feature,
+              int idx):
+        feat(feature), idx(idx) {
+    }
+
+    NodeIndex():
+        feat(NULL), idx(-1) {
+    }
+
+    bool isNull() const {
+        return feat == NULL;
+    }
+};
+
+typedef vector<NodeIndex> NodeIndexVector;
+
+
+/* sort features in all transcripts */
+static void sortGeneContaining(FeatureNode* gene) {
+    for (int i = 0; i < gene->getNumChildren(); i++) {
+        gene->getChild(i)->getChildren().sortContaining();
+    }
+}
+
+
+/* fetch exon_number attr */
+static int getExonNumber(const FeatureNode *feature) {
+    return stringToInt(feature->getAttrs().get(GxfFeature::EXON_NUMBER_ATTR)->getVal());
+}
+
+/* replace exon_number attr */
+static void setExonNumber(FeatureNode *feature, int exonNum) {
+    feature->getAttrs().update(AttrVal(GxfFeature::EXON_NUMBER_ATTR, toString(exonNum)));
+}
+
+/* next exon feature index, starting at position */
+static NodeIndex getNextExon(FeatureNode* transcript,
+                             int iFeat) {
+    // assumes exons are in order
+    for (int jFeat = iFeat; jFeat < transcript->getNumChildren(); jFeat++) {
+        if (transcript->getChild(jFeat)->getType() == GxfFeature::EXON) {
+            return NodeIndex(transcript->getChild(jFeat), jFeat);
+        }
+    }
+    return NodeIndex();
+}
+
+/* Make sure features is after the exon in the transcript array, as this
+ * ordering is counted on by where the merged features get inserted. */
+static void ensureFeatureOrder(const NodeIndex& exon,
+                               int iFeat) {
+    if (iFeat < exon.idx) {
+        throw logic_error("ensureFeatureOrder: feature order is not as expected");
+    }
+}
+
+/* CDS feature index overlapping exon  */
+static NodeIndex getOverlappingCds(FeatureNode* transcript,
+                                   const NodeIndex& exon) {
+    // assumes CDS are after exon, but doesn't insist on immediately after
+    for (int iFeat = exon.idx + 1; iFeat < transcript->getNumChildren(); iFeat++) {
+        if ((transcript->getChild(iFeat)->getType() == GxfFeature::CDS)
+            and (transcript->getChild(iFeat)->overlaps(exon.feat))) {
+            ensureFeatureOrder(exon, iFeat);
+            return NodeIndex(transcript->getChild(iFeat), iFeat);
+        }
+    }
+    return NodeIndex();
+}
+
+/*  features overlapping exon, including CDS. */
+static NodeIndexVector getExonOverlapping(FeatureNode* transcript,
+                                          const NodeIndex& exon) {
+    // assumes overlap are after exon, but doesn't insist on immediately after
+    NodeIndexVector feats;
+    for (int iFeat = exon.idx + 1; iFeat < transcript->getNumChildren(); iFeat++) {
+        if ((transcript->getChild(iFeat)->getType() != GxfFeature::EXON)
+            and (transcript->getChild(iFeat)->overlaps(exon.feat))) {
+            ensureFeatureOrder(exon, iFeat);
+            feats.push_back(NodeIndex(transcript->getChild(iFeat), iFeat));
+        }
+    }
+    return feats;
+}
+
+/* Merge two feature records */
+static string getMergePhase(FeatureNode* feature1, FeatureNode* feature2) {
+   if (feature1->getPhase() != ".") {
+        if (feature1->getStrand() == "+") {
+            return feature1->getPhase();
+        } else {
+            return feature2->getPhase();
+        }
+   } else {
+       return ".";
+   }
+}
+
+/* FeatureNode with new feature and existing attributes */
+static FeatureNode* mkMergeNode(FeatureNode* transcript,
+                                GxfFeature* newFeature, FeatureNode* feature) {
+    return new FeatureNode(newFeature, transcript, feature->fRemapStatus, feature->fTargetStatus, feature->fNumMappings);
+}
+
+/* Merge two feature records */
+static FeatureNode* mergeFeatureRecs(FeatureNode* transcript,
+                                     FeatureNode* feature1, FeatureNode* feature2) {
+    if (gVerbose) {
+        cerr << "merge: " << transcript->getTypeId() << ": " << feature1->getType()
+             << ": " << feature1->getStart() << "-" << feature1->getEnd()
+             << " with " << feature2->getStart() << "-" << feature2->getEnd()
+             << endl;
+    }
+    if (feature1->getType() != feature2->getType()) {
+        throw logic_error("mergeFeatureRecs: feature types not the same");
+    }
+    if ((feature1->getNumChildren() > 0) or (feature2->getNumChildren() > 0)) {
+        throw logic_error("mergeFeatureRecs: assumption of no transcript grandchildren is not true");
+    }
+    GxfFeature* newFeature = new GxfFeature(feature1->getSeqid(), feature1->getSource(), feature1->getType(),
+                                            feature1->getStart(), feature2->getEnd(), feature1->getScore(),
+                                            feature1->getStrand(), getMergePhase(feature1, feature2), feature1->getAttrs());
+    return mkMergeNode(transcript, newFeature, feature1);
+}
+
+/* find feature of specified type or -1 */
+static int findOverType(const string& featType,
+                        NodeIndexVector& overs,
+                        int startIdx = 0) {
+    for (int i = 0; i < overs.size(); i++) {
+        if (overs[i].feat->getType() == featType) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* merge if possible */
+static FeatureNode* mergeCopyOther(FeatureNode* transcript,
+                                   FeatureNode* feature,
+                                   NodeIndexVector& overs2,
+                                   BoolVector& done2) {
+    int i2 = findOverType(feature->getType(), overs2);
+    if (i2 < 0) {
+        return feature->cloneFeature();
+    } else {
+        FeatureNode* newFeat = mergeFeatureRecs(transcript, feature, overs2[i2].feat);
+        done2[i2] = true;
+        return newFeat;
+    }
+}
+
+/* merge or copy overlapping other features */
+static FeatureNodeVector mergeCopyOthers(FeatureNode* transcript,
+                                         int exonNum,
+                                         NodeIndexVector& overs1,
+                                         NodeIndexVector& overs2) {
+    FeatureNodeVector merged;
+    BoolVector done2;
+    done2.resize(overs2.size());
+
+    for (int i1 = 0; i1 < overs1.size(); i1++) {
+        FeatureNode* feat = mergeCopyOther(transcript, overs1[i1].feat, overs2, done2);
+        setExonNumber(feat, exonNum);
+        merged.push_back(feat);
+    }
+
+    // copy those that haven't been merged
+    for (int i2 = 0; i2 < overs2.size(); i2++) {
+        if (not done2[i2]) {
+            FeatureNode* feat = overs2[i2].feat->cloneFeature();
+            setExonNumber(feat, exonNum);
+            merged.push_back(feat);
+        }
+    }
+    return merged;
+}
+
+/* clear out nodes that have been replaced */
+static void removeReplacedNodes(FeatureNode* transcript,
+                                NodeIndexVector& overs) {
+    for (int i = 0; i < overs.size(); i++) {
+        delete transcript->removeChild(transcript->getChildIdx(overs[i].feat));
+    }
+}
+
+/* insert or append a node */
+static void insertNode(FeatureNode* transcript,
+                       int iFeat,
+                       FeatureNode* feat) {
+    FeatureNodeVector& children = transcript->getChildren();
+    assert(iFeat <= children.size());
+    if (iFeat >= children.size()) {
+        children.push_back(feat);
+    } else {
+        children.insert(children.begin() + (iFeat + 1), feat);
+    }
+}
+                             
+/* add new nodes at position iFeat */
+static void addNewNodes(FeatureNode* transcript,
+                        int iFeat,
+                        FeatureNode* mergedExon,
+                        FeatureNodeVector& mergedOthers) {
+    insertNode(transcript, iFeat++, mergedExon);
+    for (int i = 0; i < mergedOthers.size(); i++) {
+        insertNode(transcript, iFeat++, mergedOthers[i]);
+    }
+}
+
+/* find the insert point for replaced records after deletions */
+static int findInsertPoint(const FeatureNode* transcript,
+                           const FeatureNode* mergedExon) {
+    const FeatureNodeVector& children = transcript->getChildren();
+    for (int iChild = 0; iChild < children.size(); iChild++) {
+        if (children[iChild]->getStart0() >= mergedExon->getEnd()) {
+            return iChild;
+        }
+    }
+    return children.size();
+}
+
+/* Merge two exon records, index in feature array of exon1 stays the same,
+ * everything above it might change */
+static void mergeExonRecs(FeatureNode* transcript,
+                          NodeIndex& exon1, NodeIndex& exon2) {
+    // N.B. this recreates records even if they could just moved to keep book
+    // keeping easier, as this is not performance-sensitive.
+    FeatureNode* mergedExon = mergeFeatureRecs(transcript, exon1.feat, exon2.feat);
+
+    // other features
+    NodeIndexVector overs1 = getExonOverlapping(transcript, exon1);
+    NodeIndexVector overs2 = getExonOverlapping(transcript, exon2);
+    FeatureNodeVector mergedOthers = mergeCopyOthers(transcript, getExonNumber(mergedExon),
+                                                     overs1, overs2);
+
+    // delete replaced features
+    delete transcript->removeChild(transcript->getChildIdx(exon1.feat));
+    delete transcript->removeChild(transcript->getChildIdx(exon2.feat));
+    removeReplacedNodes(transcript, overs1);
+    removeReplacedNodes(transcript, overs2);
+    
+    addNewNodes(transcript, findInsertPoint(transcript, mergedExon),
+                mergedExon, mergedOthers);
+}
+
+static bool preservesFrame(NodeIndex& cds1,
+                           NodeIndex& cds2) {
+    int gapSize = cds2.feat->getStart0() - cds1.feat->getEnd();
+    Frame frame1(Frame::fromPhaseStr(cds1.feat->getPhase()));
+    Frame frame2(Frame::fromPhaseStr(cds2.feat->getPhase()));
+    if (cds1.feat->getStrand() == "+") {
+        return frame1.incr(cds1.feat->length() + gapSize) == frame2;
+    } else {
+        return frame2.incr(cds2.feat->length() + gapSize) == frame1;
+    }
+}
+
+/* Check and possible merge two exon */
+static bool canMergeExonRecs(FeatureNode* transcript,
+                             NodeIndex& exon1,
+                             NodeIndex& exon2) {
+    if ((exon2.feat->getStart0() - exon1.feat->getEnd()) > maxCloseGapSize) {
+        return false;   // gap over threshold
+    }
+    NodeIndex cds1 = getOverlappingCds(transcript, exon1);
+    NodeIndex cds2 = getOverlappingCds(transcript, exon2);
+    if ((not cds1.isNull()) and (not cds2.isNull())
+        and (not preservesFrame(cds1, cds2))) {
+        return false;   // CDS on both sides and not keeping frame
+    }
+    return true;
+}
+
+/* Merge gaps in exons causes by gaps in alignments. */
+static void mergeTranscriptGaps(FeatureNode* transcript) {
+    int iFeat = 0;
+    bool anyMerged = false;
+    while (true) {
+        NodeIndex exon1 = getNextExon(transcript, iFeat);
+        if (exon1.isNull()) {
+            break;
+        }
+        iFeat = exon1.idx + 1;
+        NodeIndex exon2 = getNextExon(transcript, iFeat);
+        if (exon2.isNull()) {
+            break;
+        }
+        if (canMergeExonRecs(transcript, exon1, exon2)) {
+            mergeExonRecs(transcript, exon1, exon2);
+            anyMerged = true;
+        } else {
+            iFeat++;
+        }
+    }
+    if (anyMerged) {
+        transcript->getChildren().sortContaining();
+    }
+}
+
+/* Merge gaps in all . */
+static void mergeGeneGaps(FeatureNode* gene) {
+    for (int i = 0; i < gene->getNumChildren(); i++) {
+        mergeTranscriptGaps(gene->getChild(i));
+    }
 }
 
 /* renumber all exons in a transcript */
-static void renumberExons(FeatureNode* transcript,
-                          FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
-    int exonNum = 1;
-    // exons are always in genomic order.
+static void renumberTranscript(FeatureNode* transcript) {
+    int exonNum = 0;
     for (int i = 0; i < transcript->getNumChildren(); i++) {
         if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
-            renumberExon(transcript->getChild(i), exonNum++, exonNumExonMap);
+            exonNum++;
         }
+        setExonNumber(transcript->getChild(i), exonNum);
     }
-}
-
-/* find the new exon containing a feature given the old exon number */
-static FeatureNode* findNewExon(FeatureNode* feature,
-                                int oldExonNum,
-                                FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
-    for (int i = 0; i < exonNumExonMap[oldExonNum].size(); i++) {
-        if (feature->overlaps(exonNumExonMap[oldExonNum][i])) {
-            return exonNumExonMap[oldExonNum][i];
-        }
-    }
-    throw logic_error("renumberOtherFeature: lost exon");
-}
-
-/* change a non-exon feature to their exon numbers */
-static void renumberOtherFeature(FeatureNode* feature,
-                                 FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
-    const AttrVal* exonNumAttr = feature->getAttrs().find(GxfFeature::EXON_NUMBER_ATTR);;
-    if (exonNumAttr != NULL) {
-        FeatureNode* newExon = findNewExon(feature, stringToInt(exonNumAttr->getVal()), exonNumExonMap);
-        const AttrVal* newExonNumAttr = newExon->getAttrs().get(GxfFeature::EXON_NUMBER_ATTR);
-        feature->getAttrs().update(*newExonNumAttr);
-    }
-}
-
-/* recursively change non-exons features to match the news exon numbers */
-static void renumberOtherFeatures(FeatureNode* feature,
-                                  FeatureTreePolish::ExonNumExonMap& exonNumExonMap) {
-    for (int i = 0; i < feature->getNumChildren(); i++) {
-        if (feature->getChild(i)->getType() != GxfFeature::EXON) {
-            renumberOtherFeature(feature->getChild(i), exonNumExonMap);
-        }
-        renumberOtherFeatures(feature->getChild(i), exonNumExonMap);
-    }
-}
-
-/* renumber all features in a transcript */
-static void renumberTranscriptExons(FeatureNode* transcript) {
-    assert(transcript->getType() == GxfFeature::TRANSCRIPT);
-    FeatureTreePolish::ExonNumExonMap exonNumExonMap;
-    renumberExons(transcript, exonNumExonMap);
-    renumberOtherFeatures(transcript, exonNumExonMap);
 }
 
 /* renumber all exons in a gene */
 static void renumberGeneExons(FeatureNode* gene) {
     for (int i = 0; i < gene->getNumChildren(); i++) {
-        renumberTranscriptExons(gene->getChild(i));
+        renumberTranscript(gene->getChild(i));
     }
 }
 
@@ -227,9 +496,9 @@ static bool compareMappedTranscriptsDescendants(const FeatureNode* prevParent,
     } else {
         // compare children sorted 
         FeatureNodeVector prevChildren(prevParent->getChildren());
-        prevChildren.sort();
+        prevChildren.sortContaining();
         FeatureNodeVector newChildren(newParent->getChildren());
-        newChildren.sort();
+        newChildren.sortContaining();
 
         for (int i = 0; i < prevChildren.size(); i++) {
             if (not compareOtherFeatures(prevChildren[i], newChildren[i])) {
@@ -302,7 +571,7 @@ bool FeatureTreePolish::setTranscriptMappingVersion(FeatureNode* transcript) con
 /*
  * recursive collect exons by pre-mapped id.
  */
-static void collectExons(const FeatureNode* root,
+ static void collectExons(const FeatureNode* root,
                          FeatureTreePolish::ExonIdExonMap& exonIdExonMap) {
     for (int i = 0; i < root->getNumChildren(); i++) {
         const FeatureNode* child = root->getChild(i);
@@ -374,7 +643,6 @@ bool FeatureTreePolish::setTranscriptsMappingVersions(FeatureNode* gene) const {
     return transcriptsSame;
 }
 
-
 /* Added mapping version numbers */
 void FeatureTreePolish::setGeneMappingVersion(FeatureNode* gene) const {
     bool transcriptsSame = setTranscriptsMappingVersions(gene) ;
@@ -389,6 +657,9 @@ void FeatureTreePolish::setGeneMappingVersion(FeatureNode* gene) const {
 
 /* last minute fix-ups */
 void FeatureTreePolish::polishGene(FeatureNode* gene) const {
+    sortGeneContaining(gene);
+    mergeGeneGaps(gene);
+    
     // n.b. must renumber exons first, otherwise different exon numbers
     // with previous version will cause false mapping version increments.
     renumberGeneExons(gene);

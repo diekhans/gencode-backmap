@@ -18,11 +18,6 @@ class AnnotationSet;
  */
 class FeatureTreePolish {
     public:
-    // use to map old exon numbers to new exons in a transcript
-    typedef map<int, FeatureNodeVector> ExonNumExonMap;
-    typedef ExonNumExonMap::iterator ExonNumExonMapIter;
-    typedef ExonNumExonMap::const_iterator ExonNumExonMapConstIter;
-
     // use to add mapping version number to exon ids
     typedef map<string, FeatureNodeVector> ExonIdExonMap;
     typedef ExonIdExonMap::iterator ExonIdExonMapIter;

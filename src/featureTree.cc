@@ -4,6 +4,7 @@
 #include "featureTree.hh"
 #include <iostream>
 #include <algorithm> 
+#include <map> 
 #include "jkinclude.hh"
 
 /* Remap status attribute name */
@@ -410,9 +411,44 @@ static bool chromLessThan(const string& a, const string& b) {
     return a < b;
 }
 
-/* sort the vector in a predictable order.  This is not necessary what
- * will be in the GxF file by GENCODE conventions. */
-void FeatureNodeVector::sort() {
+/* for compare feature type for containing sort (gene > transcript > exon > ...) */
+typedef map<string, int> FeatureRankMap;
+static FeatureRankMap featureRanks = {
+    {GxfFeature::GENE, 0},
+    {GxfFeature::TRANSCRIPT, 1},
+    {GxfFeature::EXON, 2},
+    {GxfFeature::CDS, 3},
+    {GxfFeature::UTR, 4},
+    {GxfFeature::FIVE_PRIME_UTR, 5},
+    {GxfFeature::THREE_PRIME_UTR, 5}
+};
+
+static int getFeatureRank(const FeatureNode *feature) {
+    FeatureRankMap::const_iterator it = featureRanks.find(feature->getType());
+    if (it == featureRanks.end()) {
+        return 1024;
+    } else {
+        return it->second;
+    }
+}
+
+/* sort by containing features before contained */
+static bool containingLessThan(const FeatureNode *a, const FeatureNode *b) {
+    if (a->getStart() < b->getStart()) {
+        return true;
+    } else if (a->getStart() > b->getStart()) {
+        return false;
+    } else if (a->getEnd() < b->getEnd()) {
+        return false;
+    } else if (a->getEnd() > b->getEnd()) {
+        return true;
+    } else {
+        return getFeatureRank(a) < getFeatureRank(b);
+    }
+};
+
+/* sort by chromosome order. */
+void FeatureNodeVector::sortChrom() {
     std::sort(begin(), end(),
               [](const FeatureNode* a, const FeatureNode* b) -> bool {
                   if (a->getSeqid() != b->getSeqid()) {
@@ -425,6 +461,19 @@ void FeatureNodeVector::sort() {
               });
 }
 
+
+/* sort the vector in chromosome order. With containing features before
+ * contained features. */
+void FeatureNodeVector::sortContaining() {
+    std::sort(begin(), end(),
+              [](const FeatureNode* a, const FeatureNode* b) -> bool {
+                  if (a->getSeqid() != b->getSeqid()) {
+                      return chromLessThan(a->getSeqid(), b->getSeqid());
+                  } else {
+                      return containingLessThan(a, b);
+                  }
+              });
+}
 
 
 /*

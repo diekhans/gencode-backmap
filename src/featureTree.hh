@@ -34,9 +34,13 @@ extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
 class FeatureNode;
 /* Vector of Feature objects */
 class FeatureNodeVector: public vector<FeatureNode*> {
-public:
-    /* sort the vector in a chromosome order. */
-    void sort();
+    public:
+    /* sort by chromosome order. */
+    void sortChrom();
+    
+    /* sort the vector in chromosome order. With containing features before
+     contained features. */
+    void sortContaining();
 };
 
 
@@ -71,6 +75,19 @@ class FeatureNode {
         fNumMappings(0) {
     }
 
+    FeatureNode(GxfFeature* feature,
+                FeatureNode* parent,
+                RemapStatus remapStatus,
+                TargetStatus targetStatus,
+                int numMappings):
+        fFeature(feature),
+        fParent(parent),
+        fRemapStatus(remapStatus),
+        fTargetStatus(targetStatus),
+        fNumMappings(numMappings) {
+    }
+
+    
     ~FeatureNode() {
         delete fFeature;
         for (size_t i = 0; i < fChildren.size(); i++) {
@@ -97,6 +114,20 @@ class FeatureNode {
     const FeatureNode* getChild(int iChild) const {
         return fChildren[iChild];
     }
+    int getChildIdx(const FeatureNode* child) const {
+        for (int iChild = 0; iChild < fChildren.size(); iChild++) {
+            if (fChildren[iChild] == child) {
+                return iChild;
+            }
+        }
+        throw logic_error("getChildIdx: expected child feature not found");
+    }
+    
+    FeatureNode* removeChild(int iChild) {
+        FeatureNode* child = fChildren[iChild];
+        fChildren.erase(fChildren.begin() + iChild);
+        return child;
+    }
     RemapStatus getRemapStatus() const {
         return fRemapStatus;
     }
@@ -120,6 +151,9 @@ class FeatureNode {
     }
     int getEnd() const {
         return fFeature->getEnd();
+    }
+    int getStart0() const {
+        return fFeature->getStart() - 1;
     }
     /* get the length of the feature */
     int length() const {

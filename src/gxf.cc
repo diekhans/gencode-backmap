@@ -14,6 +14,8 @@ const string GxfFeature::EXON = "exon";
 const string GxfFeature::CDS = "CDS";
 const string GxfFeature::START_CODON = "start_codon";
 const string GxfFeature::UTR = "UTR";
+const string GxfFeature::FIVE_PRIME_UTR = "five_prime_UTR";
+const string GxfFeature::THREE_PRIME_UTR = "three_prime_UTR";
 const string GxfFeature::STOP_CODON = "stop_codon";
 const string GxfFeature::STOP_CODON_REDEFINED_AS_SELENOCYSTEINE = "stop_codon_redefined_as_selenocysteine";
 

@@ -146,18 +146,6 @@ class Frame {
         }
     }
 
-    /** 
-     * Get the next frame, but don't cycle.  After frame 2, NONE is returned.
-     * NONE always returns NONE. 
-     */
-    Frame& operator++(int) {
-        assertValid();
-        if ((F0 <= fVal) && (fVal <= F2)) {
-            fVal = FrameEnum(((int)fVal)+1);
-        }
-        return *this;
-    }
-
     /** Get a single character abbreviation for the frame. */
     string getAbbrev() const;
 

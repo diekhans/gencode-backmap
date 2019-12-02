@@ -25,10 +25,10 @@ using namespace std;
     ((bool)(dynamic_cast<const className*>(objPtr) != NULL))
 
 
-/* vector of integers */
+/* vectors of basic types */
 typedef vector<int> IntVector;
-
-/* a pair of strings */
+typedef vector<int> IntVector;
+typedef vector<bool> BoolVector;
 typedef pair<string, string> StringPair;
 
 /* set of strings */

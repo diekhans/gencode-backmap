@@ -209,11 +209,25 @@ AnnotationSet::~AnnotationSet() {
     if (fLocationMap != NULL) {
         freeLocationMap();
     }
-    for (int i = 0; i <fGenes.size(); i++) {
+    for (int i = 0; i < fGenes.size(); i++) {
         delete fGenes[i];
     }
 }
 
+/* sort gene in gencode order */
+static void sortGencodeGene(FeatureNode* gene) {
+    gene->getChildren().sortChrom();
+    for (int i = 0; i < gene->getNumChildren(); i++) {
+        gene->getChildren().sortContaining();
+    }
+}
+
+void AnnotationSet::sortGencode() {
+    sortGenes();
+    for (int i = 0; i < fGenes.size(); i++) {
+        sortGencodeGene(fGenes[i]);
+    }
+}
 
 /* write a sequence region record */
 void AnnotationSet::outputSeqRegion(const string& seqId,
