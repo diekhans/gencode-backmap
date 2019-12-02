@@ -917,10 +917,10 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {
         copyTargetGenes(mappedSet, mappingInfoFh);
     }
-    mappedSet.sort();
+    mappedSet.sortGenes();
     mappedSet.write(mappedGxfFh);
     if (unmappedGxfFh != NULL) {
-        unmappedSet.sort();
+        unmappedSet.sortGenes();
         unmappedSet.write(*unmappedGxfFh);
     }
 }

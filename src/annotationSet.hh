@@ -135,9 +135,12 @@ class AnnotationSet {
     }
 
     /* sort genes */
-    void sort() {
-        fGenes.sort();
+    void sortGenes() {
+        fGenes.sortChrom();
     }
+
+    /* sort into standard gencode order */
+    void sortGencode();
     
     /* print genes for debugging */
     void dump(ostream& fh) const;
