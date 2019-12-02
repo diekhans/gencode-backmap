@@ -902,7 +902,6 @@ void GeneMapper::copyTargetGenes(AnnotationSet& mappedSet,
 
 /* Map a GFF3/GTF */
 void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
-                        GxfWriter* unmappedGxfFh,
                         ostream& mappingInfoFh,
                         ostream* transcriptPslFh) {
     AnnotationSet mappedSet(&fGenomeTransMap->fTargetSizes);
@@ -919,9 +918,5 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     }
     mappedSet.sortGenes();
     mappedSet.write(mappedGxfFh);
-    if (unmappedGxfFh != NULL) {
-        unmappedSet.sortGenes();
-        unmappedSet.write(*unmappedGxfFh);
-    }
 }
 

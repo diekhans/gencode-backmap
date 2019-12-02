@@ -36,12 +36,10 @@ static bool checkGxfFormat(GxfFormat inFormat,
 /* check all files are in the same format */
 static bool checkGxfFormats(const string& inGxfFile,
                             const string& mappedGxfFile,
-                            const string& unmappedGxfFile,
                             const string& targetGxf,
                             const string& previousMappedGxf) {
     GxfFormat inFormat = gxfFormatFromFileName(inGxfFile);
     return checkGxfFormat(inFormat, mappedGxfFile, false)
-        and checkGxfFormat(inFormat, unmappedGxfFile, true)
         and checkGxfFormat(inFormat, targetGxf, true)
         and checkGxfFormat(inFormat, previousMappedGxf, true);
 }
@@ -56,7 +54,6 @@ static void gencodeBackmap(const string& inGxfFile,
                            ParIdHackMethod parIdHackMethod,
                            const string& headerFile,
                            const string& mappedGxfFile,
-                           const string& unmappedGxfFile,
                            const string& mappingInfoTsv,
                            const string& targetGxf,
                            const string& targetPatchBed,
@@ -71,22 +68,16 @@ static void gencodeBackmap(const string& inGxfFile,
     BedMap* targetPatchMap = (targetPatchBed.size() > 0)
         ? new BedMap(targetPatchBed) : NULL;
     GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile, parIdHackMethod);
-    GxfWriter* unmappedGxfFh = (unmappedGxfFile.size() > 0)
-        ? GxfWriter::factory(unmappedGxfFile, parIdHackMethod) : NULL;
     if (headerFile.size() > 0) {
         mappedGxfFh->copyFile(headerFile);
-        if (unmappedGxfFh != NULL) {
-            unmappedGxfFh->copyFile(headerFile);
-        }
     }
     FIOStream mappingInfoFh((mappingInfoTsv.size() > 0) ? mappingInfoTsv : "/dev/null" , ios::out);
     FIOStream* transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
     GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, previousMappedAnnotations,
                           targetPatchMap, substituteMissingTargetVersion,
                           useTargetFlags, onlyManualForTargetSubstituteOverlap);
-    geneMapper.mapGxf(*mappedGxfFh, unmappedGxfFh, mappingInfoFh, transcriptPslFh);
+    geneMapper.mapGxf(*mappedGxfFh, mappingInfoFh, transcriptPslFh);
     delete mappedGxfFh;
-    delete unmappedGxfFh;
     delete genomeTransMap;
     delete targetPatchMap;
     delete targetAnnotations;
@@ -102,8 +93,6 @@ const string usage = "%s [options] inGxf mappingAligns mappedGxf [mappingInfoTsv
     "  --help - print this message and exit\n"
     "  --verbose - verbose tracing to stderr\n"
     "  --swapMap - swap the query and target sides of the mapping alignments\n"
-    "  --unmappedGxf=gxfFile - output unmapped annotations in an GTF/GFF3 file.\n"
-    "    This is mainly useful for debugging.\n"
     "  --targetGxf=gxfFile - GFF3 or GTF of gene annotations on target genome.\n"
     "    If specified, require mappings to location of previous version of\n"
     "    gene or transcript.\n"
@@ -140,7 +129,6 @@ const string usage = "%s [options] inGxf mappingAligns mappedGxf [mappingInfoTsv
     "          either all GFF3 or all GTF.\n"
     "  mappingAligns - Alignments between the two genomes.  The \n"
     "  mappedGxf - GxF file of mapped features on target genome\n"
-    "  unmappedGxf - GxF file of unmapped features on source genome\n"
     "  mappingInfoTsv - TSV file with information about each gene and transcript mapping\n"
     "\n";
 
@@ -148,7 +136,6 @@ const struct option long_options[] = {
     {"help", 0, NULL, 'h'},
     {"verbose", 0, NULL, 'v'},
     {"swapMap", 0, NULL, 's'},
-    {"unmappedGxf", 1, NULL, 'U'},
     {"targetGxf", 1, NULL, 't'}, 
     {"previousMappedGxf", 1, NULL, 'M'}, 
     {"targetPatches", 1, NULL, 'T'}, 
@@ -174,7 +161,6 @@ int main(int argc, char *argv[]) {
     bool swapMap = false;
     bool help = false;
     unsigned useTargetFlags = 0;
-    string unmappedGxfFile;
     string targetGxf;
     string targetPatchBed;
     string headerFile;
@@ -195,8 +181,6 @@ int main(int argc, char *argv[]) {
             gVerbose = true;
         } else if (optc == 's') {
             swapMap = true;
-        } else if (optc == 'U') {
-            unmappedGxfFile = string(optarg);
         } else if (optc == 't') {
             targetGxf = string(optarg);
         } else if (optc == 'T') {
@@ -241,8 +225,7 @@ int main(int argc, char *argv[]) {
     string mappedGxfFile = argv[optind+2];
     string mappingInfoTsv = (nposargs > 3) ? argv[optind+3] : "";
 
-    if (not checkGxfFormats(inGxfFile, mappedGxfFile, unmappedGxfFile,
-                            targetGxf, previousMappedGxf)) {
+    if (not checkGxfFormats(inGxfFile, mappedGxfFile, targetGxf, previousMappedGxf)) {
         return 1;
     }
     
@@ -250,8 +233,8 @@ int main(int argc, char *argv[]) {
         gencodeBackmap(inGxfFile, mappingAligns, swapMap,
                        substituteMissingTargetVersion, useTargetFlags,
                        onlyManualForTargetSubstituteOverlap, parIdHackMethod,
-                       headerFile, mappedGxfFile, unmappedGxfFile,
-                       mappingInfoTsv, targetGxf, targetPatchBed, previousMappedGxf,
+                       headerFile, mappedGxfFile, mappingInfoTsv,
+                       targetGxf, targetPatchBed, previousMappedGxf,
                        transcriptPsls);
     } catch (const exception& ex) {
         cerr << "Error: " << ex.what() << endl;
