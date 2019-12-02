@@ -47,7 +47,7 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3NcbiTest gtfNcbiTest \
 	gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
-	cmpUcscSubstituteManOverlap \
+	mappingVerTests cmpUcscSubstituteManOverlap \
 	gff3V29RegressTest dupTranscriptsV33Test \
 	reportsTests ucscLiftEditTest regressTests \
 	gapTest
