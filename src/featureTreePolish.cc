@@ -658,12 +658,11 @@ void FeatureTreePolish::setGeneMappingVersion(FeatureNode* gene) const {
 /* last minute fix-ups */
 void FeatureTreePolish::polishGene(FeatureNode* gene) const {
     sortGeneContaining(gene);
-    mergeGeneGaps(gene);
-    
-    // n.b. must renumber exons first, otherwise different exon numbers
-    // with previous version will cause false mapping version increments.
-    renumberGeneExons(gene);
     if (isRemapped(gene)) {
+        // n.b. must renumber exons first, otherwise different exon numbers
+        // with previous version will cause false mapping version increments.
+        mergeGeneGaps(gene);
+        renumberGeneExons(gene);
         setGeneMappingVersion(gene);
     }
 }
