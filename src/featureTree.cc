@@ -169,6 +169,8 @@ RemapStatus TransMappedFeature::calcRemapStatus(bool srcSeqInMapping) const {
         assert(unmapped.size() > 0);
         // nothing mapped
         return REMAP_STATUS_DELETED;
+    } else if (not isPrimaryAssembly(mapped[0]->getSeqid())) {
+        return REMAP_STATUS_NON_PRIMARY;
     } else if (unmapped.size() == 0) {
         // full mapped
         if (mapped.size() == 1) {
@@ -326,6 +328,9 @@ RemapStatus ResultFeatureTrees::calcBoundingFeatureRemapStatus(bool srcSeqInMapp
     }
     if (allChildWithRemapStatus(REMAP_STATUS_DELETED)) {
         return REMAP_STATUS_DELETED;
+    }
+    if (anyChildWithRemapStatus(REMAP_STATUS_NON_PRIMARY)) {
+        return REMAP_STATUS_NON_PRIMARY;
     }
     if (allChildWithRemapStatus(REMAP_STATUS_FULL_CONTIG|REMAP_STATUS_FULL_FRAGMENT)) {
         return REMAP_STATUS_FULL_FRAGMENT;
@@ -574,6 +579,12 @@ bool isFakeGeneName(const string& geneName) {
     // still not perfect.  Probably need to read in HGNC list.
     const char *fakeRe = "^(AC|ABBA|AD|AF|AL|AJ|AL|AMYH|AUXG|AP|BX|CAAA|CR|CT|CU|FO|FP|FQ|GU|HM|KC|KF|KP|KU|L|LO|U|Z)[0-9][0-9][0-9][0-9]+\\.[0-9]+$";
     return regexMatch(const_cast<char*>(geneName.c_str()), fakeRe);
+}
+
+/* is this a primary assembly sequence? */
+bool isPrimaryAssembly(const string& chrom) {
+    const char *chromRe = "^chr([XYM]|([0-9][0-9]?))$";
+    return regexMatch(const_cast<char*>(chrom.c_str()), chromRe);
 }
 
 /* Should geneName be used in matching.  Empty or fake contig name based are

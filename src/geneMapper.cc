@@ -714,6 +714,8 @@ void GeneMapper::processGeneLevelMapping(ResultFeatureTrees* mappedGene) {
         forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_GENE_CONFLICT);
     } else if (hasExcessiveSizeChange(mappedGene)) {
         forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_GENE_SIZE_CHANGE);
+    } else if (mappedGene->getRemapStatus() == REMAP_STATUS_NON_PRIMARY) {
+        forceToUnmappedDueToRemapStatus(mappedGene, REMAP_STATUS_NON_PRIMARY);
     } else if (hasTargetStatusNonOverlap(mappedGene)) {
         forceToUnmappedDueToTargetStatus(mappedGene, TARGET_STATUS_NONOVERLAP);
     }

@@ -78,13 +78,13 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 3	mapSrc	trans	ENST00000565211.1	OTTHUMT00000430519.1	DUX4-001	protein_coding	chr4	190173774	190175845	+	none	0	na
 3	mapSrc	trans	ENST00000563716.5	OTTHUMT00000430520.1	DUX4-005	processed_transcript	chr4	190175193	190185942	+	none	0	na
 3	mapSrc	trans	ENST00000564366.1	OTTHUMT00000430521.1	DUX4-004	processed_transcript	chr4	190182117	190185911	+	none	0	na
-3	unmap	gene	ENSG00000260596.5	OTTHUMG00000175568.1	DUX4	protein_coding	chr4	190173774	190185942	+	partial	2	nonOverlap
-3	unmap	trans	ENST00000616166.1		DUX4-201	protein_coding	chr4	190173774	190175048	+	full_contig	1	new
-3	unmap	trans	ENST00000570263.5	OTTHUMT00000430517.1	DUX4-003	protein_coding	chr4	190173774	190175845	+	partial	2	new
-3	unmap	trans	ENST00000569241.5	OTTHUMT00000430518.1	DUX4-002	protein_coding	chr4	190173774	190175845	+	partial	2	new
-3	unmap	trans	ENST00000565211.1	OTTHUMT00000430519.1	DUX4-001	protein_coding	chr4	190173774	190175845	+	partial	2	new
-3	unmap	trans	ENST00000563716.5	OTTHUMT00000430520.1	DUX4-005	processed_transcript	chr4	190175193	190185942	+	partial	2	new
-3	unmap	trans	ENST00000564366.1	OTTHUMT00000430521.1	DUX4-004	processed_transcript	chr4	190182117	190185911	+	full_contig	1	new
+3	unmap	gene	ENSG00000260596.5	OTTHUMG00000175568.1	DUX4	protein_coding	chr4	190173774	190185942	+	non_primary	2	nonOverlap
+3	unmap	trans	ENST00000616166.1		DUX4-201	protein_coding	chr4	190173774	190175048	+	non_primary	1	new
+3	unmap	trans	ENST00000570263.5	OTTHUMT00000430517.1	DUX4-003	protein_coding	chr4	190173774	190175845	+	non_primary	2	new
+3	unmap	trans	ENST00000569241.5	OTTHUMT00000430518.1	DUX4-002	protein_coding	chr4	190173774	190175845	+	non_primary	2	new
+3	unmap	trans	ENST00000565211.1	OTTHUMT00000430519.1	DUX4-001	protein_coding	chr4	190173774	190175845	+	non_primary	2	new
+3	unmap	trans	ENST00000563716.5	OTTHUMT00000430520.1	DUX4-005	processed_transcript	chr4	190175193	190185942	+	non_primary	2	new
+3	unmap	trans	ENST00000564366.1	OTTHUMT00000430521.1	DUX4-004	processed_transcript	chr4	190182117	190185911	+	non_primary	1	new
 3	targetSubst	gene	ENSG00000258389.2	OTTHUMG00000161317.3	DUX4	protein_coding	chr4	191005267	191007077	+	none	0	na
 3	targetSubst	trans	ENST00000556625.1		DUX4-201	protein_coding	chr4	191005267	191006883	+	none	0	na
 3	targetSubst	trans	ENST00000605758.1	OTTHUMT00000470043.1	DUX4-003	protein_coding	chr4	191005567	191007077	+	none	0	na

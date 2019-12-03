@@ -14,6 +14,7 @@ static const string REMAP_STATUS_AUTO_SMALL_NCRNA_STR = "automatic_small_ncrna_g
 static const string REMAP_STATUS_AUTOMATIC_GENE_STR = "automatic_gene";
 static const string REMAP_STATUS_PSEUDOGENE_STR = "pseudogene";
 static const string REMAP_STATUS_INELIGIBLE_STR = "ineligible";
+static const string REMAP_STATUS_NON_PRIMARY_STR = "non_primary";
 static const string REMAP_STATUS_ERROR_STR = "error";
 
 /* convert a remap status to a string  */
@@ -43,6 +44,8 @@ const string& remapStatusToStr(RemapStatus remapStatus) {
             return REMAP_STATUS_PSEUDOGENE_STR;
         case REMAP_STATUS_INELIGIBLE:
             return REMAP_STATUS_INELIGIBLE_STR;
+        case REMAP_STATUS_NON_PRIMARY:
+            return REMAP_STATUS_NON_PRIMARY_STR;
         case REMAP_STATUS_ERROR:
             return REMAP_STATUS_ERROR_STR;
     }

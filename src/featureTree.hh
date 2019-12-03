@@ -689,6 +689,9 @@ static inline int getMappingVersion(const string& id) {
 /* does a name appear to be a fake gene name (generated from contigs)? */
 bool isFakeGeneName(const string& geneName);
 
+/* is this a primary assembly sequence? */
+bool isPrimaryAssembly(const string& chrom);
+
 /* Should geneName be used in matching.  Empty or fake contig name based are
  * not used.  Don't use gene name for automatic non-coding, as some small
  * non-coding genes has the same name for multiple instances
