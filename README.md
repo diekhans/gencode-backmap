@@ -192,7 +192,7 @@ This does not include GFF3 meta comment.
 - to run the tests, the following programs from the UCSC Browser are required:
   - gff3ToGenePred
   - gtfToGenePred
-- Python 2.7
+- Python 3.7
 
 ### Compiling
 
