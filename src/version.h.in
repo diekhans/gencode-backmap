@@ -1,4 +1,4 @@
 #include <string>
 
-static const string VERSION = "1.7";
+static const string VERSION = "1.8";
 static const string VERSION_HASH = "@VERSION_HASH@";
