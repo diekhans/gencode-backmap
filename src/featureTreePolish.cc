@@ -48,12 +48,7 @@ static void sortGeneContaining(FeatureNode* gene) {
     }
 }
 
-
-/* fetch exon_number attr */
-static int getExonNumber(const FeatureNode *feature) {
-    return stringToInt(feature->getAttrs().get(GxfFeature::EXON_NUMBER_ATTR)->getVal());
-}
-
+    
 /* replace exon_number attr */
 static void setExonNumber(FeatureNode *feature, int exonNum) {
     feature->getAttrs().update(AttrVal(GxfFeature::EXON_NUMBER_ATTR, toString(exonNum)));
@@ -178,7 +173,6 @@ static FeatureNode* mergeCopyOther(FeatureNode* transcript,
 
 /* merge or copy overlapping other features */
 static FeatureNodeVector mergeCopyOthers(FeatureNode* transcript,
-                                         int exonNum,
                                          NodeIndexVector& overs1,
                                          NodeIndexVector& overs2) {
     FeatureNodeVector merged;
@@ -187,7 +181,6 @@ static FeatureNodeVector mergeCopyOthers(FeatureNode* transcript,
 
     for (int i1 = 0; i1 < overs1.size(); i1++) {
         FeatureNode* feat = mergeCopyOther(transcript, overs1[i1].feat, overs2, done2);
-        setExonNumber(feat, exonNum);
         merged.push_back(feat);
     }
 
@@ -195,7 +188,6 @@ static FeatureNodeVector mergeCopyOthers(FeatureNode* transcript,
     for (int i2 = 0; i2 < overs2.size(); i2++) {
         if (not done2[i2]) {
             FeatureNode* feat = overs2[i2].feat->cloneFeature();
-            setExonNumber(feat, exonNum);
             merged.push_back(feat);
         }
     }
@@ -257,8 +249,7 @@ static void mergeExonRecs(FeatureNode* transcript,
     // other features
     NodeIndexVector overs1 = getExonOverlapping(transcript, exon1);
     NodeIndexVector overs2 = getExonOverlapping(transcript, exon2);
-    FeatureNodeVector mergedOthers = mergeCopyOthers(transcript, getExonNumber(mergedExon),
-                                                     overs1, overs2);
+    FeatureNodeVector mergedOthers = mergeCopyOthers(transcript, overs1, overs2);
 
     // delete replaced features
     delete transcript->removeChild(transcript->getChildIdx(exon1.feat));
@@ -331,21 +322,44 @@ static void mergeGeneGaps(FeatureNode* gene) {
     }
 }
 
-/* renumber all exons in a transcript */
-static void renumberTranscript(FeatureNode* transcript) {
-    int exonNum = 0;
+/* count of exon features */
+static int countNumExons(FeatureNode* transcript) {
+    int cnt = 0;
     for (int i = 0; i < transcript->getNumChildren(); i++) {
         if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
-            exonNum++;
+            cnt++;
         }
-        setExonNumber(transcript->getChild(i), exonNum);
+    }
+    return cnt;
+}
+
+/* renumber all exons in a transcript */
+static void renumberTranscriptExons(FeatureNode* transcript) {
+    // logic here assumes exons come before features contained
+    // in them
+    if (transcript->getStrand() == "+") {
+        int exonNum = 0;
+        for (int i = 0; i < transcript->getNumChildren(); i++) {
+            if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
+                exonNum++;
+            }
+            setExonNumber(transcript->getChild(i), exonNum);
+        }
+    } else {
+        int exonNum = countNumExons(transcript);
+        for (int i = 0; i < transcript->getNumChildren(); i++) {
+            setExonNumber(transcript->getChild(i), exonNum);
+            if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
+                exonNum--;
+            }
+        }
     }
 }
 
 /* renumber all exons in a gene */
 static void renumberGeneExons(FeatureNode* gene) {
     for (int i = 0; i < gene->getNumChildren(); i++) {
-        renumberTranscript(gene->getChild(i));
+        renumberTranscriptExons(gene->getChild(i));
     }
 }
 
