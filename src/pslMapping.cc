@@ -10,6 +10,8 @@
 // It would be better to have a sort function passed it, but we had all the
 // core dump issues with sort, put algorithm here for now.
 
+#undef USE_CXX_SORT
+
 /* constructor, sort mapped PSLs */
 PslMapping::PslMapping(struct psl* srcPsl,
                        PslVector& mappedPsls,
@@ -42,10 +44,10 @@ int PslMapping::numAlignedBases(const struct psl* psl) {
  */
 int PslMapping::calcPslMappingScore(const struct psl* srcPsl,
                                     const struct psl* mappedPsl) {
-    // FIXME: not sure if this makes sens
-    return (numAlignedBases(srcPsl) - numAlignedBases(mappedPsl))
-        + abs(int(srcPsl->qNumInsert)-int(mappedPsl->qNumInsert))
-        + abs(int(srcPsl->tNumInsert)-int(mappedPsl->tNumInsert));
+    // this mostly sort out ties, not that meaningful
+    return abs(numAlignedBases(srcPsl) - numAlignedBases(mappedPsl))
+        + abs(int(srcPsl->qNumInsert) - int(mappedPsl->qNumInsert))
+        + abs(int(srcPsl->tNumInsert) - int(mappedPsl->tNumInsert));
 }
 
 /* dump for debugging purposes, adding optional description */
@@ -65,44 +67,19 @@ void PslMapping::dump(ostream& fh,
     }
 }
 
-/* comparison functor based on lowest store. */
-class ScoreCmp {
-    public:
-    struct psl* fSrcPsl;
-    
-    ScoreCmp(struct psl* srcPsl):
-        fSrcPsl(srcPsl) {
-    }
-
-    int operator()(struct psl* mappedPsl1,
-                   struct psl* mappedPsl2) const {
-        return -(PslMapping::calcPslMappingScore(fSrcPsl, mappedPsl1)
-                 - PslMapping::calcPslMappingScore(fSrcPsl, mappedPsl2));
-    }
-};
-
-
+static void dumpMapped(struct psl* srcPsl,
+                       PslVector& mappedPsls) {
 #if 0
-// FIXME: with this seemingly correct sort, the C++ library goes of the end of the vector and SEGVs
-// this happens on g++ 4.8.2 on Linux and 4.9 on OS/X (Mac ports).  It doesn't happen with
-// clang on OS/X.
-/* sort with best (lowest score) first */
-void PslMapping::sortMappedPsls() {
-    //sort(fMappedPsls.begin(), fMappedPsls.end(), ScoreCmp(fSrcPsl));
-    std::sort(fMappedPsls.begin(), fMappedPsls.end(),
-              [this](const struct psl* a, const struct psl* b) -> bool {
-                  return (PslMapping::calcPslMappingScore(this->fSrcPsl, a)
-                          - PslMapping::calcPslMappingScore(this->fSrcPsl, b));
-              });
-    if (fMappedPsls.size() > 0) {
-        fMappedPsl = fMappedPsls[0];
+    if (mappedPsls.size() > 1) {
+        fprintf(stdout, "@ ");
+        pslTabOut(srcPsl, stdout);
+        for (auto it: mappedPsls) {
+            pslTabOut(it, stdout);
+        }
+        fflush(stdout);
     }
+#endif
 }
-#else
-/* globals for use in comparison because qsort doesn't have a client data */
-static struct psl* gSrcPsl = NULL;
-static const FeatureNode* gPrimaryTarget = NULL;
-static const FeatureNode* gSecondaryTarget = NULL;
 
 /* compute fraction of overlap similarity for a psl and a target feature. */
 static float targetSimilarity(const struct psl *mappedPsl,
@@ -118,7 +95,7 @@ static float targetSimilarity(const struct psl *mappedPsl,
     return float(2*(minEnd - maxStart)) / float((mappedPsl->tEnd-mappedPsl->tStart) + targetFeature->length());
 }
 
-/* compare function based on target similarity. */
+/* compare function based on target similarity, higher is better (-1)  */
 static int targetSimilarityCmp(const struct psl *mappedPsl1,
                                const struct psl *mappedPsl2,
                                const FeatureNode* targetFeature) {
@@ -127,9 +104,9 @@ static int targetSimilarityCmp(const struct psl *mappedPsl1,
     float sim1 = targetSimilarity(mappedPsl1, targetFeature);
     float sim2 = targetSimilarity(mappedPsl2, targetFeature);
     if (sim1 < sim2) {
-        return -1;
+        return 1;  // better
     } else if (sim1 > sim2) {
-        return 1;
+        return -1;
     } else {
         return 0;
     }
@@ -137,8 +114,9 @@ static int targetSimilarityCmp(const struct psl *mappedPsl1,
 
 /* compare by span similarity */
 static int spanSimilarityCmp(const struct psl *mappedPsl1,
-                             const struct psl *mappedPsl2) {
-    int srcSpan = (gSrcPsl->tEnd - gSrcPsl->tStart);
+                             const struct psl *mappedPsl2,
+                             const struct psl *srcPsl) {
+    int srcSpan = (srcPsl->tEnd - srcPsl->tStart);
     int span1Diff = abs(srcSpan - (mappedPsl1->tEnd - mappedPsl1->tStart));
     int span2Diff = abs(srcSpan - (mappedPsl2->tEnd - mappedPsl2->tStart));
     // rank smallest span change best (reverse sort)
@@ -151,6 +129,97 @@ static int spanSimilarityCmp(const struct psl *mappedPsl1,
     }
 }
 
+#ifdef USE_CXX_SORT
+/* std::sort compare implementation */
+static bool mappedPslCompare(struct psl* srcPsl,
+                             const FeatureNode* primaryTarget,
+                             const FeatureNode* secondaryTarget,
+                             const struct psl* mappedPsl1,
+                             const struct psl* mappedPsl2) {
+    // must provide strict less than
+    if (mappedPsl1 == mappedPsl2) {
+        return false;  // same entry, hope this avoids corruption on bad order
+    }
+    // reverse sort, less than is better
+    if ((primaryTarget != NULL)
+        and (targetSimilarityCmp(mappedPsl1, mappedPsl2, primaryTarget) < 0)) {
+        return true;
+    }
+    if ((secondaryTarget != NULL)
+        and (targetSimilarityCmp(mappedPsl1, mappedPsl2, secondaryTarget) < 0)) {
+        return true;
+    }
+    if (spanSimilarityCmp(mappedPsl1, mappedPsl2, srcPsl) < 0) {
+        return true;
+    }
+    if (PslMapping::calcPslMappingScore(srcPsl, mappedPsl1) <
+        PslMapping::calcPslMappingScore(srcPsl, mappedPsl2)) {
+        return true;
+    }
+    return false;
+}
+
+/* check it strict weak for a pair */
+static void checkStrictWeak(struct psl* srcPsl,
+                            const FeatureNode* primaryTarget,
+                            const FeatureNode* secondaryTarget,
+                            const struct psl* mappedPsl1,
+                            const struct psl* mappedPsl2) {
+    if (mappedPslCompare(srcPsl, primaryTarget, secondaryTarget, mappedPsl1, mappedPsl1)) {
+        throw logic_error("PSL1 less than self: " + pslToString(mappedPsl1));
+    }
+    if (mappedPslCompare(srcPsl, primaryTarget, secondaryTarget, mappedPsl2, mappedPsl2)) {
+        throw logic_error("PSL2 less than self: " + pslToString(mappedPsl2));
+    }
+    bool xyLessThan = mappedPslCompare(srcPsl, primaryTarget, secondaryTarget, mappedPsl1, mappedPsl2);
+    bool yxLessThan = mappedPslCompare(srcPsl, primaryTarget, secondaryTarget, mappedPsl2, mappedPsl1);
+    if (xyLessThan and yxLessThan) {
+        throw logic_error("PSL1/PSL2 asymmetry error: " + pslToString(mappedPsl1)
+                          + " and " + pslToString(mappedPsl2));
+    }
+}
+
+/*
+ * Validate that strict weak ordering holds:
+ *   - For all x in S, it is not the case that x < x (irreflexivity).
+ *   - For all x, y in S, if x < y then it is not the case that y < x (asymmetry).
+ *   - For all x, y, z in S, if x < y and y < z then x < z (transitivity).
+ *   - For all x, y, z in S, if x is incomparable with y (neither x < y
+ *     nor y < x hold), and y is incomparable with z, then x is
+ *     incomparable with z (transitivity of incomparability).
+ * only the first two are check
+ */
+static void checkStrictWeak(struct psl* srcPsl,
+                            const FeatureNode* primaryTarget,
+                            const FeatureNode* secondaryTarget,
+                            const PslVector& mappedPsls) {
+    for (auto it1 = mappedPsls.begin(); it1 != mappedPsls.end(); it1++) {
+        for (auto it2 = it1 + 1; it2 != mappedPsls.end(); it2++) {
+            checkStrictWeak(srcPsl,primaryTarget, secondaryTarget, *it1, *it2);
+        }
+    }
+}
+
+/* sort with best (lowest score) first */
+void PslMapping::sortMappedPsls(const FeatureNode* primaryTarget,
+                                const FeatureNode* secondaryTarget) {
+    dumpMapped(fSrcPsl, fMappedPsls);
+    checkStrictWeak(fSrcPsl, primaryTarget, secondaryTarget, fMappedPsls);
+    std::sort(fMappedPsls.begin(), fMappedPsls.end(),
+              [this, primaryTarget, secondaryTarget](const struct psl* mappedPsl1, const struct psl* mappedPsl2) -> bool {
+                  return mappedPslCompare(this->fSrcPsl, primaryTarget, secondaryTarget,
+                                          mappedPsl1, mappedPsl2);
+              });
+    if (fMappedPsls.size() > 0) {
+        fMappedPsl = fMappedPsls[0];
+    }
+}
+#else
+/* globals for use in comparison because qsort doesn't have a client data */
+static struct psl* gSrcPsl = NULL;
+static const FeatureNode* gPrimaryTarget = NULL;
+static const FeatureNode* gSecondaryTarget = NULL;
+
 /* compare two psl to see which is better mapped. */
 static int mapScoreCmp(const void *va, const void *vb) {
     const struct psl *mappedPsl1 = *static_cast<const struct psl *const*>(va);
@@ -158,16 +227,16 @@ static int mapScoreCmp(const void *va, const void *vb) {
     if (gPrimaryTarget != NULL) {
         int diff = targetSimilarityCmp(mappedPsl1, mappedPsl2, gPrimaryTarget);
         if (diff != 0) {
-            return -diff; // inverse sort
+            return diff;
         }
     }
     if (gSecondaryTarget != NULL) {
         int diff = targetSimilarityCmp(mappedPsl1, mappedPsl2, gSecondaryTarget);
         if (diff != 0) {
-            return -diff; // inverse sort
+            return diff;
         }
     }
-    int diff = spanSimilarityCmp(mappedPsl1, mappedPsl2);
+    int diff = spanSimilarityCmp(mappedPsl1, mappedPsl2, gSrcPsl);
     if (diff != 0) {
         return diff;
     }
@@ -179,6 +248,7 @@ static int mapScoreCmp(const void *va, const void *vb) {
 /* sort with best (lowest score) first */
 void PslMapping::sortMappedPsls(const FeatureNode* primaryTarget,
                                 const FeatureNode* secondaryTarget) {
+    dumpMapped(fSrcPsl, fMappedPsls);
     gSrcPsl = fSrcPsl;
     gPrimaryTarget = primaryTarget;
     gSecondaryTarget = secondaryTarget;

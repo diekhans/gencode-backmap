@@ -9,7 +9,7 @@ GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
 	data/dup-transcripts.v19.gff3
 GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 \
 	data/gencode.v31.annotation.gff3 data/dup-transcripts.v33.gff3 \
-	data/gapped-transcripts.v33.gff3
+	data/gapped-transcripts.v33.gff3 data/sort.v33.gff3
 
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetGff3Arg = --targetGxf=data/gencode.v19.annotation.gff3
@@ -48,7 +48,7 @@ test: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	mappingVerTests cmpUcscSubstituteManOverlap \
-	gff3V29RegressTest dupTranscriptsV33Test \
+	gff3V29RegressTest dupTranscriptsV33Test sortStrictV33Test \
 	reportsTests ucscLiftEditTest regressTests \
 	gapTest
 
@@ -236,6 +236,13 @@ dupTranscriptsV33Test: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
+# std::sort SEGVing because of violating strict ordering
+sortStrictV33Test: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap ${headerArg} data/sort.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	gff3ToGenePred output/$@.mapped.gff3 /dev/null
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
 # gaps in transcripts due to alignment issues
 gapTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${headerArg} data/gapped-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
@@ -307,8 +314,6 @@ mapInfoSumSubTargetTest: mkdirs
 	${diff} expected/$@.sum output/$@.sum
 
 
-
-
 ##
 # memory leak checks
 ##
@@ -322,19 +327,21 @@ gtfUcscValgrind: mkdirs
 
 
 liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
-v25Dir = /hive/data/genomes/hg38/bed/gencodeV25/data/release_25
-v25Gff3 = ${v25Dir}/gencode.v25.chr_patch_hapl_scaff.annotation.gff3.gz
-v25Gtf = ${v25Dir}/gencode.v25.chr_patch_hapl_scaff.annotation.gtf.gz
+gencodeV19Dir = /hive/data/genomes/hg19/bed/gencodeV19/data/release_19
+gencodeV19Gff3 = ${gencodeV19Dir}/gencode.v19.annotation.gff3.gz
+bigVer = 33
+bigPrevVer = 32
+gencodeFullDir = /hive/data/genomes/hg38/bed/gencodeV${bigVer}/data/release_${bigVer}
+gencodeFullGff3 = ${gencodeFullDir}/gencode.v${bigVer}.annotation.gff3.gz
+gencodePrevLiftDir = /hive/data/genomes/hg19/bed/gencodeV${bigPrevVer}lift37/data/release_${bigPrevVer}lift37
+gencodePrevLiftGff3 = ${gencodePrevLiftDir}/gencode.v${bigPrevVer}lift37.annotation.gff3.gz
 
-bigTest: bigGff3UcscTest bigGtfUcscTest
-
-bigGff3UcscTest: mkdirs
-	${gencode_backmap} --oldStyleParIdHack --swapMap ${v25Gff3} ${liftOverChains} output/$@.mapped.gff3 output/$@.map-info >& output/$@.gff3.log
-	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
-
-bigGtfUcscTest: mkdirs
-	${gencode_backmap} --oldStyleParIdHack --swapMap ${v25Gtf} ${liftOverChains} output/$@.mapped.gtf output/$@.map-info >& output/$@.gtf.log
-	gtfToGenePred output/$@.mapped.gtf /dev/null
+bigTest: tmp/problemRegions.bed tmp/hg38ToHg19.over.gencode.chain
+	@mkdir -p bigout
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 \
+	    --targetGxf=${gencodeV19Gff3} --targetPatches=tmp/problemRegions.bed --previousMappedGxf=${gencodePrevLiftGff3} \
+	     ${gencodeFullGff3} tmp/hg38ToHg19.over.gencode.chain bigout/gencode.v${bigVer}lift37.annotation.gff3 bigout/gencode.v${bigVer}lift37.map-info.tsv
+	${gff3ToGenePred} bigout/gencode.v${bigVer}lift37.annotation.gff3 /dev/null
 
 ##
 # update test data when annotations change
@@ -346,12 +353,21 @@ update: mappingChains problemRegions
 # commands to create new mapping chains when test set is changed
 # also creates a PSL from the chain as is useful for debugging
 ##
-mappingChains: ucscMappingChains
-
-ucscMappingChains: tmp/testGrch38.gp
+mappingChains: tmp/testGrch38.gp
 	overlapSelect tmp/testGrch38.gp /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
-	chainToPslBasic ${testUcscLiftOverChains} tmp/hg38ToHg19.over.psl
-	pslSwap tmp/hg38ToHg19.over.psl tmp/hg19ToHg38.over.psl
+	chainToPslBasic ${testUcscLiftOverChains} tmp/hg38ToHg19.over.test.psl
+	pslSwap tmp/hg38ToHg19.over.test.psl tmp/hg19ToHg38.over.test.psl
+
+##
+# generate problem regions on GRCh37
+##
+problemRegions: tmp/testGrch37.gp tmp/problemRegions.bed
+	overlapSelect -inRange tmp/testGrch37.gp tmp/problemRegions.bed data/problemRegions.bed
+
+
+##
+# tmp file used by both update and big targets
+##
 
 # need to only include first ##gff-version header
 tmp/testGrch38.gp: ${GRCh38_GFF3s}
@@ -359,41 +375,61 @@ tmp/testGrch38.gp: ${GRCh38_GFF3s}
 	gff3ToGenePred <(awk 'NR==1||FNR>1{print $$0}' $^) $@
 
 tmp/GRCh37.p13.refseq-gencode.lift: tmp/GCF_000001405.25.assembly.txt
+	@mkdir -p $(dir $@)
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@
 
 tmp/GRCh38.p2.refseq-gencode.lift:  tmp/GCF_000001405.28.assembly.txt
+	@mkdir -p $(dir $@)
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@
 
 tmp/GRCh37.p13.sizes: tmp/GCF_000001405.25.assembly.txt
+	@mkdir -p $(dir $@)
 	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@
 
 tmp/GRCh38.p2.sizes: tmp/GCF_000001405.28.assembly.txt
+	@mkdir -p $(dir $@)
 	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@
 
 tmp/GCF_000001405.25.assembly.txt:
-	@mkdir -p tmp
+	@mkdir -p $(dir $@)
 	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.assembly.txt
 
 tmp/GCF_000001405.28.assembly.txt:
+	@mkdir -p $(dir $@)
 	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
 
+tmp/hg38ToHg19.over.gencode.chain: tmp/GCF_000001405.36_GRCh38.p10_assembly_report.txt tmp/GCF_000001405.13_GRCh37_assembly_report.txt
+	@mkdir -p $(dir $@)
+	../bin/ucscLiftEdit ${liftOverChains} tmp/GCF_000001405.36_GRCh38.p10_assembly_report.txt tmp/GCF_000001405.13_GRCh37_assembly_report.txt $@
 
-##
-# generate problem regions on GRCh37
-##
-problemRegions: tmp/testGrch37.gp
-	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz | zcat | cut -f 2- > tmp/hg19Patch13Patches.bed
-	wget -nv -O tmp/Hg19.grcIncidentDb.bb http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
-	bigBedToBed tmp/Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > tmp/Hg19.grcIncidentDb.bed
-	(cat tmp/hg19Patch13Patches.bed tmp/Hg19.grcIncidentDb.bed) | overlapSelect -inFmt=bed tmp/testGrch37.gp /dev/stdin data/problemRegions.bed
+tmp/GCF_000001405.36_GRCh38.p10_assembly_report.txt:
+	@mkdir -p $(dir $@)
+	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
+
+tmp/GCF_000001405.13_GRCh37_assembly_report.txt:
+	@mkdir -p $(dir $@)
+	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt
 
 # need to only include first ##gff-version header
 tmp/testGrch37.gp: ${GRCh37_GFF3s}
 	@mkdir -p $(dir $@)
 	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' $^) $@
 
+tmp/problemRegions.bed: tmp/hg19Patch13Patches.bed tmp/Hg19.grcIncidentDb.bed
+	cat tmp/hg19Patch13Patches.bed tmp/Hg19.grcIncidentDb.bed > $@
+
+tmp/hg19Patch13Patches.bed:
+	@mkdir -p $(dir $@)
+	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz | zcat | cut -f 2- > tmp/hg19Patch13Patches.bed
+
+tmp/Hg19.grcIncidentDb.bed:
+	@mkdir -p $(dir $@)
+	wget -nv -O tmp/Hg19.grcIncidentDb.bb http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
+	bigBedToBed tmp/Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > tmp/Hg19.grcIncidentDb.bed
+
+
 mkdirs:
 	@mkdir -p output
 
 clean:
-	rm -rf output tmp
+	rm -rf output tmp bigout

@@ -24,7 +24,7 @@ class PslVector: public vector<struct psl*> {
 /*
  * convert a PSL to a string for debuging purposes.
  */
-string pslToString(struct psl* psl);
+string pslToString(const struct psl* psl);
 
 /*
  * Convert a PSL block to a string

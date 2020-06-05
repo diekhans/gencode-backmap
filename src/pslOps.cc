@@ -14,7 +14,7 @@ static string unsignedArrayToString(unsigned len,
 /*
  * convert a PSL to a string for debuging purposes.
  */
-string pslToString(struct psl* psl) {
+string pslToString(const struct psl* psl) {
     return toString(psl->match) + "\t" +
         toString(psl->misMatch) + "\t" +
         toString(psl->repMatch) + "\t" +

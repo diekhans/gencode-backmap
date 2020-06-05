@@ -1,0 +1,9 @@
+geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featStart	featEnd	featStrand	mappingStatus	mappingCount	targetStatus
+0	mapSrc	gene	ENSG00000198788.8	OTTHUMG00000156800.4	MUC2	protein_coding	chr11	1074875	1110511	+	none	0	na
+0	mapSrc	trans	ENST00000361558.7	OTTHUMT00000345894.4	MUC2-201	processed_transcript	chr11	1074875	1110511	+	none	0	na
+0	mapSrc	trans	ENST00000613187.1		MUC2-202	pseudogene	chr11	1094474	1099340	+	none	0	na
+0	mapSrc	trans	ENST00000616479.1		MUC2-203	protein_coding	chr11	1102455	1103456	+	none	0	na
+0	map	gene	ENSG00000198788.8_1	OTTHUMG00000156800.4_1	MUC2	protein_coding	chr11	1074875	1104419	+	partial	19	na
+0	map	trans	ENST00000361558.7_1	OTTHUMT00000345894.4_1	MUC2-201	processed_transcript	chr11	1074875	1104419	+	partial	19	na
+0	map	trans	ENST00000613187.1_1		MUC2-202	pseudogene	chr11	1092412	1093248	+	partial	19	na
+0	map	trans	ENST00000616479.1_1		MUC2-203	protein_coding	chr11	1096363	1097364	+	full_contig	19	na
