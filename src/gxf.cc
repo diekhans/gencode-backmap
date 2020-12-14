@@ -89,7 +89,7 @@ GxfFormat gxfFormatFromFileName(const string& fileName) {
     } else if (fileName == "/dev/null") {
         return DEV_NULL_FORMAT;
     } else {
-        errAbort(toCharStr("Error: expected input annotation with an extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
+        errAbort(toCharStr("Error: expected file with extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
         return GXF_UNKNOWN_FORMAT;
     }
 }
@@ -191,7 +191,10 @@ class Gff3Parser: public GxfParser {
         StringVector parts = stringSplit(attrsStr,';');
         // `;' is a separator
         for (size_t i = 0; i < parts.size(); i++) {
-            parseAttr(stringTrim(parts[i]), attrVals);
+            string part = stringTrim(parts[i]);
+            if (part.size() > 0) {
+                parseAttr(part, attrVals);
+            }
         }
         return attrVals;
     }
@@ -303,10 +306,15 @@ GxfRecord* GxfParser::read() {
     string line;
     if (not fIn->readLine(line)) {
         return NULL;
-    } else if ((line.size() > 0) and line[0] != '#') {
-        return parseFeature(splitFeatureLine(line));
-    } else {
-        return new GxfLine(line);
+    }
+    try {
+        if ((line.size() > 0) and line[0] != '#') {
+            return parseFeature(splitFeatureLine(line));
+        } else {
+            return new GxfLine(line);
+        }
+    } catch (exception& e) {
+        throw runtime_error("Error: " + string(e.what()) + ": " + line);
     }
 }
 

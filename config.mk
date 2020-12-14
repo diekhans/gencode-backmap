@@ -10,7 +10,7 @@ KENTDIR = ${HOME}/kent/src
 KENTINC = -I${KENTDIR}/inc -I${KENTDIR}/hg/inc
 KENTLIBDIR = ${KENTDIR}/lib/${MACH}
 KENTLIBS = ${KENTLIBDIR}/jkhgap.a ${KENTLIBDIR}/jkweb.a ${KENTDIR}/htslib/libhts.a
-LIBS = -lssl -lcrypto -lz -lpthread
+LIBS = $(shell freetype-config --libs) -lssl -lcrypto -lz -lpthread
 
 ifeq (${SYS},Darwin)
     USE_CLANG = no
