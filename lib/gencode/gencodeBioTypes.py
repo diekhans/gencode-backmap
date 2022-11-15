@@ -1,113 +1,94 @@
 """
-Objects to store gencode gene annotations
+Declarations and operations on biotypes.  Used in ensuring that
+all biotypes are can be mapped to a reduced set for coloring and
+selection in the browser.
 """
-from pycbio_local.sys import PycbioException, pycbioRaiseFrom
-from pycbio_local.sys.enumeration import Enumeration
+from pycbio.sys.symEnum import SymEnum, SymEnumValue, auto
+from pycbio.gencode import GencodeGenesException
 
-class GencodeGenesException(PycbioException):
-    "exception associated with Gencode Genes objects"
-    def __init__(self, msg, cause=None):
-        PycbioException.__init__(self, msg, cause)
+class BioType(SymEnum):
+    overlapping_ncRNA_3prime = SymEnumValue(auto(), "3prime_overlapping_ncRNA")
+    antisense = auto()
+    antisense_RNA = antisense
+    bidirectional_promoter_lncRNA = auto()
+    IG_C_gene = auto()
+    IG_C_pseudogene = auto()
+    IG_D_gene = auto()
+    IG_D_pseudogene = auto()
+    IG_J_gene = auto()
+    IG_J_pseudogene = auto()
+    IG_LV_gene = auto()
+    IG_pseudogene = auto()
+    IG_V_gene = auto()
+    IG_V_pseudogene = auto()
+    lincRNA = auto()
+    lncRNA = auto()
+    macro_lncRNA = auto()
+    miRNA = auto()
+    misc_RNA = auto()
+    Mt_rRNA = auto()
+    Mt_tRNA = auto()
+    non_coding = auto()
+    nonsense_mediated_decay = auto()  # transcripts only
+    non_stop_decay = auto()  # transcripts only
+    polymorphic_pseudogene = auto()
+    processed_pseudogene = auto()
+    processed_transcript = auto()
+    protein_coding = auto()
+    pseudogene = auto()
+    retained_intron = auto()  # transcripts only
+    ribozyme = auto()
+    rRNA = auto()
+    rRNA_pseudogene = auto()
+    scaRNA = auto()
+    scRNA = auto()
+    sense_intronic = auto()
+    sense_overlapping = auto()
+    snoRNA = auto()
+    snRNA = auto()
+    sRNA = auto()
+    TEC = auto()
+    transcribed_processed_pseudogene = auto()
+    transcribed_unitary_pseudogene = auto()
+    transcribed_unprocessed_pseudogene = auto()
+    translated_processed_pseudogene = auto()
+    translated_unprocessed_pseudogene = auto()
+    TR_C_gene = auto()
+    TR_D_gene = auto()
+    TR_J_gene = auto()
+    TR_J_pseudogene = auto()
+    TR_V_gene = auto()
+    TR_V_pseudogene = auto()
+    unitary_pseudogene = auto()
+    unprocessed_pseudogene = auto()
+    vaultRNA = auto()
+    vault_RNA = auto()
+    protein_coding_LoF = auto()
+    artifact = auto()
+    artifactual_duplication = auto()
+    protein_coding_CDS_not_defined = auto()
+
+class GencodeFunction(SymEnum):
+    """category used to color UCSC browser tracks"""
+    coding = auto()
+    nonCoding = auto()
+    pseudo = auto()
+    other = auto()
 
 
-BioType = Enumeration("BioType", ("IG_C_gene", "IG_D_gene", "IG_J_gene", "IG_V_gene", "IG_LV_gene",
-                                  "IG_C_pseudogene", "IG_D_pseudogene", "IG_pseudogene", "IG_J_pseudogene", "IG_V_pseudogene",
-                                  "TR_gene", "TR_C_gene", "TR_D_gene", "TR_J_gene", "TR_V_gene",
-                                  "ambiguous_orf", "antisense", "antisense_RNA", "lincRNA",
-                                  "Mt_rRNA", "Mt_tRNA", "Mt_tRNA_pseudogene",
-                                  "TEC",
-                                  "TR_pseudogene", "TR_J_pseudogene", "TR_V_pseudogene",
-                                  "miRNA", "miRNA_pseudogene", "misc_RNA",
-                                  "ncrna_host", "misc_RNA_pseudogene",
-                                  "non_coding", "nonsense_mediated_decay",
-                                  "polymorphic_pseudogene",
-                                  "processed_pseudogene",
-                                  "processed_transcript", "protein_coding",
-                                  "pseudogene", "rRNA", "rRNA_pseudogene",
-                                  "retained_intron", "retrotransposed",
-                                  "scRNA", "scRNA_pseudogene",
-                                  "snRNA", "snRNA_pseudogene",
-                                  "snoRNA", "snoRNA_pseudogene",
-                                  "tRNA_pseudogene",
-                                  "transcribed_processed_pseudogene",
-                                  "transcribed_unprocessed_pseudogene",
-                                  "unitary_pseudogene",
-                                  "transcribed_unitary_pseudogene",
-                                  "unprocessed_pseudogene",
-                                  ("overlapping_ncrna_3prime", "3prime_overlapping_ncrna"),   # FIXME: which case is right
-                                  ("overlapping_ncRNA_3prime", "3prime_overlapping_ncRNA"),
-                                  "disrupted_domain",
-                                  "sense_intronic", "sense_overlapping",
-                                  "non_stop_decay", "translated_processed_pseudogene",
-                                  "translated_unprocessed_pseudogene",
-                                  "known_ncrna",
-                                  "macro_lncRNA",
-                                  "ribozyme",
-                                  "scaRNA",
-                                  "sRNA",
-                                  "vaultRNA",
-                                  "bidirectional_promoter_lncrna",  # FIXME: which case is right
-                                  "bidirectional_promoter_lncRNA"))
-BioTag = Enumeration("BioTag", ("2way_pseudo_cons", "CCDS", "PAR", "exp_conf",
-                                "cds_end_NF", "cds_start_NF", "mRNA_end_NF",
-                                "mRNA_start_NF",
-                                ("not_organism_supported", "not_organism_supported", ("not_organism-supported",)),  # alias is for typo in V7
-                                "pseudo_consens", "seleno", "non_ATG_start",
-                                "alternative_5_UTR", "alternative_3_UTR",
-                                "non_canonical_other", "non_canonical_U12",
-                                "non_canonical_TEC",
-                                "non_canonical_conserved",
-                                "non_canonical_polymorphism",
-                                "non_canonical_genome_sequence_error",
-                                ("non_submitted_evidence", "non_submitted_evidence", ("non-submitted_evidence",)),  # alias is old value
-                                "NAGNAG_splice_site", "upstream_ATG",
-                                "downstream_ATG", "NMD_exception",
-                                "upstream_uORF", "overlapping_uORF",
-                                ("not_best_in_genome_evidence", "not_best_in_genome_evidence", ("not_best-in-genome_evidence",)),  # alias is old value
-                                "basic",
-                                "readthrough_transcript",
-                                "dotter_confirmed",
-                                "RNA_Seq_supported_only",
-                                "NMD_likely_if_extended",
-                                "retained_intron_final",
-                                "CAGE_supported_TSS",
-                                "retained_intron_first",
-                                "sequence_error",
-                                "low_sequence_quality",
-                                "bicistronic",
-                                "retained_intron_CDS",
-                                "RP_supported_TIS",
-                                "inferred_exon_combination",
-                                "appris_principal",
-                                "appris_principal_1",
-                                "appris_principal_2",
-                                "appris_principal_3",
-                                "appris_principal_4",
-                                "appris_principal_5",
-                                "appris_alternative_1",
-                                "appris_alternative_2",
-                                "appris_candidate_longest",
-                                "appris_candidate",
-                                "appris_candidate_ccds",
-                                "appris_candidate_longest_ccds",
-                                "appris_candidate_longest_seq",
-                                "appris_candidate_highest_score",
-                                "inferred_transcript_model",
-                                "RNA_Seq_supported_partial",
-                                "3_nested_supported_extension",
-                                "3_standard_supported_extension",
-                                "454_RNA_Seq_supported",
-                                "5_nested_supported_extension",
-                                "5_standard_supported_extension",
-                                "nested_454_RNA_Seq_supported",
-                                "ncRNA_host", "reference_genome_error",
-                                "overlapping_locus", "fragmented_locus",
-                                "retrogene", "orphan", "semi_processed"))
-GencodeMethod = Enumeration("GencodeMethod", ("manual", "automatic"))
-GencodeExtendedMethod = Enumeration("GencodeExtendedMethod", ("manualOnly", "automaticOnly", "merged"))
+class GnecodeGeneCategory(SymEnum):
+    """gene categories uses in GENCODE stats reporting, from
+     http://ftp.ebi.ac.uk/pub/databases/gencode/_README_stats.txt"""
+    protein_coding = auto()
+    lncRNA = auto()
+    smallRNA = auto()
+    pseudoGene = auto()
+    immunoSegment = auto()
 
-GencodeFunction = Enumeration("GencodeFunction", ("pseudo", "coding", "nonCoding", "problem"))
-GencodeCompleteness = Enumeration("GencodeCompleteness", ("partial", "full"))
+
+bioTypesTranscriptOnly = frozenset([BioType.nonsense_mediated_decay,
+                                    BioType.non_stop_decay,
+                                    BioType.retained_intron])
 
 bioTypesCoding = frozenset([BioType.IG_C_gene,
                             BioType.IG_D_gene,
@@ -115,20 +96,20 @@ bioTypesCoding = frozenset([BioType.IG_C_gene,
                             BioType.IG_V_gene,
                             BioType.IG_LV_gene,
                             BioType.polymorphic_pseudogene,
+                            BioType.protein_coding_LoF,
+                            BioType.protein_coding_CDS_not_defined,
                             BioType.protein_coding,
                             BioType.nonsense_mediated_decay,
-                            BioType.TR_gene,
                             BioType.TR_C_gene,
                             BioType.TR_D_gene,
                             BioType.TR_J_gene,
                             BioType.TR_V_gene,
                             BioType.non_stop_decay])
 bioTypesNonCoding = frozenset([BioType.antisense,
-                               BioType.antisense_RNA,
                                BioType.lincRNA,
+                               BioType.lncRNA,
                                BioType.miRNA,
                                BioType.misc_RNA,
-                               BioType.ncrna_host,
                                BioType.Mt_rRNA,
                                BioType.Mt_tRNA,
                                BioType.non_coding,
@@ -137,38 +118,30 @@ bioTypesNonCoding = frozenset([BioType.antisense,
                                BioType.snoRNA,
                                BioType.scRNA,
                                BioType.snRNA,
-                               BioType.overlapping_ncrna_3prime,
                                BioType.overlapping_ncRNA_3prime,
                                BioType.sense_intronic,
                                BioType.sense_overlapping,
-                               BioType.known_ncrna,
                                BioType.macro_lncRNA,
                                BioType.ribozyme,
                                BioType.scaRNA,
                                BioType.sRNA,
                                BioType.vaultRNA,
-                               BioType.bidirectional_promoter_lncrna,
+                               BioType.vault_RNA,
                                BioType.bidirectional_promoter_lncRNA])
-bioTypesProblem = frozenset([BioType.retained_intron,
-                             BioType.TEC,
-                             BioType.disrupted_domain,
-                             BioType.ambiguous_orf])
+bioTypesLncRna = frozenset([BioType.lincRNA,
+                            BioType.lncRNA])
+bioTypesOther = frozenset([BioType.retained_intron,
+                           BioType.TEC,
+                           BioType.artifact,
+                           BioType.artifactual_duplication])
 bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.IG_pseudogene,
                             BioType.IG_V_pseudogene,
-                            BioType.miRNA_pseudogene,
-                            BioType.misc_RNA_pseudogene,
-                            BioType.Mt_tRNA_pseudogene,
                             BioType.processed_pseudogene,
                             BioType.pseudogene,
                             BioType.rRNA_pseudogene,
-                            BioType.scRNA_pseudogene,
-                            BioType.snoRNA_pseudogene,
-                            BioType.snRNA_pseudogene,
                             BioType.transcribed_processed_pseudogene,
                             BioType.transcribed_unprocessed_pseudogene,
-                            BioType.tRNA_pseudogene,
-                            BioType.TR_pseudogene,
                             BioType.unitary_pseudogene,
                             BioType.transcribed_unitary_pseudogene,
                             BioType.unprocessed_pseudogene,
@@ -176,15 +149,16 @@ bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.IG_D_pseudogene,
                             BioType.TR_J_pseudogene,
                             BioType.TR_V_pseudogene,
-                            BioType.retrotransposed,
                             BioType.translated_processed_pseudogene,
                             BioType.translated_unprocessed_pseudogene,
                             ])
+bioTypesTranscribedPseudo = frozenset([BioType.transcribed_processed_pseudogene,
+                                       BioType.transcribed_unprocessed_pseudogene,
+                                       BioType.transcribed_unitary_pseudogene])
 
-assert((len(bioTypesCoding) + len(bioTypesNonCoding) + len(bioTypesProblem) + len(bioTypesPseudo)) == len(BioType.values))
+assert (len(bioTypesCoding) + len(bioTypesNonCoding) + len(bioTypesOther) + len(bioTypesPseudo)) == len(list(BioType))
 
-bioTypesTR = frozenset((BioType.TR_gene,
-                        BioType.TR_C_gene,
+bioTypesTR = frozenset((BioType.TR_C_gene,
                         BioType.TR_D_gene,
                         BioType.TR_J_gene,
                         BioType.TR_V_gene))
@@ -193,40 +167,6 @@ bioTypesIG = frozenset((BioType.IG_C_gene,
                         BioType.IG_J_gene,
                         BioType.IG_V_gene))
 
-bioTagNotFullCds = frozenset([BioTag.cds_start_NF,
-                              BioTag.cds_end_NF])
-bioTagNotFullMRna = frozenset([BioTag.mRNA_start_NF,
-                              BioTag.mRNA_end_NF])
-bioTagNotFull = frozenset(bioTagNotFullCds | bioTagNotFullMRna)
-
-# characterized/uncharacterized ncRNAs for basic gencode set definition
-bioTypesNonCodingCharacterized = frozenset([BioType.antisense,
-                                            BioType.antisense_RNA,
-                                            BioType.miRNA,
-                                            BioType.Mt_rRNA,
-                                            BioType.Mt_tRNA,
-                                            BioType.rRNA,
-                                            BioType.snoRNA,
-                                            BioType.scRNA,
-                                            BioType.snRNA,
-                                            BioType.ncrna_host,
-                                            BioType.ribozyme,
-                                            BioType.scaRNA,
-                                            BioType.sRNA,
-                                            BioType.vaultRNA])
-bioTypesNonCodingUncharacterized = frozenset([BioType.non_coding,
-                                              BioType.lincRNA,
-                                              BioType.processed_transcript,
-                                              BioType.misc_RNA,
-                                              BioType.overlapping_ncrna_3prime,
-                                              BioType.overlapping_ncRNA_3prime,
-                                              BioType.sense_intronic,
-                                              BioType.sense_overlapping,
-                                              BioType.known_ncrna,
-                                              BioType.macro_lncRNA,
-                                              BioType.bidirectional_promoter_lncrna,
-                                              BioType.bidirectional_promoter_lncRNA])
-assert(len(bioTypesNonCodingCharacterized) + len(bioTypesNonCodingUncharacterized) == len(bioTypesNonCoding))
 
 # small, non-coding RNAs from
 bioTypesSmallNonCoding = frozenset([BioType.miRNA,
@@ -238,7 +178,10 @@ bioTypesSmallNonCoding = frozenset([BioType.miRNA,
                                     BioType.snoRNA,
                                     BioType.scRNA,
                                     BioType.snRNA,
-                                    BioType.sRNA])
+                                    BioType.sRNA,
+                                    BioType.scaRNA,
+                                    BioType.vaultRNA,
+                                    BioType.vault_RNA])
 
 # imported from external databases
 bioTypesNonCodingExternalDb = frozenset([BioType.miRNA,
@@ -248,6 +191,41 @@ bioTypesNonCodingExternalDb = frozenset([BioType.miRNA,
                                          BioType.rRNA,
                                          BioType.snoRNA,
                                          BioType.snRNA])
+
+# GENE category mappings
+gencodeCategoryProteinCoding = frozenset([BioType.protein_coding])
+gencodeCategoryLncRNA = frozenset([BioType.processed_transcript,
+                                   BioType.lincRNA,
+                                   BioType.overlapping_ncRNA_3prime,
+                                   BioType.antisense,
+                                   BioType.non_coding,
+                                   BioType.sense_intronic,
+                                   BioType.sense_overlapping,
+                                   BioType.TEC,
+                                   BioType.macro_lncRNA,
+                                   BioType.bidirectional_promoter_lncRNA,
+                                   BioType.lncRNA])
+gencodeCategorySmallRNA = frozenset([BioType.snRNA,
+                                     BioType.snoRNA,
+                                     BioType.rRNA,
+                                     BioType.Mt_tRNA,
+                                     BioType.Mt_rRNA,
+                                     BioType.misc_RNA,
+                                     BioType.miRNA,
+                                     BioType.ribozyme,
+                                     BioType.sRNA,
+                                     BioType.scaRNA,
+                                     BioType.vaultRNA])
+gencodeCategoryPseudoGene = bioTypesPseudo
+gencodeCategoryImmunoSegment = frozenset([BioType.IG_C_gene,
+                                          BioType.IG_D_gene,
+                                          BioType.IG_J_gene,
+                                          BioType.IG_V_gene,
+                                          BioType.IG_LV_gene,
+                                          BioType.TR_C_gene,
+                                          BioType.TR_D_gene,
+                                          BioType.TR_J_gene,
+                                          BioType.TR_V_gene])
 
 
 def getFunctionForBioType(bt):
@@ -261,7 +239,14 @@ def getFunctionForBioType(bt):
         return GencodeFunction.nonCoding
     elif bt in bioTypesPseudo:
         return GencodeFunction.pseudo
-    elif bt in bioTypesProblem:
-        return GencodeFunction.problem
+    elif bt in bioTypesOther:
+        return GencodeFunction.other
     else:
-        pycbioRaiseFrom(GencodeGenesException("unknown biotype: " + str(bt)))
+        raise GencodeGenesException("unknown biotype: " + str(bt))
+
+def getTranscriptFunction(geneBioType, transcriptBioType):
+    # all transcripts in pseudogenes are psuedogene transcripts
+    if geneBioType in bioTypesPseudo:
+        return GencodeFunction.pseudo
+    else:
+        return getFunctionForBioType(transcriptBioType)

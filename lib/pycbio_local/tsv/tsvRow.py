@@ -1,12 +1,13 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 
-# FIXME: danger of bdump, etc, methods conflicting with columns.  maybe
+# FIXME: danger of dump, etc, methods conflicting with columns.  maybe
 # a better convention to avoid collisions or make these functions rather
 # than methods
 # FIXME: need accessor functions for columns
-from builtins import range
-from pycbio_local.tsv import TsvError
-from pycbio_local.sys import pycbioRaiseFrom
+# FIXME: need way to get raw row with Nones for sql
+# FIXME: this could actually be a dict-like object since py3
+
+from pycbio.tsv import TsvError
 
 
 def tsvRowToDict(row):
@@ -20,7 +21,7 @@ class TsvRow(object):
     # places when they are stored as fields
 
     def __init__(self, reader, row):
-        # FIXME: stupid names
+        # FIXMEL should reference one class
         self._columns_ = reader.columns
         self._colTypes_ = reader.colTypes
         self._colMap_ = reader.colMap
@@ -40,7 +41,7 @@ class TsvRow(object):
                 col = ct(col)
             setattr(self, self._columns_[i], col)
         except Exception as ex:
-            pycbioRaiseFrom(TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i])), ex)
+            raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i])) from ex
 
     def _parse(self, row):
         for i in range(len(self._columns_)):

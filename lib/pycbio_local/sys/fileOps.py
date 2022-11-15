@@ -1,7 +1,6 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """Miscellaneous file operations"""
 
-import six
 import os
 import sys
 import errno
@@ -9,8 +8,9 @@ import re
 import socket
 import tempfile
 import pipettor
-from threading import Lock
-from pycbio_local.sys import PycbioException
+from shutil import which
+from contextlib import contextmanager
+from pycbio import PycbioException
 
 # FIXME: normalize file line read routines to all take fh or name, remove redundant code.
 
@@ -40,7 +40,7 @@ def rmFiles(*fileArgs):
     """Remove one or more files if they exist. Each file argument can be a
     single file name of a list of file names"""
     for files in fileArgs:
-        if isinstance(files, six.string_types):
+        if isinstance(files, str):
             files = [files]
         for f in files:
             if os.path.exists(f):
@@ -64,17 +64,20 @@ def isCompressed(path):
     return path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z")
 
 
-def compressCmd(path, default="cat"):
+def compressCmd(path):
     """return the command to compress the path, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
     if path.endswith(".Z"):
         raise PycbioException("writing compress .Z files not supported")
     elif path.endswith(".gz"):
-        return "gzip"
+        if which("pigz"):
+            return ["pigz"]
+        else:
+            return ["gzip"]
     elif path.endswith(".bz2"):
-        return "bzip2"
+        return ["bzip2"]
     else:
-        return default
+        return ["cat"]
 
 
 def compressBaseName(path):
@@ -85,15 +88,17 @@ def compressBaseName(path):
         return path
 
 
-def decompressCmd(path, default="cat"):
+def decompressCmd(path):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
-    if path.endswith(".Z") or path.endswith(".gz"):
-        return "zcat"
+    if path.endswith(".gz") and which("unpigz"):
+        return ["unpigz", "-c"]
+    elif path.endswith(".Z") or path.endswith(".gz"):
+        return ["zcat"]
     elif path.endswith(".bz2"):
-        return "bzcat"
+        return ["bzcat"]
     else:
-        return default
+        return ["cat"]
 
 
 def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
@@ -102,16 +107,14 @@ def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
     if isCompressed(fileName):
         if mode.startswith("r"):
             cmd = decompressCmd(fileName)
-            return pipettor.Popen([cmd, fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
+            return pipettor.Popen(cmd + [fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
         elif mode.startswith("w"):
             cmd = compressCmd(fileName)
-            return pipettor.Popen([cmd], mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
+            return pipettor.Popen(cmd, mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
-    elif six.PY3:
-        return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
     else:
-        return open(fileName, mode)
+        return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
 # keyword for flush. Do we even need them with print function?
@@ -199,26 +202,18 @@ def prStrs(fh, *objs):
 
 def prRow(fh, row):
     """Print a row (list or tupe) to a tab file.
-    Does string conversion on each columns"""
-    first = True
-    for col in row:
-        if not first:
+    Does string conversion on each columns, None is written as empty"""
+    for i in range(len(row)):
+        if i > 0:
             fh.write("\t")
-        fh.write(str(col))
-        first = False
+        fh.write(str(row[i]) if row[i] is not None else '')
     fh.write("\n")
 
 
 def prRowv(fh, *objs):
     """Print a row from each argument to a tab file.
-    Does string conversion on each columns"""
-    first = True
-    for col in objs:
-        if not first:
-            fh.write("\t")
-        fh.write(str(col))
-        first = False
-    fh.write("\n")
+    Does string conversion on each columns,   None is written as empty"""
+    prRow(fh, objs)
 
 
 class FileAccessor(object):
@@ -230,11 +225,11 @@ class FileAccessor(object):
         self.fh = None
 
     def __enter__(self):
-        self.fh = opengz(self.fspec, self.mode) if isinstance(self.fspec, six.string_types) else self.fspec
+        self.fh = opengz(self.fspec, self.mode) if isinstance(self.fspec, str) else self.fspec
         return self.fh
 
     def __exit__(self, typ, value, traceback):
-        if isinstance(self.fspec, six.string_types):
+        if isinstance(self.fspec, str):
             self.fh.close()
 
 
@@ -263,7 +258,7 @@ def readFileLines(fspec):
 
 
 def readNonCommentLines(fspec):
-    """read lines from an open file on file by name into a list, removing the
+    """read lines from an open file or file by name into a list, removing the
     newlines, striping leading and training white space, and skipping blank
     lines and those with the first non-space character is '#'."""
     lines = []
@@ -284,6 +279,19 @@ def readLine(fh):
         line = line[:-1]
     return line
 
+def writeLines(fspec, lines):
+    "write each line, followed by a newline"
+    with FileAccessor(fspec, 'w') as fh:
+        for l in lines:
+            fh.write(l)
+            fh.write('\n')
+
+def writeRows(fspec, rows):
+    "write each row, joined by tabs, followed by a newline"
+    with FileAccessor(fspec, 'w') as fh:
+        for r in rows:
+            fh.write('\t'.join([str(c) for c in r]))
+            fh.write('\n')
 
 def findTmpDir(tmpDir=None):
     """find the temporary directory to use, if tmpDir is not None, it is use"""
@@ -320,53 +328,52 @@ def tmpDirGet(prefix=None, suffix=".tmp", tmpDir=None):
     will only be accessible to user."""
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
-
-_hostName = None  # get first time when needed
-_atomicNextNum = 0  # number to include in atomicTmpFile, just in case same process tries creates multiple
-_atomicTmpFileMutex = Lock()
-
-
-def _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt):
-    "Attempt to get a tmp file name, return None in the rare change that it exists"
-    global _atomicNextNum
-    baseName = "{}.{}.{}.{}.tmp{}".format(finalBasename, _hostName, os.getpid(), _atomicNextNum, finalExt)
-    _atomicNextNum += 1
-    tmpPath = os.path.join(finalDir, baseName)
-    if os.path.exists(tmpPath):
-        return None
-    else:
-        return tmpPath
-
-
 def atomicTmpFile(finalPath):
     """Return a tmp file name to use with atomicInstall.  This will be in the
-    same directory as finalPath. The temporary file will have the same extension
-    as finalPath.  In final path is in /dev (/dev/null, /dev/stdout), it is
-    returned unchanged and atomicTmpInstall will do nothing..  Thread-safe."""
-    # FIXME: this would make a good object and maybe contact manager
+    same directory as finalPath. The temporary file will have the same
+    extension as finalPath.  In final path is in /dev (/dev/null,
+    /dev/stdout), it is returned unchanged and atomicTmpInstall will do
+    nothing.  The output directory will be created if it doesn't exist.
+    Thread-safe."""
     # note: this can't use tmpFileGet, since file should not be created or be private
-    finalDir = os.path.dirname(os.path.normpath(finalPath))
+    finalDir = os.path.dirname(os.path.normpath(finalPath))  # maybe empty
     if finalDir == '/dev':
         return finalPath
-    if finalDir == "":
-        finalDir = '.'
     finalBasename = os.path.basename(finalPath)
     finalExt = os.path.splitext(finalPath)[1]
-    global _hostName
-    if _hostName is None:
-        _hostName = socket.gethostname()
-    with _atomicTmpFileMutex:
-        tmpPath = None
-        while tmpPath is None:
-            tmpPath = _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt)
+    tmpBasename = "{}.{}.{}.tmp{}".format(finalBasename, socket.gethostname(), os.getpid(), finalExt)
+    tmpPath = os.path.join(finalDir, tmpBasename)
+    if os.path.exists(tmpPath):
+        os.unlink(tmpPath)
+    elif finalDir != "":
+        ensureDir(finalDir)
     return tmpPath
-
 
 def atomicInstall(tmpPath, finalPath):
     "atomic install of tmpPath as finalPath"
     if os.path.dirname(os.path.normpath(finalPath)) != '/dev':
         os.rename(tmpPath, finalPath)
 
+
+@contextmanager
+def AtomicFileCreate(finalPath, keep=False):
+    """Context manager to create a temporary file.  Entering returns path to
+    the temporary file in the same directory as finalPath.  If the code in
+    context succeeds, the file renamed to its actually name.  If an error
+    occurs, the file is not installed and is removed unless keep is specified.
+    The output directory will be created if it doesn't exist.  Thread-safe.
+    """
+    tmpPath = atomicTmpFile(finalPath)
+    try:
+        yield tmpPath
+        atomicInstall(tmpPath, finalPath)
+    except Exception:
+        if not keep:
+            try:
+                os.unlink(tmpPath)
+            except Exception:
+                pass
+        raise
 
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"

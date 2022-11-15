@@ -1,6 +1,6 @@
 biocat	full_contig	full_fragment	none	partial	total
-pseudo	9	0	1	0	10
 coding	38	1	11	9	59
 nonCoding	28	0	19	1	48
-problem	5	0	0	0	5
+pseudo	9	0	1	0	10
+other	5	0	0	0	5
 all	80	1	31	10	122

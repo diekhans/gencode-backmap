@@ -1,25 +1,11 @@
-# Copyright 2006-2014 Mark Diekhans
-# for python2, requires enum34: https://pypi.python.org/pypi/enum34
+# Copyright 2006-2022 Mark Diekhans
 
-from __future__ import print_function
-import six
 from enum import Enum, EnumMeta
 from functools import total_ordering
 
 # FIXME: should really be built like other IntEnum, etc
-# FIXME: auto for PY2  is a hack, maybe get a enum36 ported
 
-if six.PY3:
-    from enum import auto
-else:
-    # enum34 doesn't have auto
-    _auto_null = object()
-
-    class auto(object):
-        """
-        Instances are replaced with an appropriate value in Enum class suites.
-        """
-        value = _auto_null
+from enum import auto
 
 
 SymEnum = None  # class defined after use
@@ -67,11 +53,10 @@ class SymEnumMeta(EnumMeta):
         """record info about a member specified with SymEnum and update value in classdict
         to be actual value rather than SymEnumValue"""
         symValue = classdict[name]
-        if six.PY3:
-            # under python3, enum does some sanity check, must remove from _EnumDict before
-            # reinserting
-            del classdict._member_names[classdict._member_names.index(name)]
-            del classdict[name]
+        # under python3, enum does some sanity check, must remove from
+        # _EnumDict before reinserting
+        del classdict._member_names[classdict._member_names.index(name)]
+        del classdict[name]
         classdict[name] = symValue.value
         externalNameMap.add(name, symValue.externalName)
 
@@ -83,35 +68,14 @@ class SymEnumMeta(EnumMeta):
             if isinstance(classdict[name], SymEnumValue):
                 cls._symEnumValueUpdate(classdict, name, externalNameMap)
 
-    @classmethod
-    def _updateAutoValues(cls, classdict):
-        """hack to update auto values for PY2"""
-        # find maximum
-        lastValue = None
-        for name in classdict.keys():
-            if (not name.startswith('__')) and (not isinstance(classdict[name], auto)):
-                lastValue = classdict[name] if lastValue is None else max(classdict[name], lastValue)
-        if lastValue is None:
-            lastValue = 0
-        # assign values great than last
-        for name in list(classdict.keys()):  # MUST COPY, as modifying classdict
-            if isinstance(classdict[name], auto):
-                lastValue += 1
-                classdict[name] = lastValue
-
     def __new__(metacls, clsname, bases, classdict):
         "updates class fields defined as SymEnumValue to register external names"
         if SymEnum in bases:
             metacls._buildExternalNameMap(classdict)
-            if six.PY2:
-                metacls._updateAutoValues(classdict)
         return super(SymEnumMeta, metacls).__new__(metacls, clsname, bases, classdict)
 
     @staticmethod
     def _lookUpByStr(cls, value):
-        if six.PY2 and isinstance(value, six.text_type):
-            value = value.decode()  # force unicode to str for field names
-
         # map string name to instance, check for external name
         member = cls._member_map_.get(cls.__externalNameMap__.toInternalName(value))
         if member is None:
@@ -122,8 +86,8 @@ class SymEnumMeta(EnumMeta):
             return member
 
     def __call__(cls, value, names=None, module=None, typ=None):
-        "look up a value object, either by name of value,"
-        if (names is None) and isinstance(value, six.string_types):
+        "look up a value object, either by name or value"
+        if (names is None) and isinstance(value, str):
             return SymEnumMeta._lookUpByStr(cls, value)
         else:
             return EnumMeta.__call__(cls, value, names, module=module, type=typ)
@@ -149,10 +113,10 @@ class SymEnumMixin(object):
             return self.value < other
 
     def __reduce_ex__(self, proto):
-        return self.__class__, ()
+        return self.__class__, (self.value, )
 
 
-class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
+class SymEnum(SymEnumMixin, Enum, metaclass=SymEnumMeta):
     """
     Metaclass for symbolic enumerations.  These are easily converted between
     string values and Enum objects.  This support construction from string
@@ -175,6 +139,9 @@ class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
     value:
        SymEnum(strName)
        SymEnum(intVal)
+
+    To use as an argument type in argparser
+       type=Color, choices=Color
     """
 
     def __str__(self):

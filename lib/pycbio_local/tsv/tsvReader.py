@@ -1,17 +1,10 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """TSV reading classes"""
-from builtins import next
-from builtins import object
-from builtins import range
-from future.standard_library import install_aliases
-install_aliases()
 import sys
 import csv
-import six
-from pycbio_local.sys import fileOps
-from pycbio_local.tsv.tsvRow import TsvRow
-from pycbio_local.tsv import TsvError
-from pycbio_local.sys import pycbioRaiseFrom
+from pycbio.sys import fileOps
+from pycbio.tsv.tsvRow import TsvRow
+from pycbio.tsv import TsvError
 
 csv.field_size_limit(sys.maxsize)
 
@@ -35,7 +28,7 @@ csv.field_size_limit(sys.maxsize)
 # FIXME: rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
 # FIXME: maybe build on csv.Reader class and keep less of our own crap (although column stuff is nice)
 #        however, csv.reader has got us into trouble because of print formatted files with quotes in data
-# FIXME: drop rdb stuff
+# FIXME: add default for column not in file to typemap
 
 # typeMap converter for str types were empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,
@@ -44,6 +37,9 @@ strOrNoneType = (lambda v: None if (v == "") else v,
 # typeMap converter for int types were empty represents None
 intOrNoneType = (lambda v: None if (v == "") else int(v),
                  lambda v: "" if (v is None) else str(v))
+
+floatOrNoneType = (lambda v: None if (v == "") else float(v),
+                   lambda v: "" if (v is None) else str(v))
 
 
 class printf_basic_dialect(csv.Dialect):
@@ -64,11 +60,9 @@ class TsvReader(object):
     becomes a field name.  It is also indexable by column name or int index.
     Columns can be automatically type converted by column name.  This can also
     read from a dbapi cursor object (must set allowEmpty to true)
-    """
 
-    # FIXME: database reading doesn't work, need to not use csv reader for it
-    # should have separate class for dbapi reading, build on a core
-    # class.
+    If the first character of the header is '#', it is skipped.
+    """
 
     def _readRow(self):
         "read the next row, returning None on EOF"
@@ -91,10 +85,9 @@ class TsvReader(object):
             if not allowEmpty:
                 raise TsvError("empty TSV file", reader=self)
         else:
-            if self.isRdb:
-                self._readRow()  # skip format line
             if (len(row) > 0) and row[0].startswith('#'):
-                row[0] = row[0][1:]
+                # sometimes there is a space after #
+                row[0] = row[0][1:].strip()
             self._setupColumns(row)
 
     def _setupColumns(self, columns):
@@ -106,7 +99,7 @@ class TsvReader(object):
                 col = self.columnNameMapper(col)
             self.columns.append(col)
             if col in self.colMap:
-                raise TsvError("Duplicate column name: {}".format(col))
+                raise TsvError("Duplicate column name: '{}'".format(col))
             self.colMap[col] = i
             i += 1
 
@@ -124,7 +117,7 @@ class TsvReader(object):
                 self.colTypes.append(defaultColType)
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
-                 ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab,
+                 ignoreExtraCols=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab,
                  encoding=None, errors=None):
         """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
@@ -142,11 +135,9 @@ class TsvReader(object):
             should not be in the file.
         columnNameMapper - function to map column names to the internal name.
         ignoreExtraCols - should extra columns be ignored?
-        isRdb - file is an RDB file, ignore second row (type map still needed).
         inFh - If not None, this is used as the open file, rather than
           opening it.  Closed when the end of file is reached.
         allowEmpty - an empty input results in an EOF rather than an error.
-          Should specify this if reading from a database query.
         dialect - a csv dialect object or name.
         """
         self.columns = []
@@ -162,14 +153,12 @@ class TsvReader(object):
         if rowClass is None:
             self.rowClass = TsvRow
         self.columnNameMapper = columnNameMapper
-        self.isRdb = isRdb
         self.colTypes = None
         self.ignoreExtraCols = ignoreExtraCols
         if inFh is not None:
             self.inFh = inFh
         else:
-            mode = "rU" if six.PY2 else "r"
-            self.inFh = fileOps.opengz(fileName, mode, encoding=encoding, errors=errors)
+            self.inFh = fileOps.opengz(fileName, encoding=encoding, errors=errors)
         try:
             self.reader = csv.reader(self.inFh, dialect=dialect)
             if columns:
@@ -196,7 +185,7 @@ class TsvReader(object):
         try:
             row = self._readRow()
         except Exception as ex:
-            pycbioRaiseFrom(TsvError("Error reading TSV row", self), ex)
+            raise TsvError("Error reading TSV row", self) from ex
         if row is None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
@@ -205,4 +194,4 @@ class TsvReader(object):
         try:
             return self.rowClass(self, row)
         except Exception as ex:
-            pycbioRaiseFrom(TsvError("Error converting TSV row to object", self), ex)
+            raise TsvError("Error converting TSV row to object", self) from ex
