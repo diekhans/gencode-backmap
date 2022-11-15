@@ -49,6 +49,11 @@ static void sortGeneContaining(FeatureNode* gene) {
 }
 
     
+/* get exon_number attr */
+static int getExonNumber(const FeatureNode *feature) {
+    return stringToInt(feature->getAttrValue(GxfFeature::EXON_NUMBER_ATTR));
+}
+
 /* replace exon_number attr */
 static void setExonNumber(FeatureNode *feature, int exonNum) {
     feature->getAttrs().update(AttrVal(GxfFeature::EXON_NUMBER_ATTR, toString(exonNum)));
@@ -335,31 +340,51 @@ static int countNumExons(FeatureNode* transcript) {
 
 /* renumber all exons in a transcript */
 static void renumberTranscriptExons(FeatureNode* transcript) {
-    // logic here assumes exons come before features contained
-    // in them
+    // assumes exons are sorted in genomic order.
     if (transcript->getStrand() == "+") {
         int exonNum = 0;
         for (int i = 0; i < transcript->getNumChildren(); i++) {
             if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
                 exonNum++;
+                setExonNumber(transcript->getChild(i), exonNum);
             }
-            setExonNumber(transcript->getChild(i), exonNum);
         }
     } else {
         int exonNum = countNumExons(transcript);
         for (int i = 0; i < transcript->getNumChildren(); i++) {
-            setExonNumber(transcript->getChild(i), exonNum);
             if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
+                setExonNumber(transcript->getChild(i), exonNum);
                 exonNum--;
             }
         }
     }
 }
 
+/* renumber non exons features in a transcript */
+static void renumberTranscriptNonExons(FeatureNode* transcript) {
+    // logic here assumes exons come before features contained
+    // in them (which is sanity-checked
+    int exonNum = 0;
+    const FeatureNode *exon = NULL;
+    for (int i = 0; i < transcript->getNumChildren(); i++) {
+        if (transcript->getChild(i)->getType() == GxfFeature::EXON) {
+            exon = transcript->getChild(i);
+            exonNum = getExonNumber(exon);
+        } else {
+            if ((exonNum == 0) || ! transcript->getChild(i)->overlaps(exon)) {
+                throw logic_error("ensureFeatureOrder: feature order is not as expected");
+            }
+            setExonNumber(transcript->getChild(i), exonNum);
+        }
+    }
+ }
+
+
 /* renumber all exons in a gene */
 static void renumberGeneExons(FeatureNode* gene) {
     for (int i = 0; i < gene->getNumChildren(); i++) {
         renumberTranscriptExons(gene->getChild(i));
+        renumberTranscriptNonExons(gene->getChild(i));
     }
 }
 

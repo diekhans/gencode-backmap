@@ -42,15 +42,17 @@ ncbiAssemblyReportConvert = ../bin/ncbiAssemblyReportConvert
 
 all: test
 
-test: gff3UcscTest gtfUcscTest cmpUcscTest \
+test: backmap_tests other_tests
+backmap_tests: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3ParNamingTest gtfParNamingTest cmpParNamingTest \
 	gff3NcbiTest gtfNcbiTest \
 	gff3UcscSubstituteAuto gff3UcscSubstituteAutoSmallNcRna \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	mappingVerTests cmpUcscSubstituteManOverlap \
 	gff3V29RegressTest dupTranscriptsV33Test sortStrictV33Test \
-	reportsTests ucscLiftEditTest regressTests \
-	gapTest
+	regressTests gapTest
+other_tests: reportsTests ucscLiftEditTest 
+
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
