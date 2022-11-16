@@ -416,6 +416,17 @@ static bool chromLessThan(const string& a, const string& b) {
     return a < b;
 }
 
+/* compare chrom names and range */
+static bool chromRangeLessThan(const FeatureNode *a, const FeatureNode *b) {
+    if (a->getSeqid() != b->getSeqid()) {
+        return chromLessThan(a->getSeqid(), b->getSeqid());
+    } else if (a->getStart() != b->getStart()) {
+        return a->getStart() < b->getStart();
+    } else {
+        return a->getEnd() < b->getEnd();
+    }
+}
+
 /* for compare feature type for containing sort (gene > transcript > exon > ...) */
 typedef map<string, int> FeatureRankMap;
 static FeatureRankMap featureRanks = {
@@ -425,7 +436,7 @@ static FeatureRankMap featureRanks = {
     {GxfFeature::CDS, 3},
     {GxfFeature::UTR, 4},
     {GxfFeature::FIVE_PRIME_UTR, 5},
-    {GxfFeature::THREE_PRIME_UTR, 5}
+    {GxfFeature::THREE_PRIME_UTR, 6}
 };
 
 static int getFeatureRank(const FeatureNode *feature) {
@@ -437,47 +448,88 @@ static int getFeatureRank(const FeatureNode *feature) {
     }
 }
 
-/* sort by containing features before contained */
-static bool containingLessThan(const FeatureNode *a, const FeatureNode *b) {
-    if (a->getStart() < b->getStart()) {
-        return true;
-    } else if (a->getStart() > b->getStart()) {
-        return false;
-    } else if (a->getEnd() < b->getEnd()) {
-        return false;
-    } else if (a->getEnd() > b->getEnd()) {
-        return true;
-    } else {
+/* sort by containing features before contained positve strand */
+static bool containingLessThanPos(const FeatureNode *a, const FeatureNode *b) {
+    if (a == b) {
+        return false ; // same object
+    } else if (a->overlaps(b)) {
+        // overlapping
+        if (a->getType() == b->getType()) {
+            throw logic_error("overlapping features of same type: " + a->getType());
+        }
         return getFeatureRank(a) < getFeatureRank(b);
+    } else if (a->getEnd() < b->getStart()) {
+        return true;  // a before b
+    } else {
+        return false; // a after b
+    } 
+};
+
+/* sort by containing features before contained negative strand */
+static bool containingLessThanNeg(const FeatureNode *a, const FeatureNode *b) {
+    if (a == b) {
+        return false ; // same object
+    } else if (a->overlaps(b)) {
+        // overlapping
+        if (a->getType() == b->getType()) {
+            throw logic_error("overlapping features of same type: " + a->getType());
+        }
+        return getFeatureRank(a) < getFeatureRank(b);
+    } else if (a->getEnd() > b->getStart()) {
+        return true;  // a after b
+    } else {
+        return false; // a after b
     }
 };
+ 
+/* sort by chromosomes strand and containing features */
+static bool chromContainingLessThanStrand(const FeatureNode *a, const FeatureNode *b) {
+    if (a->getSeqid() != b->getSeqid()) {
+        return chromLessThan(a->getSeqid(), b->getSeqid());
+    } else if (a->getStrand() == "+") {
+        return containingLessThanPos(a, b);
+    } else {
+        return containingLessThanNeg(a, b);
+    }
+}
+
+/* sort by chromosomes and containing features */
+static bool chromContainingLessThanGenomic(const FeatureNode *a, const FeatureNode *b) {
+    if (a->getSeqid() != b->getSeqid()) {
+        return chromLessThan(a->getSeqid(), b->getSeqid());
+    } else {
+        return containingLessThanPos(a, b);
+    }
+}
 
 /* sort by chromosome order. */
 void FeatureNodeVector::sortChrom() {
+    std::sort(begin(), end(), chromRangeLessThan);
+}
+
+/* sort by chromosome order and attribute order. */
+void FeatureNodeVector::sortChromAttrName(const string& name) {
     std::sort(begin(), end(),
-              [](const FeatureNode* a, const FeatureNode* b) -> bool {
-                  if (a->getSeqid() != b->getSeqid()) {
-                      return chromLessThan(a->getSeqid(), b->getSeqid());
-                  } else if (a->getStart() != b->getStart()) {
-                      return a->getStart() < b->getStart();
-                  } else {
-                      return a->getEnd() < b->getEnd();
+              [&](const FeatureNode* a, const FeatureNode* b) -> bool {
+                  if (chromRangeLessThan(a, b)) {
+                      if (a->getAttrValue(name) < b->getAttrValue(name)) {
+                          return true;
+                      }
                   }
+                  return false;
               });
 }
 
+/* sort the vector in chromosome order. With containing features before
+ * contained features. */
+void FeatureNodeVector::sortContainingStrand() {
+    std::sort(begin(), end(), chromContainingLessThanStrand);
+}
 
 /* sort the vector in chromosome order. With containing features before
  * contained features. */
-void FeatureNodeVector::sortContaining() {
-    std::sort(begin(), end(),
-              [](const FeatureNode* a, const FeatureNode* b) -> bool {
-                  if (a->getSeqid() != b->getSeqid()) {
-                      return chromLessThan(a->getSeqid(), b->getSeqid());
-                  } else {
-                      return containingLessThan(a, b);
-                  }
-              });
+void FeatureNodeVector::sortContainingGenomic() {
+    std::sort(begin(), end(), chromContainingLessThanGenomic);
 }
 
 

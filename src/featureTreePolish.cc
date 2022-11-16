@@ -44,10 +44,9 @@ typedef vector<NodeIndex> NodeIndexVector;
 /* sort features in all transcripts */
 static void sortGeneContaining(FeatureNode* gene) {
     for (int i = 0; i < gene->getNumChildren(); i++) {
-        gene->getChild(i)->getChildren().sortContaining();
+        gene->getChild(i)->getChildren().sortContainingGenomic();
     }
 }
-
     
 /* get exon_number attr */
 static int getExonNumber(const FeatureNode *feature) {
@@ -316,7 +315,7 @@ static void mergeTranscriptGaps(FeatureNode* transcript) {
         }
     }
     if (anyMerged) {
-        transcript->getChildren().sortContaining();
+        transcript->getChildren().sortContainingGenomic();
     }
 }
 
@@ -372,7 +371,7 @@ static void renumberTranscriptNonExons(FeatureNode* transcript) {
             exonNum = getExonNumber(exon);
         } else {
             if ((exonNum == 0) || ! transcript->getChild(i)->overlaps(exon)) {
-                throw logic_error("ensureFeatureOrder: feature order is not as expected");
+                throw logic_error("renumberTranscriptNonExons: feature order is not as expected");
             }
             setExonNumber(transcript->getChild(i), exonNum);
         }
@@ -535,9 +534,9 @@ static bool compareMappedTranscriptsDescendants(const FeatureNode* prevParent,
     } else {
         // compare children sorted 
         FeatureNodeVector prevChildren(prevParent->getChildren());
-        prevChildren.sortContaining();
+        prevChildren.sortContainingGenomic();
         FeatureNodeVector newChildren(newParent->getChildren());
-        newChildren.sortContaining();
+        newChildren.sortContainingGenomic();
 
         for (int i = 0; i < prevChildren.size(); i++) {
             if (not compareOtherFeatures(prevChildren[i], newChildren[i])) {

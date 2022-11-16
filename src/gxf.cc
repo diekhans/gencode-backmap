@@ -102,6 +102,7 @@ GxfFeature::GxfFeature(const string& seqid, const string& source, const string& 
     fStart(start), fEnd(end),
     fScore(score), fStrand(strand),
     fPhase(phase), fAttrs(attrs) {
+    assert(start <= end);
     assert(strand.size() == 1);
     assert(phase.size() == 1);
 }

@@ -227,6 +227,7 @@ gff3V29RegressTest: mkdirs ${testGencodeLiftOverChains}
 	gff3ToGenePred output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gp output/$@.mapped.gp
 
 # double mapping of transcript, detected with gff3ToGenePred
 gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}

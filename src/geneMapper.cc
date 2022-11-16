@@ -918,7 +918,7 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {
         copyTargetGenes(mappedSet, mappingInfoFh);
     }
-    mappedSet.sortGenes();
+    mappedSet.sortGencode();
     mappedSet.write(mappedGxfFh);
 }
 

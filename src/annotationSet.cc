@@ -216,9 +216,9 @@ AnnotationSet::~AnnotationSet() {
 
 /* sort gene in gencode order */
 static void sortGencodeGene(FeatureNode* gene) {
-    gene->getChildren().sortChrom();
+    gene->getChildren().sortChromAttrName(GxfFeature::TRANSCRIPT_NAME_ATTR); // sorts transcripts
     for (int i = 0; i < gene->getNumChildren(); i++) {
-        gene->getChildren().sortContaining();
+        gene->getChild(i)->getChildren().sortContainingStrand();
     }
 }
 

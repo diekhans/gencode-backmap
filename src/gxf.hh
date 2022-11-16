@@ -311,6 +311,9 @@ public:
     int getStart() const {
         return fStart;
     }
+    int getStart0() const {
+        return fStart - 1;
+    }
     int getEnd() const {
         return fEnd;
     }
@@ -402,10 +405,8 @@ public:
     bool overlaps(const GxfFeature* other) const {
         if ((fSeqid != other->fSeqid) || (fStrand != other->fStrand)) {
             return false;
-        } else if ((fStart > other->fEnd) || (fEnd < other->fStart)) {
-            return false;
         } else {
-            return true;
+            return ((getStart0() < other->getEnd()) and (getEnd() > other->getStart0()));
         }
     }
 

@@ -38,9 +38,16 @@ class FeatureNodeVector: public vector<FeatureNode*> {
     /* sort by chromosome order. */
     void sortChrom();
     
+    /* sort by chromosome order and attribute order. */
+    void sortChromAttrName(const string& name);
+
+    /* sort the vector in strand order. With containing features before
+     contained features. */
+    void sortContainingStrand();
+    
     /* sort the vector in chromosome order. With containing features before
      contained features. */
-    void sortContaining();
+    void sortContainingGenomic();
 };
 
 
@@ -86,15 +93,6 @@ class FeatureNode {
         fTargetStatus(targetStatus),
         fNumMappings(numMappings) {
     }
-
-    
-    ~FeatureNode() {
-        delete fFeature;
-        for (size_t i = 0; i < fChildren.size(); i++) {
-            delete fChildren[i];
-        }
-    }
-
     /* accessors */
     FeatureNode* getParent() {
         return fParent;
