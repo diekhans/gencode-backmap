@@ -59,12 +59,14 @@ gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gp output/$@.mapped.gp
 
 gtfUcscTest: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gp output/$@.mapped.gp
 
 cmpUcscTest: gff3UcscTest gtfUcscTest
 	${diff} output/gff3UcscTest.mapped.gp output/gtfUcscTest.mapped.gp
@@ -115,12 +117,14 @@ gff3UcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
 	${gff3ToGenePred} output/$@.mapped.gff3 stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gp output/$@.mapped.gp
 
 gtfUcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
 	${gencode_backmap} --oldStyleParIdHack --swapMap  --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	gtfToGenePred -genePredExt output/$@.mapped.gtf /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
+	${diff} expected/$@.mapped.gp output/$@.mapped.gp
 
 cmpUcscSubstituteManOverlap: gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap
 	${diff} output/gff3UcscSubstituteManOverlap.mapped.gp output/gtfUcscSubstituteManOverlap.mapped.gp
