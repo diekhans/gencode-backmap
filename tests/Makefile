@@ -336,11 +336,11 @@ gtfUcscValgrind: mkdirs
 liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
 gencodeV19Dir = /hive/data/genomes/hg19/bed/gencodeV19/data/release_19
 gencodeV19Gff3 = ${gencodeV19Dir}/gencode.v19.annotation.gff3.gz
-bigVer = 33
-bigPrevVer = 32
-gencodeFullDir = /hive/data/genomes/hg38/bed/gencodeV${bigVer}/data/release_${bigVer}
+bigVer = 42
+bigPrevVer = 42
+gencodeFullDir = /hive/data/genomes/hg38/bed/gencodeV${bigVer}/hgcImport/data/release_${bigVer}
 gencodeFullGff3 = ${gencodeFullDir}/gencode.v${bigVer}.annotation.gff3.gz
-gencodePrevLiftDir = /hive/data/genomes/hg19/bed/gencodeV${bigPrevVer}lift37/data/release_${bigPrevVer}lift37
+gencodePrevLiftDir = /hive/data/genomes/hg19/bed/gencodeV${bigPrevVer}lift37/hgcImport/data/release_${bigPrevVer}lift37
 gencodePrevLiftGff3 = ${gencodePrevLiftDir}/gencode.v${bigPrevVer}lift37.annotation.gff3.gz
 
 bigTest: tmp/problemRegions.bed tmp/hg38ToHg19.over.gencode.chain
