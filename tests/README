@@ -46,3 +46,54 @@ Test data
 
 - data/gapped-transcripts.v33.gff3
   - one bass gap in CDS of ENST00000425525.1 and ENST00000397527.6 caused by alignment.
+
+-  data/full-par-id-mappings-V43-V44.tsv
+   full list of PAR stable ids V43->V44 transition to new unique stable ids
+
+   created with:
+      overlapSelect par.bed /hive/data/genomes/hg38/bed/gencodeV43/hgcImport/data/gencode.gp par.V43.gp
+      overlapSelect par.bed /hive/data/genomes/hg38/bed/gencodeV44/hgcImport/data/gencode.gp par.V44.gp
+
+      selectById -tsv 1 par.V43.gp 4 /hive/data/genomes/hg38/bed/gencodeV43/hgcImport/data/gencode.tsv >par.V43.tsv
+      selectById -tsv 1 par.V44.gp 4 /hive/data/genomes/hg38/bed/gencodeV44/hgcImport/data/gencode.tsv >par.V44.tsv
+
+
+      overlapSelect -statsOutputBoth -overlapSimilarity=1.0 par.V43.gp par.V44.gp  over100.V43-V44.tsv
+
+      tawk 'NR==1||$1!=$2' over100.V43-V44.tsv >par.diff.tsv
+
+      Non-overalpped
+      V44	V43
+      ENST00000683447.1	new
+      ENST00000381566.6	dropped
+
+      cut -f 1,2 par.diff.tsv >par.trans-mappings.tsv
+
+      sqlite3 map.db
+      .import par.trans-mappings.tsv transpairs
+      .import par.V43.tsv attrsV43
+      .import par.V44.tsv attrsV44
+
+      .output ids_assoc.tsv
+      SELECT attrsV43.geneId as geneIdV43, attrsV43.geneName as geneNameV43, transpairs.transIdV43,
+             attrsV44.geneId as geneIdV44, attrsV44.geneName as geneNameV44, transpairs.transIdV44
+      FROM transpairs
+      LEFT JOIN attrsV43 ON transpairs.transIdV43 = attrsV43.transcriptId
+      LEFT JOIN attrsV44 ON transpairs.transIdV44 = attrsV44.transcriptId;
+
+      SELECT table1.columnA, table2.columnB, table3.columnC
+      FROM table1
+      LEFT JOIN table2
+      ON table1.common_field = table2.common_field
+      LEFT JOIN table3
+      ON table1.common_field = table3.common_field;
+
+  - input/par.V43.gff3
+    input/par.V44.gff3
+    input/par.V19.gff3
+    input/stable-id-map.V44.tsv
+    
+    Files to test for PAR stable id change. V43 is just for reference and not
+    used.
+
+  -   

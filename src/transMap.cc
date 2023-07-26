@@ -49,7 +49,7 @@ void TransMap::mapPslPair(struct psl *inPsl,
     if (inPsl->tSize != mapPsl->qSize)
         errAbort(toCharStr("Error: inPsl %s tSize (%d) != mapping alignment %s qSize (%d) (perhaps you need to specify -swapMap?)"),
                  inPsl->tName, inPsl->tSize, mapPsl->qName, mapPsl->qSize);
-    struct psl* mappedPsls = pslTransMap(pslTransMapKeepTrans, inPsl, mapPsl);
+    struct psl* mappedPsls = pslTransMap(pslTransMapKeepTrans, inPsl, pslTypeNaNa, mapPsl, pslTypeNaNa);
     struct psl* mappedPsl;
     while ((mappedPsl = static_cast<struct psl*>(slPopHead(&mappedPsls))) != NULL) {
         if (pslQStrand(mappedPsl) != pslQStrand(inPsl)) {
