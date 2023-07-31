@@ -10,6 +10,9 @@
 #include <stdexcept>
 #include <iostream>
 
+static const bool debug = 0;
+
+
 /* build transcript exons PSL to query and mapping to target genome.
  * Return NULL if no mappings for whatever reason.*/
 PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcript) const {
@@ -20,9 +23,11 @@ PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcript) co
     // get alignment of exons to srcGenome and to targetGenome
     PslMapping* exonsMapping = FeatureTransMap(fGenomeTransMap).mapFeatures(qName, exons);
     if (exonsMapping == NULL) {
-        return NULL;  // source sequence not in map
+        return NULL; // not in mapping chains
     }
-    // resort using more evidence
+        
+    // filter for same chrom and sort using more evidence
+    exonsMapping->filterSameTarget();
     exonsMapping->sortMappedPsls(fTargetTranscript, fTargetGene);
     if (debug) {
         exonsMapping->dump(cerr, "Transcript Exons:", "    ");
@@ -39,7 +44,7 @@ PslMapping* TranscriptMapper::allExonsTransMap(const FeatureNode* transcript) co
 const TransMapVector TranscriptMapper::makeViaExonsTransMap(const PslMapping* exonsMapping) {
     TransMapVector transMaps;
     transMaps.push_back(TransMap::factoryFromPsl(exonsMapping->getSrcPsl(), true)); // swap map genomeA to exons
-    transMaps.push_back(TransMap::factoryFromPsl(exonsMapping->getMappedPsl(), false)); // exons to genomeB
+    transMaps.push_back(TransMap::factoryFromPsl(exonsMapping->getBestMappedPsl(), false)); // exons to genomeB
     return transMaps;
 }
 
@@ -47,7 +52,9 @@ const TransMapVector TranscriptMapper::makeViaExonsTransMap(const PslMapping* ex
 PslMapping* TranscriptMapper::featurePslMap(const FeatureNode* feature) {
     const AttrVal* idAttr = feature->findAttr(GxfFeature::ID_ATTR);
     const string& featureId = (idAttr != NULL) ? idAttr->getVal() : "someFeature";
-    return fViaExonsFeatureTransMap->mapFeature(featureId, feature);
+    PslMapping* pslMapping = fViaExonsFeatureTransMap->mapFeature(featureId, feature);
+    pslMapping->sortMappedPsls();
+    return pslMapping;
 }
 
 /* map one feature, linking in a child feature. */
@@ -72,7 +79,7 @@ TransMappedFeature TranscriptMapper::mapFeatures(const FeatureNode* feature) {
 /* create a new transcript record that covers the alignment */
 ResultFeatureTrees TranscriptMapper::mapTranscriptFeature(const FeatureNode* transcript) {
     ResultFeatureTrees mappedTranscript(transcript);
-    struct psl* mappedPsl = (fExonsMapping != NULL) ? fExonsMapping->getMappedPsl() : NULL;
+    struct psl* mappedPsl = (fExonsMapping != NULL) ? fExonsMapping->getBestMappedPsl() : NULL;
     if (mappedPsl != NULL) {
         // transcript for mapped PSLs
         mappedTranscript.mapped
@@ -104,16 +111,16 @@ TranscriptMapper::TranscriptMapper(const TransMap* genomeTransMap,
     fTargetTranscript(NULL) {
     assert(transcript->getType() == GxfFeature::TRANSCRIPT);
 
-    // if available, find target transcripts to use in selecting multiple mappings.  Special handling
-    // for PAR requires sequence id.
+    // if available, find target transcripts to use in selecting multiple mappings.  PAR is handled
+    // my only allowing same chromosome.
     if (targetAnnotations != NULL) {
         fTargetGene = targetAnnotations->getFeatureById(transcript->getAttrValue(GxfFeature::GENE_ID_ATTR),
-                                                        transcript->isParY());
+                                                        transcript->fFeature->getSeqid());
         fTargetTranscript = targetAnnotations->getFeatureById(transcript->getAttrValue(GxfFeature::TRANSCRIPT_ID_ATTR),
-                                                              transcript->isParY());
+                                                              transcript->fFeature->getSeqid());
     }
 
-    // map all exons together, this will be used to project the other exons
+    // map all exons together, this will be used to project the other features
     fExonsMapping = allExonsTransMap(transcript);
     if (fExonsMapping != NULL) {
         if (transcriptPslFh != NULL) {

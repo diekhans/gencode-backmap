@@ -1,0 +1,2 @@
+* drop remap_num_mappings attribute, as it makes less sense now that filter per same chromosome
+* remove use of havana ids, seems redundant

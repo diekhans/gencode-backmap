@@ -46,12 +46,8 @@ void AnnotationSet::freeLocationMap() {
 
 /* generate key with PAR */
 string AnnotationSet::mkFeatureIdKey(const string& typeId,
-                                     bool isParY) const {
-    if (isParY) {
-        return typeId + GxfFeature::PAR_Y_SUFFIX;
-    } else {
-        return typeId;
-    }
+                                     const string& chrom) const {
+    return chrom + "/" + typeId;
 }
 
 /* insert feature in a map */
@@ -70,15 +66,15 @@ void AnnotationSet::insertInFeatureMap(const string& key,
 void AnnotationSet::addFeature(FeatureNode* feature) {
     assert(feature->isGeneOrTranscript());
     // record by id and name
-    insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getTypeId()), feature->isParY()),
+    insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getTypeId()), feature->fFeature->getSeqid()),
                        feature, fIdFeatureMap);
     if (feature->getHavanaTypeId() != "") {
-        insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getHavanaTypeId()), feature->isParY()),
+        insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getHavanaTypeId()), feature->fFeature->getSeqid()),
                            feature, fIdFeatureMap);
     }
     // save gene name when real and unique
     if (feature->isGene() and useGeneNameForMappingKey(feature)) {
-        insertInFeatureMap(mkFeatureIdKey(feature->getTypeName(), feature->isParY()),
+        insertInFeatureMap(mkFeatureIdKey(feature->getTypeName(), feature->fFeature->getSeqid()),
                            feature, fNameFeatureMap);
     }
     if (fLocationMap != NULL) {
@@ -118,16 +114,14 @@ void AnnotationSet::processRecord(GxfParser *gxfParser,
  * NULL is returned.
  */
 FeatureNode* AnnotationSet::getFeatureByKey(const string& baseId,
-                                           bool isParY,
-                                           const FeatureMap& featureMap) const {
-    string key = mkFeatureIdKey(baseId, isParY);
+                                            const string& chrom,
+                                            const FeatureMap& featureMap) const {
+    string key = mkFeatureIdKey(baseId, chrom);
     FeatureMapConstIter it = featureMap.find(key);
     if (it == featureMap.end()) {
         return NULL;
     } else if (it->second.size() > 1) {
         return NULL;
-    } else if (it->second[0]->isParY() != isParY) {
-        throw logic_error("PAR target feature hack confused: " + key);
     } else {
         return it->second[0];
     }
@@ -136,15 +130,15 @@ FeatureNode* AnnotationSet::getFeatureByKey(const string& baseId,
 /* get a target gene or transcript node with same base id or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
 FeatureNode* AnnotationSet::getFeatureById(const string& id,
-                                           bool isParY) const {
-    return getFeatureByKey(getBaseId(id), isParY, fIdFeatureMap);
+                                           const string& chrom) const {
+    return getFeatureByKey(getBaseId(id), chrom, fIdFeatureMap);
 }
 
-/* get a target gene or transcript node with same name or NULL.
- * special handling for PARs. Getting node is used if you need whole tree. */
+/* get a target gene or transcript node with same name or NULL.  Chrom is used
+ * for for PARs. Getting node is used if you need whole tree. */
 FeatureNode* AnnotationSet::getFeatureByName(const string& name,
-                                             bool isParY) const {
-    return getFeatureByKey(name, isParY, fNameFeatureMap);
+                                             const string& chrom) const {
+    return getFeatureByKey(name, chrom, fNameFeatureMap);
 }
 
 /* find overlapping features */

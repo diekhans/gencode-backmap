@@ -55,12 +55,12 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 9	mapSrc	trans	ENST00000235933.9		CD160-201	protein_coding	chr1	145728244	145739288	+	none	0	na
 9	mapSrc	trans	ENST00000401557.6	OTTHUMT00000477672.1	CD160-004	protein_coding	chr1	145728328	145736301	+	none	0	na
 9	mapSrc	trans	ENST00000584442.2	OTTHUMT00000477673.1	CD160-002	protein_coding	chr1	145728328	145738493	+	none	0	na
-9	map	gene	ENSG00000117281.14_1	OTTHUMG00000013749.4_1	CD160	protein_coding	chr1	145695798	145715614	-	full_fragment	2	overlap
-9	map	trans	ENST00000616463.1_1	OTTHUMT00000038531.4_1	CD160-003	protein_coding	chr1	145695933	145715614	-	full_fragment	2	new
-9	map	trans	ENST00000369288.5_1	OTTHUMT00000038532.2_1	CD160-001	protein_coding	chr1	145695933	145715565	-	full_contig	2	overlap
-9	map	trans	ENST00000235933.9_1		CD160-201	protein_coding	chr1	145695798	145706842	-	full_contig	2	overlap
-9	map	trans	ENST00000401557.6_1	OTTHUMT00000477672.1_1	CD160-004	protein_coding	chr1	145698786	145706758	-	full_contig	2	overlap
-9	map	trans	ENST00000584442.2_1	OTTHUMT00000477673.1_1	CD160-002	protein_coding	chr1	145696593	145706758	-	full_contig	2	new
+9	map	gene	ENSG00000117281.14_1	OTTHUMG00000013749.4_1	CD160	protein_coding	chr1	145695798	145715614	-	full_fragment	1	overlap
+9	map	trans	ENST00000616463.1_1	OTTHUMT00000038531.4_1	CD160-003	protein_coding	chr1	145695933	145715614	-	full_fragment	1	new
+9	map	trans	ENST00000369288.5_1	OTTHUMT00000038532.2_1	CD160-001	protein_coding	chr1	145695933	145715565	-	full_contig	1	overlap
+9	map	trans	ENST00000235933.9_1		CD160-201	protein_coding	chr1	145695798	145706842	-	full_contig	1	overlap
+9	map	trans	ENST00000401557.6_1	OTTHUMT00000477672.1_1	CD160-004	protein_coding	chr1	145698786	145706758	-	full_contig	1	overlap
+9	map	trans	ENST00000584442.2_1	OTTHUMT00000477673.1_1	CD160-002	protein_coding	chr1	145696593	145706758	-	full_contig	1	new
 10	mapSrc	gene	ENSG00000131788.14	OTTHUMG00000013750.12	PIAS3	protein_coding	chr1	145848522	145859836	-	none	0	na
 10	mapSrc	trans	ENST00000472114.4	OTTHUMT00000038535.2	PIAS3-003	retained_intron	chr1	145848522	145851354	-	none	0	na
 10	mapSrc	trans	ENST00000475261.1	OTTHUMT00000038536.2	PIAS3-004	retained_intron	chr1	145848522	145854664	-	none	0	na
@@ -71,20 +71,20 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 10	mapSrc	trans	ENST00000498436.2	OTTHUMT00000100713.2	PIAS3-007	retained_intron	chr1	145854610	145859035	-	none	0	na
 10	mapSrc	trans	ENST00000393046.3	OTTHUMT00000100712.8	PIAS3-006	protein_coding	chr1	145854746	145859836	-	none	0	na
 10	mapSrc	trans	ENST00000463514.2	OTTHUMT00000100711.2	PIAS3-005	protein_coding	chr1	145856761	145859745	-	none	0	na
-10	map	gene	ENSG00000131788.14_1	OTTHUMG00000013750.12_1	PIAS3	protein_coding	chr1	145575233	145586546	+	full_contig	2	overlap
-10	map	trans	ENST00000472114.4_1	OTTHUMT00000038535.2_1	PIAS3-003	retained_intron	chr1	145583714	145586546	+	full_contig	2	overlap
-10	map	trans	ENST00000475261.1_1	OTTHUMT00000038536.2_1	PIAS3-004	retained_intron	chr1	145580404	145586546	+	full_contig	2	overlap
-10	map	trans	ENST00000369298.4_1	OTTHUMT00000038534.2_1	PIAS3-002	protein_coding	chr1	145576024	145586546	+	full_contig	2	overlap
-10	map	trans	ENST00000393045.5_1	OTTHUMT00000038533.5_1	PIAS3-001	protein_coding	chr1	145575989	145586546	+	full_contig	2	overlap
-10	map	trans	ENST00000369299.6_1	OTTHUMT00000477702.1_1	PIAS3-009	retained_intron	chr1	145575290	145580662	+	full_contig	2	overlap
-10	map	trans	ENST00000484423.4_1	OTTHUMT00000477703.1_1	PIAS3-008	retained_intron	chr1	145576020	145580526	+	full_contig	2	overlap
-10	map	trans	ENST00000498436.2_1	OTTHUMT00000100713.2_1	PIAS3-007	retained_intron	chr1	145576034	145580458	+	full_contig	2	overlap
-10	map	trans	ENST00000393046.3_1	OTTHUMT00000100712.8_1	PIAS3-006	protein_coding	chr1	145575233	145580322	+	full_contig	2	overlap
-10	map	trans	ENST00000463514.2_1	OTTHUMT00000100711.2_1	PIAS3-005	protein_coding	chr1	145575324	145578307	+	full_contig	2	overlap
+10	map	gene	ENSG00000131788.14_1	OTTHUMG00000013750.12_1	PIAS3	protein_coding	chr1	145575233	145586546	+	full_contig	1	overlap
+10	map	trans	ENST00000472114.4_1	OTTHUMT00000038535.2_1	PIAS3-003	retained_intron	chr1	145583714	145586546	+	full_contig	1	overlap
+10	map	trans	ENST00000475261.1_1	OTTHUMT00000038536.2_1	PIAS3-004	retained_intron	chr1	145580404	145586546	+	full_contig	1	overlap
+10	map	trans	ENST00000369298.4_1	OTTHUMT00000038534.2_1	PIAS3-002	protein_coding	chr1	145576024	145586546	+	full_contig	1	overlap
+10	map	trans	ENST00000393045.5_1	OTTHUMT00000038533.5_1	PIAS3-001	protein_coding	chr1	145575989	145586546	+	full_contig	1	overlap
+10	map	trans	ENST00000369299.6_1	OTTHUMT00000477702.1_1	PIAS3-009	retained_intron	chr1	145575290	145580662	+	full_contig	1	overlap
+10	map	trans	ENST00000484423.4_1	OTTHUMT00000477703.1_1	PIAS3-008	retained_intron	chr1	145576020	145580526	+	full_contig	1	overlap
+10	map	trans	ENST00000498436.2_1	OTTHUMT00000100713.2_1	PIAS3-007	retained_intron	chr1	145576034	145580458	+	full_contig	1	overlap
+10	map	trans	ENST00000393046.3_1	OTTHUMT00000100712.8_1	PIAS3-006	protein_coding	chr1	145575233	145580322	+	full_contig	1	overlap
+10	map	trans	ENST00000463514.2_1	OTTHUMT00000100711.2_1	PIAS3-005	protein_coding	chr1	145575324	145578307	+	full_contig	1	overlap
 11	mapSrc	gene	ENSG00000201699.1		RNU1-59P	snRNA	chr1	149162783	149162944	-	none	0	na
 11	mapSrc	trans	ENST00000364829.1		RNU1-59P-201	snRNA	chr1	149162783	149162944	-	none	0	na
-11	unmap	gene	ENSG00000201699.1		RNU1-59P	snRNA	chr1	149162783	149162944	-	non_primary	1	nonOverlap
-11	unmap	trans	ENST00000364829.1		RNU1-59P-201	snRNA	chr1	149162783	149162944	-	non_primary	1	nonOverlap
+11	unmap	gene	ENSG00000201699.1		RNU1-59P	snRNA	chr1	149162783	149162944	-	deleted	0	lost
+11	unmap	trans	ENST00000364829.1		RNU1-59P-201	snRNA	chr1	149162783	149162944	-	deleted	0	lost
 11	targetSubst	gene	ENSG00000201699.1		RNU1-59P	snRNA	chr1	144534038	144534199	+	none	0	na
 11	targetSubst	trans	ENST00000364829.1		RNU1-59P-201	snRNA	chr1	144534038	144534199	+	none	0	na
 12	mapSrc	gene	ENSG00000242771.1	OTTHUMG00000158537.3	TRBV5-2	TR_V_pseudogene	chr7	142372640	142372912	+	none	0	na
@@ -97,8 +97,8 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 13	map	trans	ENST00000425493.1_1	OTTHUMT00000143910.1_1	RP11-475I24.8-001	lincRNA	chr9	44384585	44391705	+	full_contig	1	overlap
 14	mapSrc	gene	ENSG00000167613.14	OTTHUMG00000065545.11	LAIR1	protein_coding	chr19	54351384	54370558	-	none	0	na
 14	mapSrc	trans	ENST00000391742.5	OTTHUMT00000140506.4	LAIR1-001	protein_coding	chr19	54351384	54364957	-	none	0	na
-14	unmap	gene	ENSG00000167613.14	OTTHUMG00000065545.11	LAIR1	protein_coding	chr19	54351384	54370558	-	non_primary	1	nonOverlap
-14	unmap	trans	ENST00000391742.5	OTTHUMT00000140506.4	LAIR1-001	protein_coding	chr19	54351384	54364957	-	non_primary	1	nonOverlap
+14	unmap	gene	ENSG00000167613.14	OTTHUMG00000065545.11	LAIR1	protein_coding	chr19	54351384	54370558	-	deleted	0	lost
+14	unmap	trans	ENST00000391742.5	OTTHUMT00000140506.4	LAIR1-001	protein_coding	chr19	54351384	54364957	-	deleted	0	lost
 14	targetSubst	gene	ENSG00000167613.11	OTTHUMG00000065545.6	LAIR1	protein_coding	chr19	54865362	54882165	-	none	0	na
 14	targetSubst	trans	ENST00000391743.3	OTTHUMT00000140510.2	LAIR1-005	protein_coding	chr19	54865362	54882165	-	none	0	na
 14	targetSubst	trans	ENST00000475389.1	OTTHUMT00000140512.1	LAIR1-007	retained_intron	chr19	54866284	54868956	-	none	0	na
@@ -152,8 +152,8 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 19	map	trans	ENST00000438574.1_1	OTTHUMT00000276778.1_1	LA16c-83F12.6-001	lincRNA	chr22	16199666	16212276	-	full_contig	1	overlap
 20	mapSrc	gene	ENSG00000251940.1		SNORA15	snoRNA	chr22	19249873	19249966	+	none	0	na
 20	mapSrc	trans	ENST00000516131.1		SNORA15.3-201	snoRNA	chr22	19249873	19249966	+	none	0	na
-20	map	gene	ENSG00000251940.1_1		SNORA15	snoRNA	chr22	19237396	19237489	+	full_contig	2	overlap
-20	map	trans	ENST00000516131.1_1		SNORA15.3-201	snoRNA	chr22	19237396	19237489	+	full_contig	2	overlap
+20	map	gene	ENSG00000251940.1_1		SNORA15	snoRNA	chr22	19237396	19237489	+	full_contig	1	overlap
+20	map	trans	ENST00000516131.1_1		SNORA15.3-201	snoRNA	chr22	19237396	19237489	+	full_contig	1	overlap
 21	mapSrc	gene	ENSG00000210049.1		MT-TF	Mt_tRNA	chrM	577	647	+	none	0	na
 21	mapSrc	trans	ENST00000387314.1		MT-TF-201	Mt_tRNA	chrM	577	647	+	none	0	na
 21	map	gene	ENSG00000210049.1_1		MT-TF	Mt_tRNA	chrM	577	647	+	full_contig	1	overlap
@@ -248,12 +248,12 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 33	map	trans	ENST00000448477.4_1	OTTHUMT00000058881.2_1	PLCXD1-004	protein_coding	chrY	150401	157424	+	full_contig	1	overlap
 34	mapSrc	gene	ENSG00000270872.2	OTTHUMG00000188642.1	SRGAP2D	unprocessed_pseudogene	chr1	143975087	144068350	+	none	0	na
 34	mapSrc	trans	ENST00000605551.2	OTTHUMT00000477800.1	SRGAP2D-001	unprocessed_pseudogene	chr1	143975087	144068350	+	none	0	na
-34	unmap	gene	ENSG00000270872.2	OTTHUMG00000188642.1	SRGAP2D	unprocessed_pseudogene	chr1	143975087	144068350	+	non_primary	1	new
-34	unmap	trans	ENST00000605551.2	OTTHUMT00000477800.1	SRGAP2D-001	unprocessed_pseudogene	chr1	143975087	144068350	+	non_primary	1	new
+34	unmap	gene	ENSG00000270872.2	OTTHUMG00000188642.1	SRGAP2D	unprocessed_pseudogene	chr1	143975087	144068350	+	deleted	0	new
+34	unmap	trans	ENST00000605551.2	OTTHUMT00000477800.1	SRGAP2D-001	unprocessed_pseudogene	chr1	143975087	144068350	+	deleted	0	new
 35	mapSrc	gene	ENSG00000171943.10	OTTHUMG00000041445.3	SRGAP2C	protein_coding	chr1	121184810	121392822	+	none	0	na
 35	mapSrc	trans	ENST00000367123.6	OTTHUMT00000099264.3	SRGAP2C-001	protein_coding	chr1	121184810	121392822	+	none	0	na
-35	unmap	gene	ENSG00000171943.10	OTTHUMG00000041445.3	SRGAP2C	protein_coding	chr1	121184810	121392822	+	gene_size_change	3	nonOverlap
-35	unmap	trans	ENST00000367123.6	OTTHUMT00000099264.3	SRGAP2C-001	protein_coding	chr1	121184810	121392822	+	gene_size_change	3	nonOverlap
+35	unmap	gene	ENSG00000171943.10	OTTHUMG00000041445.3	SRGAP2C	protein_coding	chr1	121184810	121392822	+	gene_size_change	2	nonOverlap
+35	unmap	trans	ENST00000367123.6	OTTHUMT00000099264.3	SRGAP2C-001	protein_coding	chr1	121184810	121392822	+	gene_size_change	2	nonOverlap
 36	mapSrc	gene	ENSG00000272877.1	OTTHUMG00000174850.1	DDX11L8	unprocessed_pseudogene	GL877875.1	2310	3501	+	none	0	na
 36	mapSrc	trans	ENST00000572276.1	OTTHUMT00000427560.1	DDX11L8-001	unprocessed_pseudogene	GL877875.1	2310	3501	+	none	0	na
 36	unmap	gene	ENSG00000272877.1	OTTHUMG00000174850.1	DDX11L8	unprocessed_pseudogene	GL877875.1	2310	3501	+	non_primary	1	new
@@ -261,42 +261,42 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 37	mapSrc	gene	ENSG00000265808.3	OTTHUMG00000185008.3	SEC22B	protein_coding	chr1	120150898	120176515	-	none	0	na
 37	mapSrc	trans	ENST00000578049.3	OTTHUMT00000469430.2	SEC22B-001	protein_coding	chr1	120150898	120176515	-	none	0	na
 37	mapSrc	trans	ENST00000618538.1	OTTHUMT00000477748.1	SEC22B-002	protein_coding	chr1	120157291	120160501	-	none	0	na
-37	unmap	gene	ENSG00000265808.3	OTTHUMG00000185008.3	SEC22B	protein_coding	chr1	120150898	120176515	-	non_primary	3	new
-37	unmap	trans	ENST00000578049.3	OTTHUMT00000469430.2	SEC22B-001	protein_coding	chr1	120150898	120176515	-	non_primary	3	new
-37	unmap	trans	ENST00000618538.1	OTTHUMT00000477748.1	SEC22B-002	protein_coding	chr1	120157291	120160501	-	non_primary	1	new
+37	unmap	gene	ENSG00000265808.3	OTTHUMG00000185008.3	SEC22B	protein_coding	chr1	120150898	120176515	-	gene_size_change	2	new
+37	unmap	trans	ENST00000578049.3	OTTHUMT00000469430.2	SEC22B-001	protein_coding	chr1	120150898	120176515	-	gene_size_change	2	new
+37	unmap	trans	ENST00000618538.1	OTTHUMT00000477748.1	SEC22B-002	protein_coding	chr1	120157291	120160501	-	gene_size_change	0	new
 38	mapSrc	gene	ENSG00000204174.5	OTTHUMG00000018108.2	NPY4R	protein_coding	chr10	46461099	46465881	-	none	0	na
 38	mapSrc	trans	ENST00000395716.3	OTTHUMT00000047837.2	NPY4R-001	protein_coding	chr10	46461099	46463755	-	none	0	na
 38	mapSrc	trans	ENST00000612632.2		NPY4R-202	protein_coding	chr10	46461099	46465881	-	none	0	na
 38	mapSrc	trans	ENST00000374312.4		NPY4R-201	protein_coding	chr10	46461099	46465881	-	none	0	na
-38	unmap	gene	ENSG00000204174.5	OTTHUMG00000018108.2	NPY4R	protein_coding	chr10	46461099	46465881	-	non_primary	1	nonOverlap
-38	unmap	trans	ENST00000395716.3	OTTHUMT00000047837.2	NPY4R-001	protein_coding	chr10	46461099	46463755	-	non_primary	1	nonOverlap
-38	unmap	trans	ENST00000612632.2		NPY4R-202	protein_coding	chr10	46461099	46465881	-	non_primary	1	new
-38	unmap	trans	ENST00000374312.4		NPY4R-201	protein_coding	chr10	46461099	46465881	-	non_primary	1	nonOverlap
+38	unmap	gene	ENSG00000204174.5	OTTHUMG00000018108.2	NPY4R	protein_coding	chr10	46461099	46465881	-	deleted	0	lost
+38	unmap	trans	ENST00000395716.3	OTTHUMT00000047837.2	NPY4R-001	protein_coding	chr10	46461099	46463755	-	deleted	0	lost
+38	unmap	trans	ENST00000612632.2		NPY4R-202	protein_coding	chr10	46461099	46465881	-	deleted	0	new
+38	unmap	trans	ENST00000374312.4		NPY4R-201	protein_coding	chr10	46461099	46465881	-	deleted	0	lost
 38	targetSubst	gene	ENSG00000204174.2	OTTHUMG00000018108.1	NPY4R	protein_coding	chr10	47083534	47088320	+	none	0	na
 38	targetSubst	trans	ENST00000374312.1		NPY4R-201	protein_coding	chr10	47083534	47088320	+	none	0	na
 38	targetSubst	trans	ENST00000395716.1	OTTHUMT00000047837.1	NPY4R-001	protein_coding	chr10	47085664	47088320	+	none	0	na
 39	mapSrc	gene	ENSG00000204175.5	OTTHUMG00000018107.1	GPRIN2	protein_coding	chr10	46549044	46555530	-	none	0	na
 39	mapSrc	trans	ENST00000374317.1	OTTHUMT00000047836.1	GPRIN2-001	protein_coding	chr10	46549044	46555530	-	none	0	na
 39	mapSrc	trans	ENST00000374314.5		GPRIN2-201	protein_coding	chr10	46549049	46550744	-	none	0	na
-39	map	gene	ENSG00000204175.5_1	OTTHUMG00000018107.1_1	GPRIN2	protein_coding	chr10	46994087	47000573	+	full_contig	2	overlap
-39	map	trans	ENST00000374317.1_1	OTTHUMT00000047836.1_1	GPRIN2-001	protein_coding	chr10	46994087	47000573	+	full_contig	2	overlap
-39	map	trans	ENST00000374314.5_1		GPRIN2-201	protein_coding	chr10	46998873	47000568	+	full_contig	2	overlap
+39	map	gene	ENSG00000204175.5_1	OTTHUMG00000018107.1_1	GPRIN2	protein_coding	chr10	46994087	47000573	+	full_contig	1	overlap
+39	map	trans	ENST00000374317.1_1	OTTHUMT00000047836.1_1	GPRIN2-001	protein_coding	chr10	46994087	47000573	+	full_contig	1	overlap
+39	map	trans	ENST00000374314.5_1		GPRIN2-201	protein_coding	chr10	46998873	47000568	+	full_contig	1	overlap
 40	mapSrc	gene	ENSG00000279508.1		AL589743.1	protein_coding	chr14	19300177	19302924	-	none	0	na
 40	mapSrc	trans	ENST00000624585.1		AL589743.1-201	protein_coding	chr14	19300177	19302924	-	none	0	na
 40	map	gene	ENSG00000279508.1_1		AL589743.1	protein_coding	chr14	19684782	19687529	+	full_contig	1	new
 40	map	trans	ENST00000624585.1_1		AL589743.1-201	protein_coding	chr14	19684782	19687529	+	full_contig	1	new
 41	mapSrc	gene	ENSG00000278704.1		BX004987.4	protein_coding	GL000009.2	56140	58376	-	none	0	na
 41	mapSrc	trans	ENST00000618686.1		BX004987.4-201	protein_coding	GL000009.2	56140	58376	-	none	0	na
-41	map	gene	ENSG00000278704.1_1		BX004987.4	protein_coding	chr1	143398956	143401192	-	full_contig	1	new
-41	map	trans	ENST00000618686.1_1		BX004987.4-201	protein_coding	chr1	143398956	143401192	-	full_contig	1	new
+41	unmap	gene	ENSG00000278704.1		BX004987.4	protein_coding	GL000009.2	56140	58376	-	deleted	0	new
+41	unmap	trans	ENST00000618686.1		BX004987.4-201	protein_coding	GL000009.2	56140	58376	-	deleted	0	new
 42	mapSrc	gene	ENSG00000275188.1		BX004987.3	miRNA	GL000009.2	94751	94833	-	none	0	na
 42	mapSrc	trans	ENST00000621679.1		BX004987.3-201	miRNA	GL000009.2	94751	94833	-	none	0	na
-42	map	gene	ENSG00000275188.1_1		BX004987.3	miRNA	chr1	143437567	143437649	-	full_contig	2	new
-42	map	trans	ENST00000621679.1_1		BX004987.3-201	miRNA	chr1	143437567	143437649	-	full_contig	2	new
+42	unmap	gene	ENSG00000275188.1		BX004987.3	miRNA	GL000009.2	94751	94833	-	deleted	0	new
+42	unmap	trans	ENST00000621679.1		BX004987.3-201	miRNA	GL000009.2	94751	94833	-	deleted	0	new
 43	mapSrc	gene	ENSG00000280116.1		AC231657.1	protein_coding	chrX	49155242	49157351	-	none	0	na
 43	mapSrc	trans	ENST00000624556.1		AC231657.1-201	protein_coding	chrX	49155242	49157351	-	none	0	na
-43	unmap	gene	ENSG00000280116.1		AC231657.1	protein_coding	chrX	49155242	49157351	-	non_primary	3	new
-43	unmap	trans	ENST00000624556.1		AC231657.1-201	protein_coding	chrX	49155242	49157351	-	non_primary	3	new
+43	unmap	gene	ENSG00000280116.1		AC231657.1	protein_coding	chrX	49155242	49157351	-	gene_size_change	2	new
+43	unmap	trans	ENST00000624556.1		AC231657.1-201	protein_coding	chrX	49155242	49157351	-	gene_size_change	2	new
 44	mapSrc	gene	ENSG00000239810.3	OTTHUMG00000001929.5	PRAMEF11	protein_coding	chr1	12824605	12831410	-	none	0	na
 44	mapSrc	trans	ENST00000619922.1	OTTHUMT00000005460.5	PRAMEF11-001	protein_coding	chr1	12824605	12831410	-	none	0	na
 44	unmap	gene	ENSG00000239810.3	OTTHUMG00000001929.5	PRAMEF11	protein_coding	chr1	12824605	12831410	-	partial	1	nonOverlap
@@ -331,22 +331,22 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 50	mapSrc	trans	ENST00000492350.2	OTTHUMT00000048013.2	PARG-003	retained_intron	chr10	49820210	49833274	-	none	0	na
 50	mapSrc	trans	ENST00000611974.3	OTTHUMT00000476846.1	PARG-008	processed_transcript	chr10	49857295	49941970	-	none	0	na
 50	mapSrc	trans	ENST00000497481.1	OTTHUMT00000048014.1	PARG-004	processed_transcript	chr10	49865321	49867434	-	none	0	na
-50	unmap	gene	ENSG00000227345.7	OTTHUMG00000018201.3	PARG	protein_coding	chr10	49818279	49970203	-	partial	5	nonOverlap
-50	unmap	trans	ENST00000402038.6	OTTHUMT00000048011.3	PARG-001	protein_coding	chr10	49818279	49970203	-	partial	5	overlap
-50	unmap	trans	ENST00000614063.3	OTTHUMT00000476843.1	PARG-006	nonsense_mediated_decay	chr10	49818992	49941986	-	partial	4	new
-50	unmap	trans	ENST00000610922.1	OTTHUMT00000476844.1	PARG-005	nonsense_mediated_decay	chr10	49819145	49941998	-	partial	4	new
-50	unmap	trans	ENST00000616448.1	OTTHUMT00000476845.1	PARG-007	protein_coding	chr10	49819334	49941985	-	partial	4	new
-50	unmap	trans	ENST00000492350.2	OTTHUMT00000048013.2	PARG-003	retained_intron	chr10	49820210	49833274	-	partial	3	nonOverlap
-50	unmap	trans	ENST00000611974.3	OTTHUMT00000476846.1	PARG-008	processed_transcript	chr10	49857295	49941970	-	partial	2	new
-50	unmap	trans	ENST00000497481.1	OTTHUMT00000048014.1	PARG-004	processed_transcript	chr10	49865321	49867434	-	full_contig	2	overlap
+50	unmap	gene	ENSG00000227345.7	OTTHUMG00000018201.3	PARG	protein_coding	chr10	49818279	49970203	-	partial	4	nonOverlap
+50	unmap	trans	ENST00000402038.6	OTTHUMT00000048011.3	PARG-001	protein_coding	chr10	49818279	49970203	-	partial	4	overlap
+50	unmap	trans	ENST00000614063.3	OTTHUMT00000476843.1	PARG-006	nonsense_mediated_decay	chr10	49818992	49941986	-	partial	3	new
+50	unmap	trans	ENST00000610922.1	OTTHUMT00000476844.1	PARG-005	nonsense_mediated_decay	chr10	49819145	49941998	-	partial	3	new
+50	unmap	trans	ENST00000616448.1	OTTHUMT00000476845.1	PARG-007	protein_coding	chr10	49819334	49941985	-	partial	3	new
+50	unmap	trans	ENST00000492350.2	OTTHUMT00000048013.2	PARG-003	retained_intron	chr10	49820210	49833274	-	partial	2	nonOverlap
+50	unmap	trans	ENST00000611974.3	OTTHUMT00000476846.1	PARG-008	processed_transcript	chr10	49857295	49941970	-	partial	1	new
+50	unmap	trans	ENST00000497481.1	OTTHUMT00000048014.1	PARG-004	processed_transcript	chr10	49865321	49867434	-	full_contig	1	overlap
 50	targetSubst	gene	ENSG00000227345.4	OTTHUMG00000018201.2	PARG	protein_coding	chr10	51026325	51130715	-	none	0	na
 50	targetSubst	trans	ENST00000402038.3	OTTHUMT00000048011.2	PARG-001	protein_coding	chr10	51026325	51130715	-	none	0	na
 50	targetSubst	trans	ENST00000492350.1	OTTHUMT00000048013.1	PARG-003	processed_transcript	chr10	51040849	51041320	-	none	0	na
 50	targetSubst	trans	ENST00000497481.1	OTTHUMT00000048014.1	PARG-004	processed_transcript	chr10	51073367	51075480	-	none	0	na
 51	mapSrc	gene	ENSG00000230166.1	OTTHUMG00000018202.1	RP11-526K21.2	processed_pseudogene	chr10	49909613	49909942	+	none	0	na
 51	mapSrc	trans	ENST00000413846.1	OTTHUMT00000048015.1	RP11-526K21.2-001	processed_pseudogene	chr10	49909613	49909942	+	none	0	na
-51	map	gene	ENSG00000230166.1_1	OTTHUMG00000018202.1_1	RP11-526K21.2	processed_pseudogene	chr10	51117659	51117988	+	full_contig	2	overlap
-51	map	trans	ENST00000413846.1_1	OTTHUMT00000048015.1_1	RP11-526K21.2-001	processed_pseudogene	chr10	51117659	51117988	+	full_contig	2	overlap
+51	map	gene	ENSG00000230166.1_1	OTTHUMG00000018202.1_1	RP11-526K21.2	processed_pseudogene	chr10	51117659	51117988	+	full_contig	1	overlap
+51	map	trans	ENST00000413846.1_1	OTTHUMT00000048015.1_1	RP11-526K21.2-001	processed_pseudogene	chr10	51117659	51117988	+	full_contig	1	overlap
 52	mapSrc	gene	ENSG00000178645.11	OTTHUMG00000018199.1	C10orf53	protein_coding	chr10	49679651	49710261	+	none	0	na
 52	mapSrc	trans	ENST00000374113.3	OTTHUMT00000048004.1	C10orf53-001	protein_coding	chr10	49679651	49696044	+	none	0	na
 52	mapSrc	trans	ENST00000374111.6	OTTHUMT00000048005.1	C10orf53-002	protein_coding	chr10	49679686	49695107	+	none	0	na
@@ -371,16 +371,16 @@ geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featSta
 54	mapSrc	trans	ENST00000610300.3	OTTHUMT00000479025.1	NBPF9-008	protein_coding	chr1	149055630	149082311	-	none	0	na
 54	mapSrc	trans	ENST00000483630.4		NBPF9-201	protein_coding	chr1	149055630	149075866	-	none	0	na
 54	mapSrc	trans	ENST00000611593.1	OTTHUMT00000038850.3	NBPF9-006	retained_intron	chr1	149059763	149066634	-	none	0	na
-54	unmap	gene	ENSG00000269713.6	OTTHUMG00000013845.9	NBPF9	protein_coding	chr1	149054027	149103561	-	gene_conflict	4	nonOverlap
-54	unmap	trans	ENST00000615421.3	OTTHUMT00000038846.6	NBPF9-002	protein_coding	chr1	149054027	149103539	-	gene_conflict	4	new
-54	unmap	trans	ENST00000613595.3		NBPF9-203	protein_coding	chr1	149054033	149082311	-	gene_conflict	3	new
-54	unmap	trans	ENST00000584027.7		NBPF9-202	protein_coding	chr1	149054033	149082311	-	gene_conflict	3	new
-54	unmap	trans	ENST00000613969.3		NBPF9-204	protein_coding	chr1	149054033	149082311	-	gene_conflict	3	new
-54	unmap	trans	ENST00000621074.3		NBPF9-205	protein_coding	chr1	149054033	149082311	-	gene_conflict	3	new
-54	unmap	trans	ENST00000621645.3	OTTHUMT00000477629.2	NBPF9-007	protein_coding	chr1	149054138	149103561	-	gene_conflict	4	new
-54	unmap	trans	ENST00000610300.3	OTTHUMT00000479025.1	NBPF9-008	protein_coding	chr1	149055630	149082311	-	gene_conflict	2	new
-54	unmap	trans	ENST00000483630.4		NBPF9-201	protein_coding	chr1	149055630	149075866	-	gene_conflict	2	nonOverlap
-54	unmap	trans	ENST00000611593.1	OTTHUMT00000038850.3	NBPF9-006	retained_intron	chr1	149059763	149066634	-	gene_conflict	1	new
+54	unmap	gene	ENSG00000269713.6	OTTHUMG00000013845.9	NBPF9	protein_coding	chr1	149054027	149103561	-	gene_size_change	3	overlap
+54	unmap	trans	ENST00000615421.3	OTTHUMT00000038846.6	NBPF9-002	protein_coding	chr1	149054027	149103539	-	gene_size_change	3	new
+54	unmap	trans	ENST00000613595.3		NBPF9-203	protein_coding	chr1	149054033	149082311	-	gene_size_change	2	new
+54	unmap	trans	ENST00000584027.7		NBPF9-202	protein_coding	chr1	149054033	149082311	-	gene_size_change	2	new
+54	unmap	trans	ENST00000613969.3		NBPF9-204	protein_coding	chr1	149054033	149082311	-	gene_size_change	2	new
+54	unmap	trans	ENST00000621074.3		NBPF9-205	protein_coding	chr1	149054033	149082311	-	gene_size_change	2	new
+54	unmap	trans	ENST00000621645.3	OTTHUMT00000477629.2	NBPF9-007	protein_coding	chr1	149054138	149103561	-	gene_size_change	3	new
+54	unmap	trans	ENST00000610300.3	OTTHUMT00000479025.1	NBPF9-008	protein_coding	chr1	149055630	149082311	-	gene_size_change	1	new
+54	unmap	trans	ENST00000483630.4		NBPF9-201	protein_coding	chr1	149055630	149075866	-	gene_size_change	1	nonOverlap
+54	unmap	trans	ENST00000611593.1	OTTHUMT00000038850.3	NBPF9-006	retained_intron	chr1	149059763	149066634	-	gene_size_change	0	new
 54	targetSubst	gene	ENSG00000168614.13	OTTHUMG00000013845.2	NBPF9	protein_coding	chr1	144811744	144830413	+	none	0	na
 54	targetSubst	trans	ENST00000338347.4		NBPF9-202	protein_coding	chr1	144811744	144830301	+	none	0	na
 54	targetSubst	trans	ENST00000440491.2		NBPF9-203	protein_coding	chr1	144811744	144830301	+	none	0	na

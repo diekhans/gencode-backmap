@@ -11,17 +11,14 @@ class FeatureNode;
 class PslMapping {
     private:
     struct psl* fSrcPsl;
-    struct psl* fMappedPsl; // best mapped PSL, or NULL if none mapped
-    PslVector fMappedPsls;  // all mapped PSLs, [0] is fMappedPsl
+    PslVector fMappedPsls;  // all mapped PSLs, [0] is best mapped after sort
 
     static int numAlignedBases(const struct psl* psl);
 
     public:
     /* constructor, sort mapped PSLs */
     PslMapping(struct psl* srcPsl,
-               PslVector& mappedPsls,
-               const FeatureNode* primaryTarget=NULL,
-               const FeatureNode* secondaryTarget=NULL);
+               PslVector& mappedPsls);
 
     /* free up psls */
     ~PslMapping();
@@ -30,22 +27,23 @@ class PslMapping {
     struct psl* getSrcPsl() const {
         return fSrcPsl;
     }
-    struct psl* getMappedPsl() const {
-        return fMappedPsl;
+    struct psl* getBestMappedPsl() const {
+        return fMappedPsls.empty() ? NULL: fMappedPsls[0];
     }
     const PslVector getMappedPsls() const {
         return fMappedPsls;
     }
 
-    /* sort or restore the mapped PSLs  Kind of a hack to allow sort so
-     * we don't have to pass primaryTarget/secondaryTargets everywhere.
-     * targets maybe NULL. */
+    /* Sort the mapped PSLs by score, optionally using primaryTarget/secondaryTargets */
     void sortMappedPsls(const FeatureNode* primaryTarget=NULL,
                         const FeatureNode* secondaryTarget=NULL);
 
+    /* filter for mappings to same mapped target sequence as source */
+    void filterSameTarget();
+
     /* are there any mappings? */
     bool haveMappings() const {
-        return fMappedPsls.size() > 0;
+        return not fMappedPsls.empty();
     }
 
     /** write the mapped PSLs */

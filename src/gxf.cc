@@ -168,7 +168,6 @@ const string& GxfFeature::getTypeBiotype() const {
 class Gff3Parser: public GxfParser {
     private:
 
-    /* is this a multi-valued attribute? */
     /* parse ID=ENSG00000223972.5 */
     static void parseAttr(const string& attrStr,
                           AttrVals& attrVals) {

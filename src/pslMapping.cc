@@ -9,21 +9,19 @@
 // FIXME: passing down features to this level in simple container is annoying.
 // It would be better to have a sort function passed it, but we had all the
 // core dump issues with sort, put algorithm here for now.
+// NOTE: core dump was due to not following ordering requirements of C++ sort.
+
+static const bool debug = false;
+
 
 #undef USE_CXX_SORT
 
 /* constructor, sort mapped PSLs */
 PslMapping::PslMapping(struct psl* srcPsl,
-                       PslVector& mappedPsls,
-                       const FeatureNode* primaryTarget,
-                       const FeatureNode* secondaryTarget):
+                       PslVector& mappedPsls):
     fSrcPsl(srcPsl),
-    fMappedPsl(NULL),
     fMappedPsls(mappedPsls) {
     assert(pslQStrand(srcPsl) == '+');
-    if (fMappedPsls.size() > 0) {
-        sortMappedPsls(primaryTarget, secondaryTarget);
-    }
 }
 
 /* free up psls */
@@ -69,7 +67,7 @@ void PslMapping::dump(ostream& fh,
 
 static void dumpMapped(struct psl* srcPsl,
                        PslVector& mappedPsls) {
-#if 0
+#if debug
     if (mappedPsls.size() > 1) {
         fprintf(stdout, "@ ");
         pslTabOut(srcPsl, stdout);
@@ -255,11 +253,20 @@ void PslMapping::sortMappedPsls(const FeatureNode* primaryTarget,
     qsort(static_cast<struct psl**>(&(fMappedPsls[0])), fMappedPsls.size(), sizeof(struct psl*), mapScoreCmp);
     gSrcPsl = NULL;
     gPrimaryTarget = gSecondaryTarget = NULL;
-    if (fMappedPsls.size() > 0) {
-        fMappedPsl = fMappedPsls[0];
-    }
 }
 #endif
 
+/* filter for mappings to same mapped target sequence as source */
+void PslMapping::filterSameTarget() {
+    for (auto iter = fMappedPsls.begin(); iter != fMappedPsls.end();) {
+        struct psl *mpsl = *iter;
+        if (!sameString(mpsl->tName, fSrcPsl->tName)) {
+            pslFree(&mpsl);
+            iter = fMappedPsls.erase(iter);
+        } else {
+            iter++;
+        }
+    }
+}
 
 

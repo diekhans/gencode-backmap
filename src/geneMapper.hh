@@ -28,27 +28,32 @@ class GeneMapper {
         useTargetForPatchRegions  = 0x08
     };
     private:
-    /* set of (baseId, isParY) or  (name, isParY) that have been mapped. */
-    class MappedIdSet: public set<pair<string, bool> > {
-        typedef pair<string, bool> Key;
+    /* set of (baseId, chrom) or (name, chrom) that have been mapped. */
+    class MappedIdSet: public set<pair<string, string> > {
+        typedef pair<string, string> Key;
         public:
-        void addBaseId(const string& fullid, bool isParY) {
-            insert(Key(getBaseId(fullid), isParY));
+        void addBaseId(const string& fullid, const string& chrom) {
+            insert(Key(getBaseId(fullid), chrom));
         }
-        bool haveBaseId(const string& fullid, bool isParY) const {
-            return find(Key(getBaseId(fullid), isParY)) != end();
+        bool haveBaseId(const string& fullid, const string& chrom) const {
+            return find(Key(getBaseId(fullid), chrom)) != end();
         }
-        void removeBaseId(const string& fullid, bool isParY) {
-            erase(Key(getBaseId(fullid), isParY));
+        void removeBaseId(const string& fullid, const string& chrom) {
+            erase(Key(getBaseId(fullid), chrom));
         }
-        void addName(const string& name, bool isParY) {
-            insert(Key(name, isParY));
+        void addName(const string& name, const string& chrom) {
+            insert(Key(name, chrom));
         }
-        bool haveName(const string& name, bool isParY) const {
-            return find(Key(name, isParY)) != end();
+        bool haveName(const string& name, const string& chrom) const {
+            return find(Key(name, chrom)) != end();
         }
-        void removeName(const string& name, bool isParY) {
-            erase(Key(name, isParY));
+        void removeName(const string& name, const string& chrom) {
+            erase(Key(name, chrom));
+        }
+        void dump(ostream& fh, const string& prefix="") const {
+            for (auto key = cbegin(); key != cend(); key++) {
+                fh << prefix << '(' << key->first << ',' << key->second << ')' << endl;
+            }
         }
     };
 

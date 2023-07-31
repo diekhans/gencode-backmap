@@ -155,7 +155,7 @@ void FeatureMapper::processMappedFeature(const FeatureNode* feature,
                                          const PslMapping* pslMapping,
                                          TransMappedFeature& transMappedFeature) {
     PslCursor srcPslCursor(pslMapping->getSrcPsl());
-    PslCursor mappedPslCursor(pslMapping->getMappedPsl());
+    PslCursor mappedPslCursor(pslMapping->getBestMappedPsl());
     mapFeature(feature->getGxfFeature(), srcPslCursor, mappedPslCursor, transMappedFeature);
 }
 

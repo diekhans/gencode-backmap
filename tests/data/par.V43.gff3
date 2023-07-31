@@ -2,9 +2,9 @@
 #description: evidence-based annotation of the human genome (GRCh38), version 43 (Ensembl 109)
 #date: 2022-11-29
 
-##
+#---
 # ENSG00000227159.8	DDX11L16	ENST00000507418.6	ENSG00000292371.1	DDX11L16	ENST00000711270.1
-##
+#---
 chrX	HAVANA	gene	156025664	156027877	.	-	.	ID=ENSG00000227159.8;gene_id=ENSG00000227159.8;gene_type=unprocessed_pseudogene;gene_name=DDX11L16;level=2;hgnc_id=HGNC:37115;havana_gene=OTTHUMG00000022678.1
 chrX	HAVANA	transcript	156025664	156027877	.	-	.	ID=ENST00000507418.6;Parent=ENSG00000227159.8;gene_id=ENSG00000227159.8;transcript_id=ENST00000507418.6;gene_type=unprocessed_pseudogene;gene_name=DDX11L16;transcript_type=unprocessed_pseudogene;transcript_name=DDX11L16-201;level=2;transcript_support_level=NA;hgnc_id=HGNC:37115;ont=PGO:0000005;tag=basic,Ensembl_canonical;havana_gene=OTTHUMG00000022678.1;havana_transcript=OTTHUMT00000058841.1
 chrX	HAVANA	exon	156027830	156027877	.	-	.	ID=exon:ENST00000507418.6:1;Parent=ENST00000507418.6;gene_id=ENSG00000227159.8;transcript_id=ENST00000507418.6;gene_type=unprocessed_pseudogene;gene_name=DDX11L16;transcript_type=unprocessed_pseudogene;transcript_name=DDX11L16-201;exon_number=1;exon_id=ENSE00002072208.1;level=2;transcript_support_level=NA;hgnc_id=HGNC:37115;ont=PGO:0000005;tag=basic,Ensembl_canonical;havana_gene=OTTHUMG00000022678.1;havana_transcript=OTTHUMT00000058841.1
@@ -21,12 +21,12 @@ chrY	HAVANA	exon	57213526	57213602	.	-	.	ID=exon:ENST00000507418.6_PAR_Y:3;Paren
 chrY	HAVANA	exon	57213204	57213357	.	-	.	ID=exon:ENST00000507418.6_PAR_Y:4;Parent=ENST00000507418.6_PAR_Y;gene_id=ENSG00000227159.8;transcript_id=ENST00000507418.6;gene_type=unprocessed_pseudogene;gene_name=DDX11L16;transcript_type=unprocessed_pseudogene;transcript_name=DDX11L16-201;exon_number=4;exon_id=ENSE00002036959.1;level=2;transcript_support_level=NA;hgnc_id=HGNC:37115;ont=PGO:0000005;tag=basic,Ensembl_canonical,PAR;havana_gene=OTTHUMG00000022678.1;havana_transcript=OTTHUMT00000058841.1
 chrY	HAVANA	exon	57212184	57213125	.	-	.	ID=exon:ENST00000507418.6_PAR_Y:5;Parent=ENST00000507418.6_PAR_Y;gene_id=ENSG00000227159.8;transcript_id=ENST00000507418.6;gene_type=unprocessed_pseudogene;gene_name=DDX11L16;transcript_type=unprocessed_pseudogene;transcript_name=DDX11L16-201;exon_number=5;exon_id=ENSE00002023900.1;level=2;transcript_support_level=NA;hgnc_id=HGNC:37115;ont=PGO:0000005;tag=basic,Ensembl_canonical,PAR;havana_gene=OTTHUMG00000022678.1;havana_transcript=OTTHUMT00000058841.1
 
-##
+#---
 # ENSG00000124334.18	IL9R	ENST00000494962.6	ENSG00000292373.1	IL9R	ENST00000711289.1
 # ENSG00000124334.18	IL9R	ENST00000489233.6	ENSG00000292373.1	IL9R	ENST00000711288.1
 # ENSG00000124334.18	IL9R	ENST00000369423.7	ENSG00000292373.1	IL9R	ENST00000711287.1
 # ENSG00000124334.18	IL9R	ENST00000244174.11	ENSG00000292373.1	IL9R	ENST00000711286.1
-##
+#---
 
 chrX	HAVANA	gene	155997696	156010817	.	+	.	ID=ENSG00000124334.18;gene_id=ENSG00000124334.18;gene_type=protein_coding;gene_name=IL9R;level=2;hgnc_id=HGNC:6030;tag=overlapping_locus;havana_gene=OTTHUMG00000022720.1
 chrX	HAVANA	transcript	155997696	156010817	.	+	.	ID=ENST00000244174.11;Parent=ENSG00000124334.18;gene_id=ENSG00000124334.18;transcript_id=ENST00000244174.11;gene_type=protein_coding;gene_name=IL9R;transcript_type=protein_coding;transcript_name=IL9R-201;level=2;protein_id=ENSP00000244174.5;transcript_support_level=1;hgnc_id=HGNC:6030;tag=basic,Ensembl_canonical,MANE_Select,appris_principal_1,CCDS;ccdsid=CCDS14771.4;havana_gene=OTTHUMG00000022720.1;havana_transcript=OTTHUMT00000058981.1
@@ -140,13 +140,13 @@ chrY	HAVANA	exon	57192634	57192708	.	+	.	ID=exon:ENST00000494962.6_PAR_Y:1;Paren
 chrY	HAVANA	exon	57194043	57194127	.	+	.	ID=exon:ENST00000494962.6_PAR_Y:2;Parent=ENST00000494962.6_PAR_Y;gene_id=ENSG00000124334.18;transcript_id=ENST00000494962.6;gene_type=protein_coding;gene_name=IL9R;transcript_type=protein_coding_CDS_not_defined;transcript_name=IL9R-204;exon_number=2;exon_id=ENSE00003642278.1;level=2;transcript_support_level=2;hgnc_id=HGNC:6030;tag=PAR;havana_gene=OTTHUMG00000022720.1;havana_transcript=OTTHUMT00000058984.1
 chrY	HAVANA	exon	57194419	57194566	.	+	.	ID=exon:ENST00000494962.6_PAR_Y:3;Parent=ENST00000494962.6_PAR_Y;gene_id=ENSG00000124334.18;transcript_id=ENST00000494962.6;gene_type=protein_coding;gene_name=IL9R;transcript_type=protein_coding_CDS_not_defined;transcript_name=IL9R-204;exon_number=3;exon_id=ENSE00001810078.1;level=2;transcript_support_level=2;hgnc_id=HGNC:6030;tag=PAR;havana_gene=OTTHUMG00000022720.1;havana_transcript=OTTHUMT00000058984.1
 
-##
+#---
 # ENSG00000196433.13	ASMT	ENST00000432523.6	ENSG00000292336.1	ASMT	ENST00000711206.1
 # ENSG00000196433.13	ASMT	ENST00000509780.6	ENSG00000292336.1	ASMT	ENST00000711207.1
 # ENSG00000196433.13	ASMT	ENST00000381233.8	ENSG00000292336.1	ASMT	ENST00000711208.1
 # ENSG00000196433.13	ASMT	ENST00000381229.9	ENSG00000292336.1	ASMT	ENST00000711209.1
 # ENSG00000196433.13	ASMT	ENST00000381241.9	ENSG00000292336.1	ASMT	ENST00000711210.1
-##
+#---
 
 chrX	HAVANA	gene	1615059	1643081	.	+	.	ID=ENSG00000196433.13;gene_id=ENSG00000196433.13;gene_type=protein_coding;gene_name=ASMT;level=2;hgnc_id=HGNC:750;havana_gene=OTTHUMG00000021065.3
 chrX	HAVANA	transcript	1615059	1643081	.	+	.	ID=ENST00000381241.9;Parent=ENSG00000196433.13;gene_id=ENSG00000196433.13;transcript_id=ENST00000381241.9;gene_type=protein_coding;gene_name=ASMT;transcript_type=protein_coding;transcript_name=ASMT-203;level=2;protein_id=ENSP00000370639.3;transcript_support_level=1;hgnc_id=HGNC:750;tag=basic,Ensembl_canonical,MANE_Select,CCDS;ccdsid=CCDS14117.1;havana_gene=OTTHUMG00000021065.3;havana_transcript=OTTHUMT00000055611.2

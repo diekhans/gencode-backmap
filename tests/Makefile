@@ -6,10 +6,12 @@ export SHELLOPTS = pipefail
 
 ### IMPORTANT: test GFF3, if new are added update so chains are rebuilt
 GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
-	data/dup-transcripts.v19.gff3
-GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 data/gencode.v29.annotation.gff3 \
-	data/gencode.v31.annotation.gff3 data/dup-transcripts.v33.gff3 \
-	data/gapped-transcripts.v33.gff3 data/sort.v33.gff3
+	data/dup-transcripts.v19.gff3 data/par.V19.gff3
+GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 \
+	data/gencode.v29.annotation.gff3 data/gencode.v31.annotation.gff3 \
+	data/dup-transcripts.v33.gff3 \
+	data/gapped-transcripts.v33.gff3 data/sort.v33.gff3 \
+	data/par.V43.gff3 data/par.V44.gff3
 
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetGff3Arg = --targetGxf=data/gencode.v19.annotation.gff3
@@ -50,7 +52,7 @@ backmap_tests: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	mappingVerTests cmpUcscSubstituteManOverlap \
 	gff3V29RegressTest dupTranscriptsV33Test sortStrictV33Test \
-	regressTests gapTest
+	regressTests gapTest parStableIdTests
 other_tests: reportsTests ucscLiftEditTest 
 
 
@@ -257,6 +259,15 @@ gapTest: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
+# V44 gave unique ids to to chrY PAR, which caused old chrX to be mapped to chrY
+parStableIdTests: parStableIdTest
+
+parStableIdTest: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --targetGxf=data/par.V19.gff3 ${targetSubstArg} --previousMappedGxf=data/par.V43.gff3 ${headerArg} data/par.V44.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+	gff3ToGenePred -geneNameAttr=gene_name -rnaNameAttr=transcript_id output/$@.mapped.gff3 output/$@.gp
+	genePredCheck -db=hg19 output/$@.gp
 
 ##
 ## lift edit
@@ -343,11 +354,11 @@ gencodeFullGff3 = ${gencodeFullDir}/gencode.v${bigVer}.annotation.gff3.gz
 gencodePrevLiftDir = /hive/data/genomes/hg19/bed/gencodeV${bigPrevVer}lift37/hgcImport/data/release_${bigPrevVer}lift37
 gencodePrevLiftGff3 = ${gencodePrevLiftDir}/gencode.v${bigPrevVer}lift37.annotation.gff3.gz
 
-bigTest: tmp/problemRegions.bed tmp/hg38ToHg19.over.gencode.chain
+bigTest: output/update/problemRegions.bed output/update/hg38ToHg19.over.gencode.chain
 	@mkdir -p bigout
 	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 \
-	    --targetGxf=${gencodeV19Gff3} --targetPatches=tmp/problemRegions.bed --previousMappedGxf=${gencodePrevLiftGff3} \
-	     ${gencodeFullGff3} tmp/hg38ToHg19.over.gencode.chain bigout/gencode.v${bigVer}lift37.annotation.gff3 bigout/gencode.v${bigVer}lift37.map-info.tsv
+	    --targetGxf=${gencodeV19Gff3} --targetPatches=output/update/problemRegions.bed --previousMappedGxf=${gencodePrevLiftGff3} \
+	     ${gencodeFullGff3} output/update/hg38ToHg19.over.gencode.chain bigout/gencode.v${bigVer}lift37.annotation.gff3 bigout/gencode.v${bigVer}lift37.map-info.tsv
 	${gff3ToGenePred} bigout/gencode.v${bigVer}lift37.annotation.gff3 /dev/null
 
 ##
@@ -360,79 +371,91 @@ update: mappingChains problemRegions
 # commands to create new mapping chains when test set is changed
 # also creates a PSL from the chain as is useful for debugging
 ##
-mappingChains: tmp/testGrch38.gp
-	overlapSelect tmp/testGrch38.gp /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
-	chainToPslBasic ${testUcscLiftOverChains} tmp/hg38ToHg19.over.test.psl
-	pslSwap tmp/hg38ToHg19.over.test.psl tmp/hg19ToHg38.over.test.psl
+mappingChains: output/update/testGrch38.gp
+	overlapSelect output/update/testGrch38.gp /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
+	chainToPslBasic ${testUcscLiftOverChains} output/update/hg38ToHg19.over.test.psl
+	pslSwap output/update/hg38ToHg19.over.test.psl output/update/hg19ToHg38.over.test.psl
 
 ##
 # generate problem regions on GRCh37
 ##
-problemRegions: tmp/testGrch37.gp tmp/problemRegions.bed
-	overlapSelect -inRange tmp/testGrch37.gp tmp/problemRegions.bed data/problemRegions.bed
+problemRegions: output/update/testGrch37.gp output/update/problemRegions.bed
+	overlapSelect -inRange output/update/testGrch37.gp output/update/problemRegions.bed data/problemRegions.bed
 
 
 ##
-# tmp file used by both update and big targets
+# tmp files used by both update and big targets
 ##
 
-# need to only include first ##gff-version header
-tmp/testGrch38.gp: ${GRCh38_GFF3s}
+# Need to convert individually as there are duplicate ids.
+# Using /dev/stdout in the loop result in only the last file being 
+# the loops stdout, so use UCSC internal mechanism for stdout
+output/update/testGrch38.gp: ${GRCh38_GFF3s}
 	@mkdir -p $(dir $@)
-	gff3ToGenePred <(awk 'NR==1||FNR>1{print $$0}' $^) $@
+	for f in $^ ; do gff3ToGenePred $$f stdout ; done > $@.tmp
+	mv -f $@.tmp $@
 
-tmp/GRCh37.p13.refseq-gencode.lift: tmp/GCF_000001405.25.assembly.txt
+output/update/GRCh37.p13.refseq-gencode.lift: output/update/GCF_000001405.25.assembly.txt
 	@mkdir -p $(dir $@)
-	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@
+	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@.tmp
+	mv -f $@.tmp $@
 
-tmp/GRCh38.p2.refseq-gencode.lift:  tmp/GCF_000001405.28.assembly.txt
+output/update/GRCh38.p2.refseq-gencode.lift:  output/update/GCF_000001405.28.assembly.txt
 	@mkdir -p $(dir $@)
-	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@
+	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@.tmp
+	mv -f $@.tmp $@
 
-tmp/GRCh37.p13.sizes: tmp/GCF_000001405.25.assembly.txt
+output/update/GRCh37.p13.sizes: output/update/GCF_000001405.25.assembly.txt
+	@mkdir -p $(dir $@)
+	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@.tmp
+	mv -f $@.tmp $@
+
+output/update/GRCh38.p2.sizes: output/update/GCF_000001405.28.assembly.txt
 	@mkdir -p $(dir $@)
 	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@
 
-tmp/GRCh38.p2.sizes: tmp/GCF_000001405.28.assembly.txt
-	@mkdir -p $(dir $@)
-	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@
-
-tmp/GCF_000001405.25.assembly.txt:
+output/update/GCF_000001405.25.assembly.txt:
 	@mkdir -p $(dir $@)
 	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.assembly.txt
 
-tmp/GCF_000001405.28.assembly.txt:
+output/update/GCF_000001405.28.assembly.txt:
 	@mkdir -p $(dir $@)
 	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
 
-tmp/hg38ToHg19.over.gencode.chain: tmp/GCF_000001405.36_GRCh38.p10_assembly_report.txt tmp/GCF_000001405.13_GRCh37_assembly_report.txt
+output/update/hg38ToHg19.over.gencode.chain: output/update/GCF_000001405.36_GRCh38.p10_assembly_report.txt output/update/GCF_000001405.13_GRCh37_assembly_report.txt
 	@mkdir -p $(dir $@)
-	../bin/ucscLiftEdit ${liftOverChains} tmp/GCF_000001405.36_GRCh38.p10_assembly_report.txt tmp/GCF_000001405.13_GRCh37_assembly_report.txt $@
+	../bin/ucscLiftEdit ${liftOverChains} output/update/GCF_000001405.36_GRCh38.p10_assembly_report.txt output/update/GCF_000001405.13_GRCh37_assembly_report.txt $@
 
-tmp/GCF_000001405.36_GRCh38.p10_assembly_report.txt:
+output/update/GCF_000001405.36_GRCh38.p10_assembly_report.txt:
 	@mkdir -p $(dir $@)
-	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
+	wget -nv -O $@.tmp ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
+	mv -f $@.tmp $@
 
-tmp/GCF_000001405.13_GRCh37_assembly_report.txt:
+output/update/GCF_000001405.13_GRCh37_assembly_report.txt:
 	@mkdir -p $(dir $@)
-	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt
+	wget -nv -O $@.tmp ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt
+	mv -f $@.tmp $@
 
-# need to only include first ##gff-version header
-tmp/testGrch37.gp: ${GRCh37_GFF3s}
+output/update/testGrch37.gp: ${GRCh37_GFF3s}
 	@mkdir -p $(dir $@)
-	gff3ToGenePred <(awk 'NR==1||FNR>1{print $0}' $^) $@
+	for f in $^ ; do gff3ToGenePred $$f stdout ; done > $@.tmp
+	mv -f $@.tmp $@
 
-tmp/problemRegions.bed: tmp/hg19Patch13Patches.bed tmp/Hg19.grcIncidentDb.bed
-	cat tmp/hg19Patch13Patches.bed tmp/Hg19.grcIncidentDb.bed > $@
+output/update/problemRegions.bed: output/update/hg19Patch13Patches.bed output/update/Hg19.grcIncidentDb.bed
+	cat $^ > $@.tmp
+	mv -f $@.tmp $@
 
-tmp/hg19Patch13Patches.bed:
+output/update/hg19Patch13Patches.bed:
 	@mkdir -p $(dir $@)
-	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz | zcat | cut -f 2- > tmp/hg19Patch13Patches.bed
+	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz | zcat | cut -f 2- > $@.tmp
+	mv -f $@.tmp $@
 
-tmp/Hg19.grcIncidentDb.bed:
+output/update/Hg19.grcIncidentDb.bed:
 	@mkdir -p $(dir $@)
-	wget -nv -O tmp/Hg19.grcIncidentDb.bb http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
-	bigBedToBed tmp/Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > tmp/Hg19.grcIncidentDb.bed
+	wget -nv -O output/update/Hg19.grcIncidentDb.bb.tmp http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
+	mv -f output/update/Hg19.grcIncidentDb.bb.tmp output/update/Hg19.grcIncidentDb.bb
+	bigBedToBed output/update/Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > $@.tmp
+	mv -f $@.tmp $@
 
 
 mkdirs:

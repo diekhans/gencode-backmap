@@ -589,7 +589,7 @@ const FeatureNode* FeatureTreePolish::getPrevMappedFeature(const FeatureNode* ne
         return NULL;
     } else {
         return fPreviousMappedAnotations->getFeatureById(newFeature->getTypeId(),
-                                                         newFeature->isParY());
+                                                         newFeature->fFeature->getSeqid());
     }
 }
 

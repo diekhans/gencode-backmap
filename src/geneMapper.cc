@@ -121,9 +121,10 @@ void GeneMapper::outputTargetGeneInfo(const ResultFeatureTrees* mappedGene,
 }
 
 /* get string describing gene or other feature */
-string GeneMapper::featureDesc(const FeatureNode* gene) const {
-    return "(" + gene->getTypeId() + " " + gene->getTypeName() + " " +  gene->getTypeBiotype()
-        + " " + ((gene->getHavanaTypeId().size() > 0) ? gene->getHavanaTypeId() : "-") + ")";
+string GeneMapper::featureDesc(const FeatureNode* feature) const {
+    return "(" + feature->getTypeId() + " " + feature->fFeature->getSeqid() +
+        " " + feature->getTypeName() + " " +  feature->getTypeBiotype() +
+        " " + ((feature->getHavanaTypeId().size() > 0) ? feature->getHavanaTypeId() : "-") + ")";
 }
 
 /* is the source sequence for a feature in the mapping at all? */
@@ -146,15 +147,15 @@ void GeneMapper::debugRecordMapped(const FeatureNode* feature,
 /* record gene and it's transcripts as being mapped */
 void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
     assert(gene->isGene());
-    fMappedIdsNames.addBaseId(gene->getTypeId(), gene->isParY());
+    fMappedIdsNames.addBaseId(gene->getTypeId(), gene->fFeature->getSeqid());
     debugRecordMapped(gene, "recordGeneMapped typeId", getBaseId(gene->getTypeId()));
     
     if (useGeneNameForMappingKey(gene)) {
-        fMappedIdsNames.addName(gene->getTypeName(), gene->isParY());
+        fMappedIdsNames.addName(gene->getTypeName(), gene->fFeature->getSeqid());
         debugRecordMapped(gene, "recordGeneMapped typeName", gene->getTypeName());
     }
     if (gene->getHavanaTypeId() != "") {
-        fMappedIdsNames.addBaseId(gene->getHavanaTypeId(), gene->isParY());
+        fMappedIdsNames.addBaseId(gene->getHavanaTypeId(), gene->fFeature->getSeqid());
         debugRecordMapped(gene, "recordGeneMapped havanaTypeId", getBaseId(gene->getHavanaTypeId()));
     }
 }
@@ -163,15 +164,15 @@ void GeneMapper::recordGeneMapped(const FeatureNode* gene) {
 /* remove record of gene and it's transcripts as being mapped */
 void GeneMapper::forgetGeneMapped(const FeatureNode* gene) {
     assert(gene->isGene());
-    fMappedIdsNames.removeBaseId(gene->getTypeId(), gene->isParY());
+    fMappedIdsNames.removeBaseId(gene->getTypeId(), gene->fFeature->getSeqid());
     debugRecordMapped(gene, "forgetGeneMapped typeId", getBaseId(gene->getTypeId()));
     
     if (useGeneNameForMappingKey(gene)) {
-        fMappedIdsNames.removeName(gene->getTypeName(), gene->isParY());
+        fMappedIdsNames.removeName(gene->getTypeName(), gene->fFeature->getSeqid());
         debugRecordMapped(gene, "forgetGeneMapped typeName", gene->getTypeName());
     }
     if (gene->getHavanaTypeId() != "") {
-        fMappedIdsNames.removeBaseId(gene->getHavanaTypeId(), gene->isParY());
+        fMappedIdsNames.removeBaseId(gene->getHavanaTypeId(), gene->fFeature->getSeqid());
         debugRecordMapped(gene, "forgetGeneMapped havanaTypeId", getBaseId(gene->getHavanaTypeId()));
     }
 }
@@ -180,14 +181,14 @@ void GeneMapper::forgetGeneMapped(const FeatureNode* gene) {
 /* record transcript as being mapped */
 void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
     assert(transcript->isTranscript());
-    if (fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->isParY())) {
+    if (fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->fFeature->getSeqid())) {
         //FIXME: throw logic_error("BUG: transcript base id has already been mapped: " + transcript->getTypeId());
         cerr  << "WARNING: transcript base id has already been mapped: " + transcript->getTypeId() << endl;
     }
-    fMappedIdsNames.addBaseId(transcript->getTypeId(), transcript->isParY());
+    fMappedIdsNames.addBaseId(transcript->getTypeId(), transcript->fFeature->getSeqid());
     debugRecordMapped(transcript, "recordTranscriptMapped typeId", getBaseId(transcript->getTypeId()));
     if (transcript->getHavanaTypeId() != "") {
-        fMappedIdsNames.addBaseId(transcript->getHavanaTypeId(), transcript->isParY());
+        fMappedIdsNames.addBaseId(transcript->getHavanaTypeId(), transcript->fFeature->getSeqid());
         debugRecordMapped(transcript, "recordTranscriptMapped havanaTypeId", getBaseId(transcript->getHavanaTypeId()));
     }
 }
@@ -195,10 +196,10 @@ void GeneMapper::recordTranscriptMapped(const FeatureNode* transcript) {
 /* removed record of transcript as being mapped */
 void GeneMapper::forgetTranscriptMapped(const FeatureNode* transcript) {
     assert(transcript->isTranscript());
-    fMappedIdsNames.removeBaseId(transcript->getTypeId(), transcript->isParY());
+    fMappedIdsNames.removeBaseId(transcript->getTypeId(), transcript->fFeature->getSeqid());
     debugRecordMapped(transcript, "forgetTranscriptMapped typeId", getBaseId(transcript->getTypeId()));
     if (transcript->getHavanaTypeId() != "") {
-        fMappedIdsNames.removeBaseId(transcript->getHavanaTypeId(), transcript->isParY());
+        fMappedIdsNames.removeBaseId(transcript->getHavanaTypeId(), transcript->fFeature->getSeqid());
         debugRecordMapped(transcript, "forgetTranscriptMapped havanaTypeId", getBaseId(transcript->getHavanaTypeId()));
     }
 }
@@ -207,18 +208,18 @@ void GeneMapper::forgetTranscriptMapped(const FeatureNode* transcript) {
 /* check if gene have been mapped */
 bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
     assert(gene->isGene());
-    if (fMappedIdsNames.haveBaseId(gene->getTypeId(), gene->isParY())) {
+    if (fMappedIdsNames.haveBaseId(gene->getTypeId(), gene->fFeature->getSeqid())) {
         debugRecordMapped(gene, "checkGeneMapped found typeId", getBaseId(gene->getTypeId()));
         return true;
     }
     if (useGeneNameForMappingKey(gene)
-        and fMappedIdsNames.haveName(gene->getTypeName(), gene->isParY())) {
+        and fMappedIdsNames.haveName(gene->getTypeName(), gene->fFeature->getSeqid())) {
         debugRecordMapped(gene, "checkGeneMapped found typeName", gene->getTypeName());
         return true;
 
     }
     if (gene->getHavanaTypeId() != "") {
-        if (fMappedIdsNames.haveBaseId(gene->getHavanaTypeId(), gene->isParY())) {
+        if (fMappedIdsNames.haveBaseId(gene->getHavanaTypeId(), gene->fFeature->getSeqid())) {
             debugRecordMapped(gene, "checkGeneMapped found havanaTypeId", gene->getHavanaTypeId());
             return true;
         }
@@ -230,7 +231,7 @@ bool GeneMapper::checkGeneMapped(const FeatureNode* gene) const {
 /* check if transcript have already been mapped */
 bool GeneMapper::checkTranscriptMapped(const FeatureNode* transcript) const {
     assert(transcript->isTranscript());
-    bool found = fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->isParY());
+    bool found = fMappedIdsNames.haveBaseId(transcript->getTypeId(), transcript->fFeature->getSeqid());
     debugRecordMapped(transcript, std::string("checkTranscriptMapped ") + (found ? "TRUE" : "FALSE")  + " typeId", getBaseId(transcript->getTypeId()));
     return found;
 }
@@ -269,7 +270,9 @@ ResultFeatureTrees GeneMapper::processTranscript(const FeatureNode* transcript,
     ResultFeatureTrees mappedTranscript = transcriptMapper.mapTranscriptFeatures(transcript);
     TargetStatus targetStatus = getTargetAnnotationStatus(&mappedTranscript);
     mappedTranscript.setTargetStatus(targetStatus);
-    recordTranscriptMapped(transcript);
+    if (mappedTranscript.mapped != NULL) {
+        recordTranscriptMapped(transcript);
+    }
     return mappedTranscript;
 }
 
@@ -436,7 +439,7 @@ void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
 bool GeneMapper::checkForPathologicalGeneRename(const ResultFeatureTrees* mappedGene,
                                                 const FeatureNode* targetGene) const {
     return (getBaseId(mappedGene->src->getTypeId()) != getBaseId(targetGene->getTypeId()))
-        and (fSrcAnnotations->getFeatureById(targetGene->getTypeId(), targetGene->isParY()) != NULL);
+        and (fSrcAnnotations->getFeatureById(targetGene->getTypeId(), targetGene->fFeature->getSeqid()) != NULL);
 }
 
 /* should we substitute target version of gene?  */
@@ -661,15 +664,15 @@ const FeatureNode* GeneMapper::getTargetAnnotation(const FeatureNode* feature) c
     // havana id and transcript names are just a numbering withing the gene
     // and not stable.
     const FeatureNode* targetFeature = fTargetAnnotations->getFeatureById(getPreMappedId(feature->getTypeId()),
-                                                                          feature->isParY());
+                                                                          feature->fFeature->getSeqid());
     if (feature->isGene()) {
         if ((targetFeature == NULL) and (feature->getHavanaTypeId() != "")) {
             targetFeature = fTargetAnnotations->getFeatureByName(getPreMappedId(feature->getHavanaTypeId()),
-                                                                 feature->isParY());
+                                                                 feature->fFeature->getSeqid());
         }
         if ((targetFeature == NULL) and useGeneNameForMappingKey(feature)) {
             targetFeature = fTargetAnnotations->getFeatureByName(feature->getTypeName(),
-                                                                 feature->isParY());
+                                                                 feature->fFeature->getSeqid());
         }
     }
     return targetFeature;

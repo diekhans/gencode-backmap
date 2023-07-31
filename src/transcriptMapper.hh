@@ -31,7 +31,6 @@ class TranscriptMapper {
     const FeatureTransMap* fViaExonsFeatureTransMap;   // two-level transmap, NULL if can't map (owned)
     const FeatureNode* fTargetGene;                     // target annotations for this transcript, if any, to help
     const FeatureNode* fTargetTranscript;               // selecting between multiple mappings.
-    static const bool debug = 0;
     
     PslMapping* allExonsTransMap(const FeatureNode* transcript) const;
     static const TransMapVector makeViaExonsTransMap(const PslMapping* exonsMapping);

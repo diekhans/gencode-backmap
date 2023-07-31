@@ -84,6 +84,9 @@ The following ids have to the mapping versions applied
 - 'havana_gene
 - 'havana_transcript
 
+To deal with the, the PAR used the name stable ids (until V44), mapping are
+restricted to the same chromosome.
+
 ### Categorization of mappings 
 
 Information is collected on mappings and saved as attributes of the
@@ -114,7 +117,7 @@ the mapping information file.  The attributes and their values are:
 - `remap_original_id` - Original ID attribute of the feature.  If a feature is split when mapped,
   new IDs are created, otherwise the original ID is used.
 - `remap_original_location` - Location of the feature in the source genome.
-- `remap_num_mappings` - Number of mappings of the feature, only one of them was used.
+- `remap_num_mappings` - Number of mappings of the feature (on the same chromosome), only one of them was used.
 - `remap_target_status` - Attribute that compares the mapping to the existing target annotations. Possible values are:
   - `new` - Gene or transcript was not in target annotations.
   - `lost` -Gene or transcript exists in source and target genome, however source was not mapped.

@@ -25,10 +25,10 @@ class AnnotationSet {
         FeatureNode* feature;
     };
 
-    // map of gene or transcripts id or name feature object.  If feature is in
-    // PAR_Y, suffix is added to key.  A list is kept because occasionally
-    // gene names or HAVANA gene ids are duplicated incorrectly on multiple genes.
-    // it this case, we can't the result.
+    // Map of gene or transcripts id or name feature object and chromosome.  A
+    // list is kept because gene names can have multiple associated gene ids.
+    // including chrom handles pre-V44 releases where the same ids are used
+    // for both PAR regions
     typedef map<const string, FeatureNodeVector> FeatureMap;
     typedef FeatureMap::iterator FeatureMapIter;
     typedef FeatureMap::const_iterator FeatureMapConstIter;
@@ -52,7 +52,7 @@ class AnnotationSet {
     const GenomeSizeMap* fGenomeSizes;
 
     string mkFeatureIdKey(const string& typeId,
-                          bool isParY) const;
+                          const string& chrom) const;
     void insertInFeatureMap(const string& key,
                             FeatureNode* feature,
                             FeatureMap& featureMap);
@@ -71,7 +71,7 @@ class AnnotationSet {
                            bool manualOnlyTranscripts);
 
     FeatureNode* getFeatureByKey(const string& baseKey,
-                                 bool isParY,
+                                 const string& chrom,
                                  const FeatureMap& featureMap) const;
 
     /* check if a seqregion for seqid has been written, if so, return true,
@@ -112,12 +112,12 @@ class AnnotationSet {
     /* get a gene or transcript with same base id or NULL.  special
      * handling for PARs. */
     FeatureNode* getFeatureById(const string& id,
-                                bool isParY) const;
+                                const string& chrom) const;
     
     /* get a gene or transcript with same name or NULL.  special handling
      * for PARs. */
     FeatureNode* getFeatureByName(const string& name,
-                                  bool isParY) const;
+                                  const string& chrom) const;
 
     /* find overlapping features */
     FeatureNodeVector findOverlappingFeatures(const string& seqid,
