@@ -8,6 +8,7 @@
 #include <iostream>
 #include "frame.hh"
 #include "globals.hh"
+#include "featureTree.hh"
 
 static const bool DEBUG = false;
 
@@ -496,15 +497,18 @@ static bool compareMappedFeatures(const FeatureNode* prevFeature,
  * recursive */
 static bool compareGeneFeatures(const FeatureNode* prevFeature,
                                 const FeatureNode* newFeature) {
+
+    // Don't trigger off of GENE_STATUS_ATTR anymore, as chromosome filtering change
+    // this in some cahses
     static const StringVector attrNames = {
         GxfFeature::GENE_NAME_ATTR,
         GxfFeature::GENE_TYPE_ATTR,
-        GxfFeature::GENE_STATUS_ATTR,
-        GxfFeature::TAG_ATTR
+        GxfFeature::TAG_ATTR,
+        REMAP_STATUS_ATTR,
+        REMAP_TARGET_STATUS_ATTR
     };
     static const StringVector idAttrNames = {
         GxfFeature::GENE_ID_ATTR,
-        GxfFeature::GENE_HAVANA_ATTR,
     };
     return compareMappedFeatures(prevFeature, newFeature, attrNames, idAttrNames);
 }
@@ -683,7 +687,7 @@ bool FeatureTreePolish::setTranscriptsMappingVersions(FeatureNode* gene) const {
 
 /* Added mapping version numbers */
 void FeatureTreePolish::setGeneMappingVersion(FeatureNode* gene) const {
-    bool transcriptsSame = setTranscriptsMappingVersions(gene) ;
+    bool transcriptsSame = setTranscriptsMappingVersions(gene);
 
     const FeatureNode* prevGene = getPrevMappedFeature(gene);
     bool geneSame = transcriptsSame and

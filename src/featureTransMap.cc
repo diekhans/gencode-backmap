@@ -58,6 +58,7 @@ struct psl* FeaturesToPsl::makeFeaturesPsl(const string& qName,
                              toCharStr(features[0]->getSeqid()), tSize, tStart, tEnd,
                              strand, features.size(), 0);
     makePslBlocks(psl, features);
+    pslComputeInsertCounts(psl);
     if (pslCheck(toCharStr("converted GxF"), stderr, psl) > 0) {
         throw invalid_argument("invalid PSL created: " + pslToString(psl));
     }

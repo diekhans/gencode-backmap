@@ -1,2 +1,3 @@
 * drop remap_num_mappings attribute, as it makes less sense now that filter per same chromosome
 * remove use of havana ids, seems redundant
+* REMAP_STATUS_NON_PRIMARY is no longer useful since discard mapping not to the same chromosome.
