@@ -348,7 +348,7 @@ liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
 gencodeV19Dir = /hive/data/genomes/hg19/bed/gencodeV19/data/release_19
 gencodeV19Gff3 = ${gencodeV19Dir}/gencode.v19.annotation.gff3.gz
 bigVer = 42
-bigPrevVer = 42
+bigPrevVer = 41
 gencodeFullDir = /hive/data/genomes/hg38/bed/gencodeV${bigVer}/hgcImport/data/release_${bigVer}
 gencodeFullGff3 = ${gencodeFullDir}/gencode.v${bigVer}.annotation.gff3.gz
 gencodePrevLiftDir = /hive/data/genomes/hg19/bed/gencodeV${bigPrevVer}lift37/hgcImport/data/release_${bigPrevVer}lift37
@@ -395,45 +395,18 @@ output/update/testGrch38.gp: ${GRCh38_GFF3s}
 	for f in $^ ; do gff3ToGenePred $$f stdout ; done > $@.tmp
 	mv -f $@.tmp $@
 
-output/update/GRCh37.p13.refseq-gencode.lift: output/update/GCF_000001405.25.assembly.txt
-	@mkdir -p $(dir $@)
-	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@.tmp
-	mv -f $@.tmp $@
-
-output/update/GRCh38.p2.refseq-gencode.lift:  output/update/GCF_000001405.28.assembly.txt
-	@mkdir -p $(dir $@)
-	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift $< $@.tmp
-	mv -f $@.tmp $@
-
-output/update/GRCh37.p13.sizes: output/update/GCF_000001405.25.assembly.txt
-	@mkdir -p $(dir $@)
-	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@.tmp
-	mv -f $@.tmp $@
-
-output/update/GRCh38.p2.sizes: output/update/GCF_000001405.28.assembly.txt
-	@mkdir -p $(dir $@)
-	${ncbiAssemblyReportConvert} --fromId=refSeqAccn sizes $< $@
-
-output/update/GCF_000001405.25.assembly.txt:
-	@mkdir -p $(dir $@)
-	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.25.assembly.txt
-
-output/update/GCF_000001405.28.assembly.txt:
-	@mkdir -p $(dir $@)
-	wget -nv -O $@ ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
-
 output/update/hg38ToHg19.over.gencode.chain: output/update/GCF_000001405.36_GRCh38.p10_assembly_report.txt output/update/GCF_000001405.13_GRCh37_assembly_report.txt
 	@mkdir -p $(dir $@)
 	../bin/ucscLiftEdit ${liftOverChains} output/update/GCF_000001405.36_GRCh38.p10_assembly_report.txt output/update/GCF_000001405.13_GRCh37_assembly_report.txt $@
 
 output/update/GCF_000001405.36_GRCh38.p10_assembly_report.txt:
 	@mkdir -p $(dir $@)
-	wget -nv -O $@.tmp ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
+	wget -nv -o /dev/stderr -O $@.tmp https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
 	mv -f $@.tmp $@
 
 output/update/GCF_000001405.13_GRCh37_assembly_report.txt:
 	@mkdir -p $(dir $@)
-	wget -nv -O $@.tmp ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt
+	wget -nv -o /dev/stderr -O $@.tmp https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt
 	mv -f $@.tmp $@
 
 output/update/testGrch37.gp: ${GRCh37_GFF3s}
@@ -447,12 +420,12 @@ output/update/problemRegions.bed: output/update/hg19Patch13Patches.bed output/up
 
 output/update/hg19Patch13Patches.bed:
 	@mkdir -p $(dir $@)
-	wget -nv -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz | zcat | cut -f 2- > $@.tmp
+	wget -nv -o /dev/stderr -O /dev/stdout http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/hg19Patch13Patches.txt.gz | zcat | cut -f 2- > $@.tmp
 	mv -f $@.tmp $@
 
 output/update/Hg19.grcIncidentDb.bed:
 	@mkdir -p $(dir $@)
-	wget -nv -O output/update/Hg19.grcIncidentDb.bb.tmp http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
+	wget -nv -o /dev/stderr -O output/update/Hg19.grcIncidentDb.bb.tmp http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/grcIncidentDb/hg19.grcIncidentDb.bb
 	mv -f output/update/Hg19.grcIncidentDb.bb.tmp output/update/Hg19.grcIncidentDb.bb
 	bigBedToBed output/update/Hg19.grcIncidentDb.bb stdout | cut -f 1-4 > $@.tmp
 	mv -f $@.tmp $@
