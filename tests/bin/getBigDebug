@@ -1,0 +1,28 @@
+#!/bin/bash -e
+
+# get on gene for debugging a problem with big test
+
+if [ $# != 1 ] ; then
+    echo "wrong # args: $0 gene" >&2
+    exit 1
+fi
+
+gene="$1"
+
+gencodeV19Dir=/hive/data/genomes/hg19/bed/gencodeV19/data/release_19
+gencodeV19Gff3=${gencodeV19Dir}/gencode.v19.annotation.gff3.gz
+
+bigVer=42
+bigPrevVer=41
+gencodeFullDir=/hive/data/genomes/hg38/bed/gencodeV${bigVer}/hgcImport/data/release_${bigVer}
+gencodeFullGff3=${gencodeFullDir}/gencode.v${bigVer}.annotation.gff3.gz
+gencodePrevLiftDir=/hive/data/genomes/hg19/bed/gencodeV${bigPrevVer}lift37/hgcImport/data/release_${bigPrevVer}lift37
+gencodePrevLiftGff3=${gencodePrevLiftDir}/gencode.v${bigPrevVer}lift37.annotation.gff3.gz
+
+
+mkdir -p debug
+(echo '##gff-version 3'; zfgrep -h "${gene}" ${gencodeV19Gff3}) >debug/debug.V19.gff3 &
+(echo '##gff-version 3'; zfgrep -h "${gene}" ${gencodeFullGff3}) >debug/debug.V${bigVer}.gff3 &
+(echo '##gff-version 3'; zfgrep -h "${gene}" ${gencodePrevLiftGff3}) >debug/debug.V${bigPrevVer}lift37.gff3 &
+
+wait

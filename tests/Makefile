@@ -359,7 +359,7 @@ bigTest: output/update/problemRegions.bed output/update/hg38ToHg19.over.gencode.
 	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 \
 	    --targetGxf=${gencodeV19Gff3} --targetPatches=output/update/problemRegions.bed --previousMappedGxf=${gencodePrevLiftGff3} \
 	     ${gencodeFullGff3} output/update/hg38ToHg19.over.gencode.chain bigout/gencode.v${bigVer}lift37.annotation.gff3 bigout/gencode.v${bigVer}lift37.map-info.tsv
-	${gff3ToGenePred} bigout/gencode.v${bigVer}lift37.annotation.gff3 /dev/null
+	${gff3ToGenePred} -geneNameAttr=gene_name -rnaNameAttr=transcript_id bigout/gencode.v${bigVer}lift37.annotation.gff3 bigout/gencode.v${bigVer}lift37.annotation.gp
 
 ##
 # update test data when annotations change

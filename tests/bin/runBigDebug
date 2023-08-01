@@ -1,0 +1,14 @@
+#!/bin/bash -e
+
+# run on files in debug
+
+liftOverChains=/hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
+bigVer=42
+bigPrevVer=41
+
+set -x
+../bin/gencode-backmap --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 \
+    --targetGxf=debug/debug.V19.gff3 --targetPatches=output/update/problemRegions.bed --previousMappedGxf=debug/debug.V${bigPrevVer}lift37.gff3 \
+     debug/debug.V${bigVer}.gff3 ${liftOverChains} debug/debug.out.gff3 debug/debug.out.tsv
+
+

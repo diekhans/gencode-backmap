@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+gene="$1"
+
+for age in prev new ; do
+    (echo '##gff-version 3'; fgrep -h "${gene}" ${age}out/gencode.v42lift37.annotation.gff3 | tawk '$3 ~ /gene|transcript/') > ${gene}.${age}.gff3 &
+done    
+
+wait
+diff ${gene}.prev.gff3 ${gene}.new.gff3 > ${gene}.diff

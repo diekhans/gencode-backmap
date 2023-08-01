@@ -517,8 +517,9 @@ static bool compareGeneFeatures(const FeatureNode* prevFeature,
  * mapped features.  This is not recursive */
 static bool compareOtherFeatures(const FeatureNode* prevFeature,
                                              const FeatureNode* newFeature) {
+    // don't use EXON_NUMBER_ATTR, as this was changed at one point to fix
+    // incorrect order
     static const StringVector attrNames = {
-        GxfFeature::EXON_NUMBER_ATTR,
         GxfFeature::TAG_ATTR
     };
     static const StringVector idAttrNames = {
