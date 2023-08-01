@@ -347,8 +347,8 @@ gtfUcscValgrind: mkdirs
 liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
 gencodeV19Dir = /hive/data/genomes/hg19/bed/gencodeV19/data/release_19
 gencodeV19Gff3 = ${gencodeV19Dir}/gencode.v19.annotation.gff3.gz
-bigVer = 42
-bigPrevVer = 41
+bigVer = 44
+bigPrevVer = 43
 gencodeFullDir = /hive/data/genomes/hg38/bed/gencodeV${bigVer}/hgcImport/data/release_${bigVer}
 gencodeFullGff3 = ${gencodeFullDir}/gencode.v${bigVer}.annotation.gff3.gz
 gencodePrevLiftDir = /hive/data/genomes/hg19/bed/gencodeV${bigPrevVer}lift37/hgcImport/data/release_${bigPrevVer}lift37
