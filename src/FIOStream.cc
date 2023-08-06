@@ -7,7 +7,7 @@
 /* get file name based on "-" or "" being stdio */
 static const string getRealFileName(const string& fileName,
                                     int ioMode) {
-    if ((fileName.size() == 0) || (fileName == "-")) {
+    if (fileName.empty() || (fileName == "-")) {
         return (ioMode == ios::in) ? "/dev/stdin" : "/dev/stdout";
     } else {
         return fileName;

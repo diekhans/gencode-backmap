@@ -192,7 +192,7 @@ class Gff3Parser: public GxfParser {
         // `;' is a separator
         for (size_t i = 0; i < parts.size(); i++) {
             string part = stringTrim(parts[i]);
-            if (part.size() > 0) {
+            if (not part.empty()) {
                 parseAttr(part, attrVals);
             }
         }
@@ -308,7 +308,7 @@ GxfRecord* GxfParser::read() {
         return NULL;
     }
     try {
-        if ((line.size() > 0) and line[0] != '#') {
+        if ((not line.empty()) and line[0] != '#') {
             return parseFeature(splitFeatureLine(line));
         } else {
             return new GxfLine(line);
@@ -455,7 +455,7 @@ class GtfWriter: public GxfWriter {
         string strAttrs;
         for (int i = 0; i < attrVals.size(); i++) {
             if (includeAttr(attrVals[i])) {
-                if (strAttrs.size() > 0) {
+                if (not strAttrs.empty()) {
                     strAttrs += " ";  // same formatting as GENCODE
                 }
                 strAttrs += formatAttr(attrVals[i], isParY);

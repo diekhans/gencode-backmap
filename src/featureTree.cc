@@ -165,13 +165,13 @@ RemapStatus TransMappedFeature::calcRemapStatus(bool srcSeqInMapping) const {
     if (not srcSeqInMapping) {
         // couldn't even try mapping, chrom not in map
         return REMAP_STATUS_NO_SEQ_MAP;
-    } else if (mapped.size() == 0) {
-        assert(unmapped.size() > 0);
+    } else if (mapped.empty()) {
+        assert(not unmapped.empty());
         // nothing mapped
         return REMAP_STATUS_DELETED;
     } else if (not isPrimaryAssembly(mapped[0]->getSeqid())) {
         return REMAP_STATUS_NON_PRIMARY;
-    } else if (unmapped.size() == 0) {
+    } else if (unmapped.empty()) {
         // full mapped
         if (mapped.size() == 1) {
             return REMAP_STATUS_FULL_CONTIG;
@@ -180,8 +180,8 @@ RemapStatus TransMappedFeature::calcRemapStatus(bool srcSeqInMapping) const {
         }
     } else {
         // partially mapped
-        assert(mapped.size() > 0);
-        assert(unmapped.size() > 0);
+        assert(not mapped.empty());
+        assert(not unmapped.empty());
         return REMAP_STATUS_PARTIAL;
     }
 }
@@ -647,7 +647,7 @@ bool useGeneNameForMappingKey(const FeatureNode* gene) {
     assert(gene->isGene());
     const std::string& geneName = gene->getTypeName();
     return (not gene->isAutomaticSmallNonCodingGene())
-        and (geneName.size() > 0)
+        and (not geneName.empty())
         and not isFakeGeneName(geneName);
 }
 

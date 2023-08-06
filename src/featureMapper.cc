@@ -224,10 +224,10 @@ void FeatureMapper::updateParents(FeatureNodeVector& parentFeatures,
 /* validate parents and update Parent id for mapped and unmapped, in needed. */
 void FeatureMapper::updateParents(TransMappedFeature& parentFeatures,
                                   TransMappedFeature& childFeatures) {
-    if (parentFeatures.mapped.size() > 0) {
+    if (not parentFeatures.mapped.empty()) {
         updateParents(parentFeatures.mapped, childFeatures.mapped);
     }
-    if (parentFeatures.unmapped.size() > 0) {
+    if (not parentFeatures.unmapped.empty()) {
         updateParents(parentFeatures.unmapped, childFeatures.unmapped);
     }
 }

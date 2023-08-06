@@ -593,8 +593,8 @@ const FeatureNode* FeatureTreePolish::getPrevMappedFeature(const FeatureNode* ne
     if (fPreviousMappedAnotations == NULL) {
         return NULL;
     } else {
-        return fPreviousMappedAnotations->getFeatureById(newFeature->getTypeId(),
-                                                         newFeature->fFeature->getSeqid());
+        return fPreviousMappedAnotations->getFeatureByIdChrom(newFeature->getTypeId(),
+                                                              newFeature->fFeature->getSeqid());
     }
 }
 

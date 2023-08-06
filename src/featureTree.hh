@@ -32,6 +32,7 @@ extern const string REMAP_TARGET_STATUS_ATTR;
 extern const string REMAP_SUBSTITUTED_MISSING_TARGET_ATTR;
 
 class FeatureNode;
+
 /* Vector of Feature objects */
 class FeatureNodeVector: public vector<FeatureNode*> {
     public:

@@ -27,6 +27,9 @@ version.h: version.h.in
 	sed -e "s/@VERSION_HASH@/$$(git rev-parse HEAD)/" $< >$@.tmp
 	mv -f $@.tmp $@
 
+tags: $(wildcard *.cc *.hh)
+	etags -o TAGS $^
+
 clean:
 	rm -f ${OBJS} ${PROG} ${DEPENDS} version.h
 savebak:

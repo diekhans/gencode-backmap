@@ -61,18 +61,18 @@ static void gencodeBackmap(const string& inGxfFile,
                            const string& transcriptPsls) {
     TransMap* genomeTransMap = TransMap::factoryFromFile(mappingAligns, swapMap);
     AnnotationSet srcAnnotations(inGxfFile);
-    AnnotationSet* targetAnnotations = (targetGxf.size() > 0)
+    AnnotationSet* targetAnnotations = (not targetGxf.empty())
         ? new AnnotationSet(targetGxf) : NULL;
-    AnnotationSet* previousMappedAnnotations = (previousMappedGxf.size() > 0)
-        ? new AnnotationSet(previousMappedGxf) : NULL;
-    BedMap* targetPatchMap = (targetPatchBed.size() > 0)
+    AnnotationSet* previousMappedAnnotations = (not previousMappedGxf.empty())
+        ? new AnnotationSet(previousMappedGxf, NULL, true) : NULL;
+    BedMap* targetPatchMap = (not targetPatchBed.empty())
         ? new BedMap(targetPatchBed) : NULL;
     GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile, parIdHackMethod);
-    if (headerFile.size() > 0) {
+    if (not headerFile.empty()) {
         mappedGxfFh->copyFile(headerFile);
     }
-    FIOStream mappingInfoFh((mappingInfoTsv.size() > 0) ? mappingInfoTsv : "/dev/null" , ios::out);
-    FIOStream* transcriptPslFh = (transcriptPsls.size() > 0) ? new FIOStream(transcriptPsls, ios::out) : NULL;
+    FIOStream mappingInfoFh((not mappingInfoTsv.empty()) ? mappingInfoTsv : "/dev/null" , ios::out);
+    FIOStream* transcriptPslFh = (not transcriptPsls.empty()) ? new FIOStream(transcriptPsls, ios::out) : NULL;
     GeneMapper geneMapper(&srcAnnotations, genomeTransMap, targetAnnotations, previousMappedAnnotations,
                           targetPatchMap, substituteMissingTargetVersion,
                           useTargetFlags, onlyManualForTargetSubstituteOverlap);

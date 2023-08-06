@@ -124,7 +124,7 @@ void GeneMapper::outputTargetGeneInfo(const ResultFeatureTrees* mappedGene,
 string GeneMapper::featureDesc(const FeatureNode* feature) const {
     return "(" + feature->getTypeId() + " " + feature->fFeature->getSeqid() +
         " " + feature->getTypeName() + " " +  feature->getTypeBiotype() +
-        " " + ((feature->getHavanaTypeId().size() > 0) ? feature->getHavanaTypeId() : "-") + ")";
+        " " + ((not feature->getHavanaTypeId().empty()) ? feature->getHavanaTypeId() : "-") + ")";
 }
 
 /* is the source sequence for a feature in the mapping at all? */
@@ -439,26 +439,27 @@ void GeneMapper::setNumGeneMappings(FeatureNode* mappedGeneTree) const {
 bool GeneMapper::checkForPathologicalGeneRename(const ResultFeatureTrees* mappedGene,
                                                 const FeatureNode* targetGene) const {
     return (getBaseId(mappedGene->src->getTypeId()) != getBaseId(targetGene->getTypeId()))
-        and (fSrcAnnotations->getFeatureById(targetGene->getTypeId(), targetGene->fFeature->getSeqid()) != NULL);
+        and (fSrcAnnotations->getFeatureByIdChrom(targetGene->getTypeId(), targetGene->fFeature->getSeqid()) != NULL);
 }
 
-/* should we substitute target version of gene?  */
+/* should we substitute target version of gene even if mapped?  */
 bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const {
     // mis-mapped gene or the right biotype to a mapped sequence
-    if (fSubstituteTargetVersion.size() == 0) {
-        return false; // not substituting
-    }
     const FeatureNode* targetGene = getTargetAnnotation(mappedGene->src);
     if (targetGene == NULL) {
         // this should not have happened, but it does because of a transcript id
         // ENST00000426406 incorrectly being moved to a different gene
         if (gVerbose) {
             cerr << "shouldSubstituteTarget: false: " << featureDesc(mappedGene->src)
-                 << " missing target gene due to gene id rename" << endl;
+                 << " missing target gene probably due to gene id rename" << endl;
         }
         return false;
     }
     if (not isSrcSeqInMapping(targetGene)) {
+        if (gVerbose) {
+            cerr << "shouldSubstituteTarget: false: " << featureDesc(mappedGene->src)
+                 << " target gene chrom not in mapping alignments" << endl;
+        }
         return false;  // sequence not being mapped (moved chroms)
     }
 
@@ -663,16 +664,16 @@ const FeatureNode* GeneMapper::getTargetAnnotation(const FeatureNode* feature) c
     // gene features.  Transcripts can move between genes keeping the same
     // havana id and transcript names are just a numbering withing the gene
     // and not stable.
-    const FeatureNode* targetFeature = fTargetAnnotations->getFeatureById(getPreMappedId(feature->getTypeId()),
-                                                                          feature->fFeature->getSeqid());
+    const FeatureNode* targetFeature = fTargetAnnotations->getFeatureByIdChrom(getPreMappedId(feature->getTypeId()),
+                                                                               feature->fFeature->getSeqid());
     if (feature->isGene()) {
         if ((targetFeature == NULL) and (feature->getHavanaTypeId() != "")) {
-            targetFeature = fTargetAnnotations->getFeatureByName(getPreMappedId(feature->getHavanaTypeId()),
-                                                                 feature->fFeature->getSeqid());
+            targetFeature = fTargetAnnotations->getFeatureByNameChrom(getPreMappedId(feature->getHavanaTypeId()),
+                                                                      feature->fFeature->getSeqid());
         }
         if ((targetFeature == NULL) and useGeneNameForMappingKey(feature)) {
-            targetFeature = fTargetAnnotations->getFeatureByName(feature->getTypeName(),
-                                                                 feature->fFeature->getSeqid());
+            targetFeature = fTargetAnnotations->getFeatureByNameChrom(feature->getTypeName(),
+                                                                      feature->fFeature->getSeqid());
         }
     }
     return targetFeature;
@@ -755,7 +756,8 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
     // must be done after forcing status above
     if (mappedGene.mapped == NULL) {
         outputUnmappedGeneInfo(&mappedGene, mappingInfoFh);
-        if (shouldSubstituteTarget(&mappedGene)) {
+        if ((not fSubstituteTargetVersion.empty()) and 
+            shouldSubstituteTarget(&mappedGene)) {
             substituteTarget(&mappedGene);
             outputTargetGeneInfo(&mappedGene, "targetSubst", mappingInfoFh);
         }
@@ -779,7 +781,7 @@ void GeneMapper::maybeMapGene(const FeatureNode* srcGeneTree,
                               ostream& mappingInfoFh,
                               ostream* transcriptPslFh) {
     if (gVerbose) {
-        cerr << endl << "mapGxf: " << featureDesc(srcGeneTree)
+        cerr << endl << "maybeMapGene: " << featureDesc(srcGeneTree)
              << " shouldMapGeneType: " << shouldMapGeneType(srcGeneTree)
              << " noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(srcGeneTree))
              << " " << srcGeneTree->getTypeId() << " " << srcGeneTree->getSource()
@@ -797,6 +799,9 @@ void GeneMapper::maybeMapGene(const FeatureNode* srcGeneTree,
             fCurrentGeneNum++;
             mapGene(srcGeneTree, mappedSet, unmappedSet, featureTreePolish, mappingInfoFh, transcriptPslFh);
         }
+    }
+    if (gVerbose) {
+        cerr << "----" << endl;
     }
 }
 
@@ -835,7 +840,23 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
     static const float minSimilarity = 0.5;
     FeatureNodeVector overlapping = mappedSet.findOverlappingGenes(targetGene, minSimilarity,
                                                                fOnlyManualForTargetSubstituteOverlap);
-    return overlapping.size() > 0;
+    return not overlapping.empty();
+}
+
+/* check for special cases where target should not be included */
+bool GeneMapper::checkForIncludeTargetSpecialCases(const FeatureNode* targetGene) const {
+    // ENSG00000168939 (SPRY3) was on PAR X/Y in GRCh37, sometime it GRCh38 it
+    // was removed from chrY since it had one transcript with an exon outside
+    // of the PAR.  So with the the same id for PAR approach,
+    // 
+    if ((getBaseId(targetGene->getTypeId()) == "ENSG00000168939") and (targetGene->getSeqid() == "chrY")) {
+        if (gVerbose) {
+            cerr << "    shouldIncludeTargetGene: false: " << featureDesc(targetGene)
+                 << "PAR-Y pathological case" << endl;
+        }
+        return true;
+    }
+    return false;
 }
 
 /*
@@ -844,29 +865,42 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
 bool GeneMapper::shouldIncludeTargetGene(const FeatureNode* targetGene,
                                          AnnotationSet& mappedSet)  {
     if (gVerbose) {
-        cerr << "shouldIncludeTargetGene: " << featureDesc(targetGene) << endl
-             << "\tnoMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene)) << endl
-             << "\tshouldMapGeneType: " << shouldMapGeneType(targetGene) << endl
-             << "\talready mapped: " << checkGeneMapped(targetGene) << endl
-             << "\tany transcripts mapped: " << checkAnyGeneTranscriptsMapped(targetGene) << endl;
+        cerr << "shouldIncludeTargetGene: " << featureDesc(targetGene)
+             << ": noMapRemapStatus: " << remapStatusToStr(getNoMapRemapStatus(targetGene))
+             << ", shouldMapGeneType: " << shouldMapGeneType(targetGene)
+             << ", alreadyMapped: " << checkGeneMapped(targetGene)
+             << ", anyTransMapped: " << checkAnyGeneTranscriptsMapped(targetGene) << endl;
     }
+    if (checkForIncludeTargetSpecialCases(targetGene)) {
+        return false;
+    }
+    
     if (not shouldMapGeneType(targetGene)) {
         // biotypes not excluding from mapped, checkGeneMapped handles
         // case where biotype has changed
         if (gVerbose) {
-            cerr << "    shouldIncludeTargetGene: isSrcSeqInMapping: " << isSrcSeqInMapping(targetGene) << endl;
+            cerr << "    shouldIncludeTargetGene: isSrcSeqInMapping: " << isSrcSeqInMapping(targetGene)
+                 << ", not-checkGeneMapped: " << (not checkGeneMapped(targetGene))
+                 << ", not-checkAnyGeneTranscriptsMapped: " << (not checkAnyGeneTranscriptsMapped(targetGene))
+                 << endl;
         }
         return isSrcSeqInMapping(targetGene) and (not checkGeneMapped(targetGene)) and (not checkAnyGeneTranscriptsMapped(targetGene));
     }
     if ((fUseTargetFlags & useTargetForPatchRegions) && inTargetPatchRegion(targetGene)) {
         if (gVerbose) {
             cerr << "    shouldIncludeTargetGene: in patched region: "
-                 << " overlaps mapping: " << checkTargetOverlappingMapped(targetGene, mappedSet) << endl;
+                 << "not-checkGeneMapped: " << (not checkGeneMapped(targetGene))
+                 << ", not checkAnyGeneTranscriptsMapped: " << (not checkAnyGeneTranscriptsMapped(targetGene))
+                 << ", checkTargetOverlappingMapped: " << (not checkTargetOverlappingMapped(targetGene, mappedSet)) << endl;
+
         }
         // don't use if there is a mapped with significant overlap or any of it's transcripts
         // have been mapped
         return (not checkGeneMapped(targetGene)) and (not checkAnyGeneTranscriptsMapped(targetGene))
             and (not checkTargetOverlappingMapped(targetGene, mappedSet));
+    }
+    if (gVerbose) {
+        cerr << "    shouldIncludeTargetGene: FALSE" << endl;
     }
     return false;
 }
@@ -892,16 +926,31 @@ void GeneMapper::copyTargetGene(const FeatureNode* targetGene,
 }
 
 /*
+ * copy a target gene annotation if it should be including.
+ */
+void GeneMapper::maybeCopyTargetGene(const FeatureNode* targetGene,
+                                     AnnotationSet& mappedSet,
+                                     ostream& mappingInfoFh) {
+    if (gVerbose) {
+        cerr << endl << "maybeCopyTargetGene: " << featureDesc(targetGene) << endl;
+    }
+    if (shouldIncludeTargetGene(targetGene, mappedSet)) {
+        fCurrentGeneNum++;
+        copyTargetGene(targetGene, mappedSet, mappingInfoFh);
+    }
+    if (gVerbose) {
+        cerr << "----" << endl;
+    }
+}
+
+/*
  * copy target annotations that are skipped for mapping
  */
 void GeneMapper::copyTargetGenes(AnnotationSet& mappedSet,
                                  ostream& mappingInfoFh) {
     const FeatureNodeVector& genes = fTargetAnnotations->getGenes();
     for (int iGene = 0; iGene < genes.size(); iGene++) {
-        if (shouldIncludeTargetGene(genes[iGene], mappedSet)) {
-            fCurrentGeneNum++;
-            copyTargetGene(genes[iGene], mappedSet, mappingInfoFh);
-        }
+        maybeCopyTargetGene(genes[iGene], mappedSet, mappingInfoFh);
     }
 }
 

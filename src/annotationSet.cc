@@ -62,24 +62,42 @@ void AnnotationSet::insertInFeatureMap(const string& key,
     featureMap[key].push_back(feature);
 }
 
+/* check if we already have this feature with a different version */
+void AnnotationSet::checkForMultiIdVersions(FeatureNode* feature) const {
+    const FeatureNodeVector& features = getFeaturesById(getBaseId(feature->getTypeId()));
+    for (int i = 0; i < features.size(); i++) {
+        if (features[i]->fFeature->getTypeId() != feature->getTypeId()) {
+            throw logic_error("feature id " + feature->getTypeId() + " already exists with different version: " + features[i]->fFeature->getTypeId());
+        }
+    }
+}
+
+
 /* link a gene or transcript feature into the maps */
 void AnnotationSet::addFeature(FeatureNode* feature) {
+    if (not fAllowWeirdEntries) {
+        checkForMultiIdVersions(feature);
+    }
+    
     assert(feature->isGeneOrTranscript());
-    // record by id and name
+    // record by base id and name with chrom
     insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getTypeId()), feature->fFeature->getSeqid()),
-                       feature, fIdFeatureMap);
+                       feature, fIdFeatureChromMap);
     if (feature->getHavanaTypeId() != "") {
         insertInFeatureMap(mkFeatureIdKey(getBaseId(feature->getHavanaTypeId()), feature->fFeature->getSeqid()),
-                           feature, fIdFeatureMap);
+                           feature, fIdFeatureChromMap);
     }
     // save gene name when real and unique
     if (feature->isGene() and useGeneNameForMappingKey(feature)) {
         insertInFeatureMap(mkFeatureIdKey(feature->getTypeName(), feature->fFeature->getSeqid()),
-                           feature, fNameFeatureMap);
+                           feature, fNameFeatureChromMap);
     }
     if (fLocationMap != NULL) {
         addLocationMap(feature);
     }
+
+    // record for checking for ids of different versions
+    insertInFeatureMap(getBaseId(feature->getTypeId()), feature, fIdFeatureMap);
 }
 
 /* add a gene the maps */
@@ -108,6 +126,16 @@ void AnnotationSet::processRecord(GxfParser *gxfParser,
     }
 }
 
+/* get list of features with the base id or NULL */
+const FeatureNodeVector& AnnotationSet::getFeaturesById(const string& baseId) const {
+    static const FeatureNodeVector emptyVector;
+    FeatureMapConstIter it = fIdFeatureMap.find(baseId);
+    if (it == fIdFeatureMap.end()) {
+        return emptyVector;
+    } else {
+        return it->second;
+    }
+}
 
 /* get a target gene or transcript node from an index by name or id.
  * if the name or id is duplicated in the GxF, it can't be used as an index and
@@ -129,16 +157,16 @@ FeatureNode* AnnotationSet::getFeatureByKey(const string& baseId,
 
 /* get a target gene or transcript node with same base id or NULL.
  * special handling for PARs. Getting node is used if you need whole tree. */
-FeatureNode* AnnotationSet::getFeatureById(const string& id,
-                                           const string& chrom) const {
-    return getFeatureByKey(getBaseId(id), chrom, fIdFeatureMap);
+FeatureNode* AnnotationSet::getFeatureByIdChrom(const string& id,
+                                                const string& chrom) const {
+    return getFeatureByKey(getBaseId(id), chrom, fIdFeatureChromMap);
 }
 
 /* get a target gene or transcript node with same name or NULL.  Chrom is used
  * for for PARs. Getting node is used if you need whole tree. */
-FeatureNode* AnnotationSet::getFeatureByName(const string& name,
-                                             const string& chrom) const {
-    return getFeatureByKey(name, chrom, fNameFeatureMap);
+FeatureNode* AnnotationSet::getFeatureByNameChrom(const string& name,
+                                                  const string& chrom) const {
+    return getFeatureByKey(name, chrom, fNameFeatureChromMap);
 }
 
 /* find overlapping features */
@@ -187,7 +215,9 @@ FeatureNodeVector AnnotationSet::findOverlappingGenes(const FeatureNode* gene,
 
 /* constructor, load gene and transcript objects from a GxF */
 AnnotationSet::AnnotationSet(const string& gxfFile,
-                             const GenomeSizeMap* genomeSizes):
+                             const GenomeSizeMap* genomeSizes,
+                             bool allowWeirdEntries):
+    fAllowWeirdEntries(allowWeirdEntries),
     fLocationMap(NULL),
     fGenomeSizes(genomeSizes) {
     GxfParser* gxfParser = GxfParser::factory(gxfFile);
@@ -275,8 +305,8 @@ void AnnotationSet::dumpFeatureMap(const FeatureMap& featureMap,
 
 /* print id maps for debugging */
 void AnnotationSet::dumpIdMaps(ostream& fh) const {
-    dumpFeatureMap(fIdFeatureMap, "IdFeatureMap", fh);
-    dumpFeatureMap(fNameFeatureMap, "NameFeatureMap", fh);
+    dumpFeatureMap(fIdFeatureChromMap, "IdFeatureChromMap", fh);
+    dumpFeatureMap(fNameFeatureChromMap, "NameFeatureChromMap", fh);
 }
 
 /* output genes */

@@ -4,7 +4,10 @@ include ${ROOT}/config.mk
 SHELL = /bin/bash
 export SHELLOPTS = pipefail
 
-### IMPORTANT: test GFF3, if new are added update so chains are rebuilt
+# to get verbose output: make verbose=--verbose 
+verbose = 
+
+### IMPORTANT: test GFF3, if new are added, run make update so chains are rebuilt
 GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
 	data/dup-transcripts.v19.gff3 data/par.V19.gff3
 GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 \
@@ -26,6 +29,8 @@ testGencodeLiftOverChains = output/hg38ToHg19.gencode.over.chain
 testNcbiLiftOverChains = data/GRCh38.p2-GRCh37.p13.gencode.psl
 
 diff = diff -u
+
+gencode_backmap_verb = ${gencode_backmap} ${verbose}
 
 # use transcript_id attr, not ID
 gff3ToGenePred = gff3ToGenePred -geneNameAttr=gene_id  -rnaNameAttr=transcript_id
@@ -57,14 +62,14 @@ other_tests: reportsTests ucscLiftEditTest
 
 
 gff3UcscTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 	${diff} expected/$@.mapped.gp output/$@.mapped.gp
 
 gtfUcscTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
@@ -74,26 +79,26 @@ cmpUcscTest: gff3UcscTest gtfUcscTest
 	${diff} output/gff3UcscTest.mapped.gp output/gtfUcscTest.mapped.gp
 
 gff3NcbiTest: mkdirs ${testNcbiLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testNcbiLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testNcbiLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gtfNcbiTest: mkdirs ${testNcbiLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testNcbiLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testNcbiLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/null
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
 
 # new part naming introduced in V25
 gff3ParNamingTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v25.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v25.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gtfParNamingTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v25.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap_verb} --swapMap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v25.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	gtfToGenePred -genePredExt -ignoreGroupsWithoutExons output/$@.mapped.gtf /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
@@ -103,26 +108,26 @@ cmpParNamingTest: gff3ParNamingTest gtfParNamingTest
 
 # also test without mapinfo
 gff3UcscSubstituteAuto: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 
 # ncRNA and patch subsitution
 gff3UcscSubstituteAutoSmallNcRna: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap --useTargetForAutoSmallNonCoding ${targetPatchArg} ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap --useTargetForAutoSmallNonCoding ${targetPatchArg} ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gff3UcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${gff3ToGenePred} output/$@.mapped.gff3 stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 	${diff} expected/$@.mapped.gp output/$@.mapped.gp
 
 gtfUcscSubstituteManOverlap: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap  --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap  --onlyManualForTargetSubstituteOverlap --useTargetForAutoGenes --useTargetForPseudoGenes ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	gtfToGenePred -genePredExt output/$@.mapped.gtf /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
@@ -139,12 +144,12 @@ mappingVerTests: gff3MappingVerBaseTest gtfMappingVerBaseTest \
 
 # initial mapping
 gff3MappingVerBaseTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gtfMappingVerBaseTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --oldStyleParIdHack --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
 
@@ -156,13 +161,13 @@ dropMappingVersion = sed -E 's/(=[A-Z]+[0-9]+\.[0-9]+)_[0-9]+;/\1;/g'
 
 gff3MappingVerPrevNoVerTest: mkdirs ${testGencodeLiftOverChains}
 	${dropMappingVersion} expected/gff3MappingVerBaseTest.mapped.gff3  >output/$@.prev.gff3
-	${gencode_backmap} --oldStyleParIdHack --previousMappedGxf=output/$@.prev.gff3 --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --previousMappedGxf=output/$@.prev.gff3 --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gtfMappingVerPrevNoVerTest: mkdirs ${testGencodeLiftOverChains}
 	${dropMappingVersion} expected/gtfMappingVerBaseTest.mapped.gtf  >output/$@.prev.gtf
-	${gencode_backmap} --oldStyleParIdHack --previousMappedGxf=output/$@.prev.gtf --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --previousMappedGxf=output/$@.prev.gtf --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} data/gencode.v22.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
 
@@ -177,13 +182,13 @@ addTagGtf = tawk '${addTagMatch}{$$0=$$0" tag \"foo\";"}{print $$0}'
 
 gff3MappingVerPrevDiffMapTest: mkdirs ${testNcbiLiftOverChains}
 	${addTagGff3} data/gencode.v22.annotation.gff3 > output/$@.input.gff3
-	${gencode_backmap} --oldStyleParIdHack --previousMappedGxf=expected/gff3MappingVerBaseTest.mapped.gff3 --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGff3Arg} ${targetSubstArg} ${headerArg} output/$@.input.gff3 ${testNcbiLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --previousMappedGxf=expected/gff3MappingVerBaseTest.mapped.gff3 --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGff3Arg} ${targetSubstArg} ${headerArg} output/$@.input.gff3 ${testNcbiLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 gtfMappingVerPrevDiffMapTest: mkdirs ${testNcbiLiftOverChains}
 	${addTagGtf} data/gencode.v22.annotation.gtf > output/$@.input.gtf
-	${gencode_backmap} --oldStyleParIdHack --previousMappedGxf=expected/gtfMappingVerBaseTest.mapped.gtf --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} output/$@.input.gtf ${testNcbiLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${gencode_backmap_verb} --oldStyleParIdHack --previousMappedGxf=expected/gtfMappingVerBaseTest.mapped.gtf --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap ${targetGtfArg} ${targetSubstArg} ${headerArg} output/$@.input.gtf ${testNcbiLiftOverChains} output/$@.mapped.gtf output/$@.map-info
 	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
 	${diff} expected/$@.map-info output/$@.map-info
 
@@ -216,7 +221,7 @@ regressTests: idChangeV25Test gff3V29RegressTest gff3V31RegressTest
 #        
 
 idChangeV25Test: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --targetGxf=data/idChange.v19.gff3 ${targetSubstArg} ${headerArg} data/idChange.v25.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap --useTargetForAutoGenes --onlyManualForTargetSubstituteOverlap --targetGxf=data/idChange.v19.gff3 ${targetSubstArg} ${headerArg} data/idChange.v25.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${gff3ToGenePred} output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
@@ -225,7 +230,7 @@ idChangeV25Test: mkdirs ${testGencodeLiftOverChains}
 # protein-code gene with --useTargetForAutoGenes, ensure it works with
 # --useTargetForAutoSmallNonCoding
 gff3V29RegressTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v29.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v29.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/stdout | ${normalizeGenePred} > output/$@.mapped.gp
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
@@ -233,28 +238,28 @@ gff3V29RegressTest: mkdirs ${testGencodeLiftOverChains}
 
 # double mapping of transcript, detected with gff3ToGenePred
 gff3V31RegressTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v31.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding ${targetGff3Arg} ${targetSubstArg} ${headerArg} data/gencode.v31.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 # case where transcript moving between genes cause problems
 dupTranscriptsV33Test: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --targetGxf=data/dup-transcripts.v19.gff3 ${targetSubstArg} --previousMappedGxf=data/dup-transcripts.v32lift37.gff3 ${headerArg} data/dup-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding --targetGxf=data/dup-transcripts.v19.gff3 ${targetSubstArg} --previousMappedGxf=data/dup-transcripts.v32lift37.gff3 ${headerArg} data/dup-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 # std::sort SEGVing because of violating strict ordering
 sortStrictV33Test: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap ${headerArg} data/sort.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap ${headerArg} data/sort.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 
 # gaps in transcripts due to alignment issues
 gapTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding ${headerArg} data/gapped-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding ${headerArg} data/gapped-transcripts.v33.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	gff3ToGenePred output/$@.mapped.gff3 /dev/null
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
@@ -263,7 +268,9 @@ gapTest: mkdirs ${testGencodeLiftOverChains}
 parStableIdTests: parStableIdTest
 
 parStableIdTest: mkdirs ${testGencodeLiftOverChains}
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --targetGxf=data/par.V19.gff3 ${targetSubstArg} --previousMappedGxf=data/par.V43.gff3 ${headerArg} data/par.V44.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap \
+            --targetGxf=data/par.V19.gff3 ${targetSubstArg} ${targetPatchArg} --previousMappedGxf=data/par.V43lift37.gff3 ${headerArg} \
+	    data/par.V44.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
 	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
 	${diff} expected/$@.map-info output/$@.map-info
 	gff3ToGenePred -geneNameAttr=gene_name -rnaNameAttr=transcript_id output/$@.mapped.gff3 output/$@.gp
@@ -338,10 +345,10 @@ mapInfoSumSubTargetTest: mkdirs
 valgrindTest: gff3UcscValgrind gtfUcscValgrind
 
 gff3UcscValgrind: mkdirs
-	${valgrind} ${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testUcscLiftOverChains} /dev/null /dev/null /dev/null >& output/$@.valgrind.out
+	${valgrind} ${gencode_backmap_verb} --oldStyleParIdHack --swapMap ${targetGff3Arg} ${targetSubstArg} data/gencode.v22.annotation.gff3 ${testUcscLiftOverChains} /dev/null /dev/null /dev/null >& output/$@.valgrind.out
 
 gtfUcscValgrind: mkdirs
-	${valgrind} ${gencode_backmap} --oldStyleParIdHack --swapMap ${targetGtfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testUcscLiftOverChains}  /dev/null /dev/null /dev/null >& output/$@.valgrind.out
+	${valgrind} ${gencode_backmap_verb} --oldStyleParIdHack --swapMap ${targetGtfArg} ${targetSubstArg} data/gencode.v22.annotation.gtf ${testUcscLiftOverChains}  /dev/null /dev/null /dev/null >& output/$@.valgrind.out
 
 
 liftOverChains = /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz
@@ -356,7 +363,7 @@ gencodePrevLiftGff3 = ${gencodePrevLiftDir}/gencode.v${bigPrevVer}lift37.annotat
 
 bigTest: output/update/problemRegions.bed output/update/hg38ToHg19.over.gencode.chain
 	@mkdir -p bigout
-	${gencode_backmap} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 \
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap --substituteMissingTargets=V19 \
 	    --targetGxf=${gencodeV19Gff3} --targetPatches=output/update/problemRegions.bed --previousMappedGxf=${gencodePrevLiftGff3} \
 	     ${gencodeFullGff3} output/update/hg38ToHg19.over.gencode.chain bigout/gencode.v${bigVer}lift37.annotation.gff3 bigout/gencode.v${bigVer}lift37.map-info.tsv
 	${gff3ToGenePred} -geneNameAttr=gene_name -rnaNameAttr=transcript_id bigout/gencode.v${bigVer}lift37.annotation.gff3 bigout/gencode.v${bigVer}lift37.annotation.gp
@@ -372,9 +379,7 @@ update: mappingChains problemRegions
 # also creates a PSL from the chain as is useful for debugging
 ##
 mappingChains: output/update/testGrch38.gp
-	overlapSelect output/update/testGrch38.gp /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
-	chainToPslBasic ${testUcscLiftOverChains} output/update/hg38ToHg19.over.test.psl
-	pslSwap output/update/hg38ToHg19.over.test.psl output/update/hg19ToHg38.over.test.psl
+	overlapSelect -inRange output/update/testGrch38.gp /hive/data/genomes/hg38/bed/liftOver/hg38ToHg19.over.chain.gz ${testUcscLiftOverChains}
 
 ##
 # generate problem regions on GRCh37

@@ -166,8 +166,12 @@ class GeneMapper {
     bool inTargetPatchRegion(const FeatureNode* targetGene);
     bool checkTargetOverlappingMapped(const FeatureNode* targetGene,
                                       AnnotationSet& mappedSet);
+    bool checkForIncludeTargetSpecialCases(const FeatureNode* targetGene) const;
     bool shouldIncludeTargetGene(const FeatureNode* gene,
                                  AnnotationSet& mappedSet);
+    void maybeCopyTargetGene(const FeatureNode* targetGene,
+                             AnnotationSet& mappedSet,
+                             ostream& mappingInfoFh);
     void copyTargetGene(const FeatureNode* targetGene,
                         AnnotationSet& mappedSet,
                         ostream& mappingInfoFh);

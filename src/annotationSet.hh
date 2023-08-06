@@ -18,13 +18,16 @@ class GxfWriter;
  */
 class AnnotationSet {
     private:
-    /* stored in range tree to link target location to
-     * tree. */
+
+    /* stored in range tree to link target location to tree. */
     struct LocationLink {
         struct LocationLink *next;
         FeatureNode* feature;
     };
 
+    // for reading previous versions that have problematic entries we not try to reject
+    bool fAllowWeirdEntries;
+    
     // Map of gene or transcripts id or name feature object and chromosome.  A
     // list is kept because gene names can have multiple associated gene ids.
     // including chrom handles pre-V44 releases where the same ids are used
@@ -34,11 +37,16 @@ class AnnotationSet {
     typedef FeatureMap::const_iterator FeatureMapConstIter;
 
     // map by base id of genes and transcripts (not exons).
+    FeatureMap fIdFeatureChromMap;
+   
+    // map by names of genes; small non-coding RNAs are know to have non-unique names and are not included.
+    FeatureMap fNameFeatureChromMap;
+
+    // map of base genes and transcript ids. Used to detect multiple version
+    // of a transcript getting added, which has happened with bugs in target
+    // substitutions.
     FeatureMap fIdFeatureMap;
-
-    // map by names of genes  small non-coding RNAs are know to have non-unique names and are not included.
-    FeatureMap fNameFeatureMap;
-
+    
     // list of all gene features found
     FeatureNodeVector fGenes;
 
@@ -69,10 +77,11 @@ class AnnotationSet {
                            const FeatureNode* overlappingFeature,
                            float minSimilarity,
                            bool manualOnlyTranscripts);
-
+    const FeatureNodeVector& getFeaturesById(const string& baseId) const;
     FeatureNode* getFeatureByKey(const string& baseKey,
                                  const string& chrom,
                                  const FeatureMap& featureMap) const;
+    void checkForMultiIdVersions(FeatureNode* feature) const;
 
     /* check if a seqregion for seqid has been written, if so, return true,
      * otherwise record it and return false.  */
@@ -95,10 +104,13 @@ class AnnotationSet {
     public:
     /* constructor, load gene and transcript objects from a GxF */
     AnnotationSet(const string& gxfFile,
-                  const GenomeSizeMap* genomeSizes=NULL);
+                  const GenomeSizeMap* genomeSizes=NULL,
+                  bool allowWeirdEntries=false);
 
     /* constructor, empty set */
-    AnnotationSet(const GenomeSizeMap* genomeSizes=NULL):
+    AnnotationSet(const GenomeSizeMap* genomeSizes=NULL,
+                  bool allowWeirdEntries=false):
+        fAllowWeirdEntries(allowWeirdEntries),
         fLocationMap(NULL),
         fGenomeSizes(genomeSizes) {
     }
@@ -111,23 +123,23 @@ class AnnotationSet {
 
     /* get a gene or transcript with same base id or NULL.  special
      * handling for PARs. */
-    FeatureNode* getFeatureById(const string& id,
-                                const string& chrom) const;
+    FeatureNode* getFeatureByIdChrom(const string& id,
+                                     const string& chrom) const;
     
     /* get a gene or transcript with same name or NULL.  special handling
      * for PARs. */
-    FeatureNode* getFeatureByName(const string& name,
-                                  const string& chrom) const;
+    FeatureNode* getFeatureByNameChrom(const string& name,
+                                       const string& chrom) const;
 
     /* find overlapping features */
     FeatureNodeVector findOverlappingFeatures(const string& seqid,
-                                          int start,
+                                              int start,
                                           int end);
     
     /* find overlapping genes with minimum similarity at the transcript level */
     FeatureNodeVector findOverlappingGenes(const FeatureNode* gene,
-                                       float minSimilarity,
-                                       bool manualOnlyTranscripts);
+                                           float minSimilarity,
+                                           bool manualOnlyTranscripts);
 
     /* get list of all gene features */
     const FeatureNodeVector& getGenes() const {

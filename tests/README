@@ -89,11 +89,14 @@ Test data
       ON table1.common_field = table3.common_field;
 
   - input/par.V43.gff3
-    input/par.V44.gff3
+    input/par.V44lift37.gff3
     input/par.V19.gff3
     input/stable-id-map.V44.tsv
     
-    Files to test for PAR stable id change. V43 is just for reference and not
-    used.
+    Files to test for PAR stable id change.
 
-  -   
+    SPRY3 is  problematic in that it was on chrY at V19 then dropped from chrY because
+    it had one transcript that went beyond the PAR.  However, it was not added
+    back in in V44.
+
+

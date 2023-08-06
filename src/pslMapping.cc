@@ -56,7 +56,7 @@ void PslMapping::dump(ostream& fh,
         fh  << description << endl;
     }
     fh << indent << "srcPsl:       " << pslToString(fSrcPsl) << endl;
-    if (fMappedPsls.size() == 0) {
+    if (fMappedPsls.empty()) {
         fh << indent << "mappedPsl[0]: none" << endl;
     } else {
         for (int i = 0; i < fMappedPsls.size(); i++) {
@@ -68,7 +68,7 @@ void PslMapping::dump(ostream& fh,
 static void dumpMapped(struct psl* srcPsl,
                        PslVector& mappedPsls) {
 #if debug
-    if (mappedPsls.size() > 1) {
+    if (not mappedPsls.empty()) {
         fprintf(stdout, "@ ");
         pslTabOut(srcPsl, stdout);
         for (auto it: mappedPsls) {
@@ -208,7 +208,7 @@ void PslMapping::sortMappedPsls(const FeatureNode* primaryTarget,
                   return mappedPslCompare(this->fSrcPsl, primaryTarget, secondaryTarget,
                                           mappedPsl1, mappedPsl2);
               });
-    if (fMappedPsls.size() > 0) {
+    if (not fMappedPsls.empty()) {
         fMappedPsl = fMappedPsls[0];
     }
 }
