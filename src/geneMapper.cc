@@ -442,6 +442,7 @@ bool GeneMapper::checkForPathologicalGeneRename(const ResultFeatureTrees* mapped
         and (fSrcAnnotations->getFeatureByIdChrom(targetGene->getTypeId(), targetGene->fFeature->getSeqid()) != NULL);
 }
 
+
 /* should we substitute target version of gene even if mapped?  */
 bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) const {
     // mis-mapped gene or the right biotype to a mapped sequence
@@ -472,7 +473,7 @@ bool GeneMapper::shouldSubstituteTarget(const ResultFeatureTrees* mappedGene) co
     }
 
     // FIXME: tmp hack for V31 to avoid substitution of target when gene has merged
-    // this is being fixed properly in mast, but needed quickly
+    // this is being fixed properly , but needed quickly
     if (targetGene->getTypeId() == "ENSG00000226155.1") {
 #if 0
         cerr << "NOTE: V31 hack, don't include target gene "  << targetGene->getTypeId() << endl;
@@ -756,8 +757,7 @@ void GeneMapper::mapGene(const FeatureNode* srcGeneTree,
     // must be done after forcing status above
     if (mappedGene.mapped == NULL) {
         outputUnmappedGeneInfo(&mappedGene, mappingInfoFh);
-        if ((not fSubstituteTargetVersion.empty()) and 
-            shouldSubstituteTarget(&mappedGene)) {
+        if ((not fSubstituteTargetVersion.empty()) and shouldSubstituteTarget(&mappedGene)) {
             substituteTarget(&mappedGene);
             outputTargetGeneInfo(&mappedGene, "targetSubst", mappingInfoFh);
         }
@@ -839,7 +839,7 @@ bool GeneMapper::checkTargetOverlappingMapped(const FeatureNode* targetGene,
                                               AnnotationSet& mappedSet) {
     static const float minSimilarity = 0.5;
     FeatureNodeVector overlapping = mappedSet.findOverlappingGenes(targetGene, minSimilarity,
-                                                               fOnlyManualForTargetSubstituteOverlap);
+                                                                   fOnlyManualForTargetSubstituteOverlap);
     return not overlapping.empty();
 }
 
@@ -858,6 +858,7 @@ bool GeneMapper::checkForIncludeTargetSpecialCases(const FeatureNode* targetGene
     }
     return false;
 }
+
 
 /*
  * Check if a target gene should be copied.

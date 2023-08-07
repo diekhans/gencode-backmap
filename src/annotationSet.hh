@@ -17,6 +17,15 @@ class GxfWriter;
  * Locations in target genome of old transcripts, by base id
  */
 class AnnotationSet {
+    public:
+    // Maps of gene or transcripts id or name feature object.  A list is kept
+    // because gene names can have multiple associated gene ids.  including
+    // chrom handles pre-V44 releases where the same ids are used for both PAR
+    // regions
+    typedef map<const string, FeatureNodeVector> FeatureMap;
+    typedef FeatureMap::iterator FeatureMapIter;
+    typedef FeatureMap::const_iterator FeatureMapConstIter;
+
     private:
 
     /* stored in range tree to link target location to tree. */
@@ -25,17 +34,9 @@ class AnnotationSet {
         FeatureNode* feature;
     };
 
-    // for reading previous versions that have problematic entries we not try to reject
-    bool fAllowWeirdEntries;
+    // Warn if an id is added to the set were there is already a different version
+    bool fWarnIdDiffVersions;
     
-    // Map of gene or transcripts id or name feature object and chromosome.  A
-    // list is kept because gene names can have multiple associated gene ids.
-    // including chrom handles pre-V44 releases where the same ids are used
-    // for both PAR regions
-    typedef map<const string, FeatureNodeVector> FeatureMap;
-    typedef FeatureMap::iterator FeatureMapIter;
-    typedef FeatureMap::const_iterator FeatureMapConstIter;
-
     // map by base id of genes and transcripts (not exons).
     FeatureMap fIdFeatureChromMap;
    
@@ -77,7 +78,6 @@ class AnnotationSet {
                            const FeatureNode* overlappingFeature,
                            float minSimilarity,
                            bool manualOnlyTranscripts);
-    const FeatureNodeVector& getFeaturesById(const string& baseId) const;
     FeatureNode* getFeatureByKey(const string& baseKey,
                                  const string& chrom,
                                  const FeatureMap& featureMap) const;
@@ -105,12 +105,12 @@ class AnnotationSet {
     /* constructor, load gene and transcript objects from a GxF */
     AnnotationSet(const string& gxfFile,
                   const GenomeSizeMap* genomeSizes=NULL,
-                  bool allowWeirdEntries=false);
+                  bool warnIdDiffVersions=false);
 
     /* constructor, empty set */
     AnnotationSet(const GenomeSizeMap* genomeSizes=NULL,
-                  bool allowWeirdEntries=false):
-        fAllowWeirdEntries(allowWeirdEntries),
+                  bool warnIdDiffVersions=false):
+        fWarnIdDiffVersions(warnIdDiffVersions),
         fLocationMap(NULL),
         fGenomeSizes(genomeSizes) {
     }
@@ -121,15 +121,30 @@ class AnnotationSet {
     /* add a gene the maps */
     void addGene(FeatureNode* gene);
 
-    /* get a gene or transcript with same base id or NULL.  special
-     * handling for PARs. */
+    /* get list of features with the base id or empty if none */
+    const FeatureNodeVector& getFeaturesById(const string& baseId) const {
+        static const FeatureNodeVector emptyVector;
+        FeatureMapConstIter it = fIdFeatureMap.find(baseId);
+        if (it == fIdFeatureMap.end()) {
+            return emptyVector;
+        } else {
+            return it->second;
+        }
+    }
+
+    /* get a target gene or transcript node with same base id or NULL.
+     * special handling for PARs. Getting node is used if you need whole tree. */
     FeatureNode* getFeatureByIdChrom(const string& id,
-                                     const string& chrom) const;
-    
-    /* get a gene or transcript with same name or NULL.  special handling
-     * for PARs. */
+                                     const string& chrom) const {
+        return getFeatureByKey(getBaseId(id), chrom, fIdFeatureChromMap);
+    }
+
+    /* get a target gene or transcript node with same name or NULL.  Chrom is used
+     * for for PARs. Getting node is used if you need whole tree. */
     FeatureNode* getFeatureByNameChrom(const string& name,
-                                       const string& chrom) const;
+                                       const string& chrom) const {
+        return getFeatureByKey(name, chrom, fNameFeatureChromMap);
+    }
 
     /* find overlapping features */
     FeatureNodeVector findOverlappingFeatures(const string& seqid,

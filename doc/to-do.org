@@ -1,3 +1,9 @@
 * drop remap_num_mappings attribute, as it makes less sense now that filter per same chromosome
-* remove use of havana ids, seems redundant
+* remove use of havana ids, seems redundant, not sure they can sort anything out
 * REMAP_STATUS_NON_PRIMARY is no longer useful since discard mapping not to the same chromosome.
+* issues with multiple ids.
+in theory, should only happen in PAR
+** Test case transmoveTest gives different results depending on order of README.
+this has to do with case were transcripts have moved between gene vs target.  See tests/README.
+*** void AnnotationSet::checkForMultiIdVersions(FeatureNode* feature) const
+just warns

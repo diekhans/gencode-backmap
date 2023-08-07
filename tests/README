@@ -88,10 +88,10 @@ Test data
       LEFT JOIN table3
       ON table1.common_field = table3.common_field;
 
-  - input/par.V43.gff3
-    input/par.V44lift37.gff3
-    input/par.V19.gff3
-    input/stable-id-map.V44.tsv
+  - data/par.V43.gff3
+    data/par.V44lift37.gff3
+    data/par.V19.gff3
+    data/stable-id-map.V44.tsv
     
     Files to test for PAR stable id change.
 
@@ -100,3 +100,12 @@ Test data
     back in in V44.
 
 
+- data/transMove.V19.gff3
+  data/transMove.V43lift37.gff3
+  data/transMove.V44.gff3
+
+   Transcript ENST00000429980, ENST00000442069
+   V19: ENSG00000225655
+   V44: ENSG00000277631
+
+  Order in V44 GFF3 made a difference, which indicates another problem.

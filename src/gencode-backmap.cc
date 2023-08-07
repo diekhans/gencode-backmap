@@ -64,7 +64,7 @@ static void gencodeBackmap(const string& inGxfFile,
     AnnotationSet* targetAnnotations = (not targetGxf.empty())
         ? new AnnotationSet(targetGxf) : NULL;
     AnnotationSet* previousMappedAnnotations = (not previousMappedGxf.empty())
-        ? new AnnotationSet(previousMappedGxf, NULL, true) : NULL;
+        ? new AnnotationSet(previousMappedGxf, NULL) : NULL;
     BedMap* targetPatchMap = (not targetPatchBed.empty())
         ? new BedMap(targetPatchBed) : NULL;
     GxfWriter* mappedGxfFh = GxfWriter::factory(mappedGxfFile, parIdHackMethod);

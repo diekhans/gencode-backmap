@@ -9,12 +9,12 @@ verbose =
 
 ### IMPORTANT: test GFF3, if new are added, run make update so chains are rebuilt
 GRCh37_GFF3s = data/gencode.v19.annotation.gff3 data/idChange.v19.gff3 \
-	data/dup-transcripts.v19.gff3 data/par.V19.gff3
+	data/dup-transcripts.v19.gff3 data/par.V19.gff3 data/transMove.V19.gff3
 GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 \
 	data/gencode.v29.annotation.gff3 data/gencode.v31.annotation.gff3 \
 	data/dup-transcripts.v33.gff3 \
 	data/gapped-transcripts.v33.gff3 data/sort.v33.gff3 \
-	data/par.V43.gff3 data/par.V44.gff3
+	data/par.V43.gff3 data/par.V44.gff3 data/transMove.V44.gff3
 
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetGff3Arg = --targetGxf=data/gencode.v19.annotation.gff3
@@ -57,7 +57,7 @@ backmap_tests: gff3UcscTest gtfUcscTest cmpUcscTest \
 	gff3UcscSubstituteManOverlap gtfUcscSubstituteManOverlap \
 	mappingVerTests cmpUcscSubstituteManOverlap \
 	gff3V29RegressTest dupTranscriptsV33Test sortStrictV33Test \
-	regressTests gapTest parStableIdTests
+	regressTests gapTest parStableIdTests transMoveTests
 other_tests: reportsTests ucscLiftEditTest 
 
 
@@ -275,6 +275,18 @@ parStableIdTest: mkdirs ${testGencodeLiftOverChains}
 	${diff} expected/$@.map-info output/$@.map-info
 	gff3ToGenePred -geneNameAttr=gene_name -rnaNameAttr=transcript_id output/$@.mapped.gff3 output/$@.gp
 	genePredCheck -db=hg19 output/$@.gp
+
+transMoveTests: transMoveTest
+transMoveTest: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap \
+            --targetGxf=data/transMove.V19.gff3 ${targetSubstArg} ${targetPatchArg} --previousMappedGxf=data/transMove.V43lift37.gff3 ${headerArg} \
+	    data/transMove.V44.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+	gff3ToGenePred -geneNameAttr=gene_name -rnaNameAttr=transcript_id output/$@.mapped.gff3 output/$@.gp
+	genePredCheck -db=hg19 output/$@.gp
+
+
 
 ##
 ## lift edit

@@ -67,7 +67,7 @@ void AnnotationSet::checkForMultiIdVersions(FeatureNode* feature) const {
     const FeatureNodeVector& features = getFeaturesById(getBaseId(feature->getTypeId()));
     for (int i = 0; i < features.size(); i++) {
         if (features[i]->fFeature->getTypeId() != feature->getTypeId()) {
-            throw logic_error("feature id " + feature->getTypeId() + " already exists with different version: " + features[i]->fFeature->getTypeId());
+            cerr << "Note: feature id " + feature->getTypeId() + " already exists with different version: " + features[i]->fFeature->getTypeId() << endl;
         }
     }
 }
@@ -75,7 +75,7 @@ void AnnotationSet::checkForMultiIdVersions(FeatureNode* feature) const {
 
 /* link a gene or transcript feature into the maps */
 void AnnotationSet::addFeature(FeatureNode* feature) {
-    if (not fAllowWeirdEntries) {
+    if (not fWarnIdDiffVersions) {
         checkForMultiIdVersions(feature);
     }
     
@@ -126,17 +126,6 @@ void AnnotationSet::processRecord(GxfParser *gxfParser,
     }
 }
 
-/* get list of features with the base id or NULL */
-const FeatureNodeVector& AnnotationSet::getFeaturesById(const string& baseId) const {
-    static const FeatureNodeVector emptyVector;
-    FeatureMapConstIter it = fIdFeatureMap.find(baseId);
-    if (it == fIdFeatureMap.end()) {
-        return emptyVector;
-    } else {
-        return it->second;
-    }
-}
-
 /* get a target gene or transcript node from an index by name or id.
  * if the name or id is duplicated in the GxF, it can't be used as an index and
  * NULL is returned.
@@ -153,20 +142,6 @@ FeatureNode* AnnotationSet::getFeatureByKey(const string& baseId,
     } else {
         return it->second[0];
     }
-}
-
-/* get a target gene or transcript node with same base id or NULL.
- * special handling for PARs. Getting node is used if you need whole tree. */
-FeatureNode* AnnotationSet::getFeatureByIdChrom(const string& id,
-                                                const string& chrom) const {
-    return getFeatureByKey(getBaseId(id), chrom, fIdFeatureChromMap);
-}
-
-/* get a target gene or transcript node with same name or NULL.  Chrom is used
- * for for PARs. Getting node is used if you need whole tree. */
-FeatureNode* AnnotationSet::getFeatureByNameChrom(const string& name,
-                                                  const string& chrom) const {
-    return getFeatureByKey(name, chrom, fNameFeatureChromMap);
 }
 
 /* find overlapping features */
@@ -216,8 +191,8 @@ FeatureNodeVector AnnotationSet::findOverlappingGenes(const FeatureNode* gene,
 /* constructor, load gene and transcript objects from a GxF */
 AnnotationSet::AnnotationSet(const string& gxfFile,
                              const GenomeSizeMap* genomeSizes,
-                             bool allowWeirdEntries):
-    fAllowWeirdEntries(allowWeirdEntries),
+                             bool warnIdDiffVersions):
+    fWarnIdDiffVersions(warnIdDiffVersions),
     fLocationMap(NULL),
     fGenomeSizes(genomeSizes) {
     GxfParser* gxfParser = GxfParser::factory(gxfFile);
