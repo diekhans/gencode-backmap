@@ -195,6 +195,9 @@ AnnotationSet::AnnotationSet(const string& gxfFile,
     fWarnIdDiffVersions(warnIdDiffVersions),
     fLocationMap(NULL),
     fGenomeSizes(genomeSizes) {
+    if (gVerbose) {
+        cerr << "loading annotation set: " << gxfFile << endl;
+    }
     GxfParser* gxfParser = GxfParser::factory(gxfFile);
     GxfRecord* gxfRecord;
     while ((gxfRecord = gxfParser->next()) != NULL) {

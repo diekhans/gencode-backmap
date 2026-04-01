@@ -965,11 +965,20 @@ void GeneMapper::mapGxf(GxfWriter& mappedGxfFh,
     
     const FeatureNodeVector& srcGenes = fSrcAnnotations->getGenes();
     outputInfoHeader(mappingInfoFh);
+    if (gVerbose) {
+        cerr << "==== mapping genes ====" << endl;
+    }
     for (int i = 0; i < srcGenes.size(); i++) {
         maybeMapGene(srcGenes[i], mappedSet, unmappedSet, featureTreePolish, mappingInfoFh, transcriptPslFh);
     }
     if ((fUseTargetFlags != 0) and (fTargetAnnotations != NULL)) {
+        if (gVerbose) {
+            cerr << "==== copying target genes ====" << endl;
+        }
         copyTargetGenes(mappedSet, mappingInfoFh);
+    }
+    if (gVerbose) {
+        cerr << "==== write results ====" << endl;
     }
     mappedSet.sortGencode();
     mappedSet.write(mappedGxfFh);

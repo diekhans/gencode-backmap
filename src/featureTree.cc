@@ -448,6 +448,13 @@ static int getFeatureRank(const FeatureNode *feature) {
     }
 }
 
+/* unexpected error annotations */
+static void overlappingFeaturesOfSameType(const FeatureNode *a, const FeatureNode *b) {
+    throw logic_error("overlapping features of same type: " + a->getType() + 
+                      "\n    feature1: " + a->toString() + 
+                      "\n    feature2: " + b->toString());
+}
+
 /* sort by containing features before contained positve strand */
 static bool containingLessThanPos(const FeatureNode *a, const FeatureNode *b) {
     if (a == b) {
@@ -455,7 +462,7 @@ static bool containingLessThanPos(const FeatureNode *a, const FeatureNode *b) {
     } else if (a->overlaps(b)) {
         // overlapping
         if (a->getType() == b->getType()) {
-            throw logic_error("overlapping features of same type: " + a->getType());
+            overlappingFeaturesOfSameType(a, b);
         }
         return getFeatureRank(a) < getFeatureRank(b);
     } else if (a->getEnd() < b->getStart()) {
@@ -472,7 +479,7 @@ static bool containingLessThanNeg(const FeatureNode *a, const FeatureNode *b) {
     } else if (a->overlaps(b)) {
         // overlapping
         if (a->getType() == b->getType()) {
-            throw logic_error("overlapping features of same type: " + a->getType());
+            overlappingFeaturesOfSameType(a, b);
         }
         return getFeatureRank(a) < getFeatureRank(b);
     } else if (a->getEnd() > b->getStart()) {

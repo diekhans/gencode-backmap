@@ -147,7 +147,7 @@ The following files are needed to map using the UCSC liftover alignments:
   - ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.13_GRCh37/GCF_000001405.13_GRCh37_assembly_report.txt
 - NCBI assembly report file for GRCh38.  Since only the primary assembly is
   map, it is not necessary to update this for new releases.
-  - ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
+  - ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p14/GCF_000001405.36_GRCh38.p14_assembly_report.txt
 - GENCODE V19 primary annotations in GFF3 and GTF
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gtf.gz
   - ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gff3.gz
@@ -166,8 +166,8 @@ This does not need to be redone each releases.
 
 ```
    zcat hg19Patch13Patches.txt.gz | cut -f 2- > hg19Patch13Patches.bed
-   bigBedToBed Hg19.grcIncidentDb.bb Hg19.grcIncidentDb.bed
-   cat hg19Patch13Patches.bed Hg19.grcIncidentDb.bed >problemRegions.bed
+   bigBedToBed hg19.grcIncidentDb.bb hg19.grcIncidentDb.bed
+   cat hg19Patch13Patches.bed hg19.grcIncidentDb.bed >problemRegions.bed
 ```
 
 GENCODE uses different sequence naming for unplaced chromosome sequences than
@@ -175,7 +175,7 @@ UCSC.  Additionally, GENCODE annotates the GRCh37-lite chrM, while UCSC had
 incorporated a different chrM version.  Convert the UCSC alignments to
 use GENCODE names:
 ```
-../gencode-backmap/bin/ucscLiftEdit hg38ToHg19.over.chain.gz GCF_000001405.36_GRCh38.p10_assembly_report.txt GCF_000001405.13_GRCh37_assembly_report.txt hg38ToHg19.over.gencode.chain
+../gencode-backmap/bin/ucscLiftEdit hg38ToHg19.over.chain.gz GCF_000001405.40_GRCh38.p14_assembly_report.txt GCF_000001405.13_GRCh37_assembly_report.txt hg38ToHg19.over.gencode.chain
 ```
 
 Map the annotation files:
