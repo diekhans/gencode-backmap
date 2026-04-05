@@ -1,0 +1,6 @@
+##gff-version 3
+#description: evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
+#provider: GENCODE
+#contact: gencode@sanger.ac.uk
+#format: gff3
+#date: 2014-09-18

@@ -448,7 +448,7 @@ static int getFeatureRank(const FeatureNode *feature) {
     }
 }
 
-/* unexpected error annotations */
+/* unexpected error in annotations */
 static void overlappingFeaturesOfSameType(const FeatureNode *a, const FeatureNode *b) {
     throw logic_error("overlapping features of same type: " + a->getType() + 
                       "\n    feature1: " + a->toString() + 

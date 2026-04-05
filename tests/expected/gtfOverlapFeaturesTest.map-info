@@ -1,0 +1,149 @@
+geneNum	recType	featType	featId	featOttId	featName	featBiotype	featChrom	featStart	featEnd	featStrand	mappingStatus	mappingCount	targetStatus
+0	mapSrc	gene	ENSG00000275052.7	OTTHUMG00000129336.8	PPP4R3B	protein_coding	chr2	55547292	55618880	-	none	0	na
+0	mapSrc	trans	ENST00000616407.2	OTTHUMT00000251483.4	PPP4R3B-206	protein_coding	chr2	55547292	55617622	-	none	0	na
+0	mapSrc	trans	ENST00001052080.1		PPP4R3B-259	nonsense_mediated_decay	chr2	55547292	55617622	-	none	0	na
+0	mapSrc	trans	ENST00000611717.5	OTTHUMT00000251482.3	PPP4R3B-203	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000616288.5	OTTHUMT00000325319.3	PPP4R3B-205	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890050.2		PPP4R3B-207	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890052.2		PPP4R3B-208	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890053.2		PPP4R3B-209	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890054.2		PPP4R3B-210	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890055.2		PPP4R3B-211	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890056.2		PPP4R3B-212	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890057.2		PPP4R3B-213	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890058.2		PPP4R3B-214	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890059.2		PPP4R3B-215	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890060.2		PPP4R3B-216	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890061.2		PPP4R3B-217	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890062.2		PPP4R3B-218	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890063.2		PPP4R3B-219	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890064.2		PPP4R3B-220	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890065.2		PPP4R3B-221	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890066.2		PPP4R3B-222	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890067.2		PPP4R3B-223	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890068.2		PPP4R3B-224	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890069.2		PPP4R3B-225	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890070.2		PPP4R3B-226	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890071.2		PPP4R3B-227	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890072.2		PPP4R3B-228	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890073.2		PPP4R3B-229	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890074.2		PPP4R3B-230	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890075.2		PPP4R3B-231	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890076.2		PPP4R3B-232	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890077.2		PPP4R3B-233	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890078.2		PPP4R3B-234	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890079.2		PPP4R3B-235	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890080.2		PPP4R3B-236	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890081.2		PPP4R3B-237	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890082.2		PPP4R3B-238	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890083.2		PPP4R3B-239	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890084.2		PPP4R3B-240	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890085.2		PPP4R3B-241	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000890086.2		PPP4R3B-242	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000925128.2		PPP4R3B-243	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000925129.2		PPP4R3B-244	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000925130.2		PPP4R3B-245	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000925131.2		PPP4R3B-246	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000925132.2		PPP4R3B-247	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000925133.2		PPP4R3B-248	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953461.2		PPP4R3B-249	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953462.2		PPP4R3B-250	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953463.2		PPP4R3B-251	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953464.2		PPP4R3B-252	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953465.2		PPP4R3B-253	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953466.2		PPP4R3B-254	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953467.2		PPP4R3B-255	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953468.2		PPP4R3B-256	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000953469.2		PPP4R3B-257	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00001081270.1		PPP4R3B-265	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00001142084.1		PPP4R3B-273	protein_coding	chr2	55547292	55617799	-	none	0	na
+0	mapSrc	trans	ENST00001081268.1		PPP4R3B-263	nonsense_mediated_decay	chr2	55547295	55617681	-	none	0	na
+0	mapSrc	trans	ENST00001052081.1		PPP4R3B-260	nonsense_mediated_decay	chr2	55547301	55617600	-	none	0	na
+0	mapSrc	trans	ENST00001081269.1		PPP4R3B-264	nonsense_mediated_decay	chr2	55548375	55617681	-	none	0	na
+0	mapSrc	trans	ENST00001052082.1		PPP4R3B-261	nonsense_mediated_decay	chr2	55548377	55617622	-	none	0	na
+0	mapSrc	trans	ENST00001081271.1		PPP4R3B-266	nonsense_mediated_decay	chr2	55548378	55617595	-	none	0	na
+0	mapSrc	trans	ENST00001052083.1		PPP4R3B-262	nonsense_mediated_decay	chr2	55548379	55617619	-	none	0	na
+0	mapSrc	trans	ENST00001114804.1		PPP4R3B-270	protein_coding	chr2	55557684	55617799	-	none	0	na
+0	mapSrc	trans	ENST00001114805.1		PPP4R3B-271	protein_coding	chr2	55557685	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000997013.1		PPP4R3B-258	nonsense_mediated_decay	chr2	55564323	55617610	-	none	0	na
+0	mapSrc	trans	ENST00000482826.1	OTTHUMT00000326267.1	PPP4R3B-202	retained_intron	chr2	55568029	55573718	-	none	0	na
+0	mapSrc	trans	ENST00001107708.1		PPP4R3B-267	protein_coding	chr2	55572998	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000470801.1	OTTHUMT00000326265.1	PPP4R3B-201	protein_coding_CDS_not_defined	chr2	55598698	55616617	-	none	0	na
+0	mapSrc	trans	ENST00001107709.1		PPP4R3B-268	protein_coding	chr2	55613386	55617799	-	none	0	na
+0	mapSrc	trans	ENST00000612688.1	OTTHUMT00000325320.2	PPP4R3B-204	protein_coding_CDS_not_defined	chr2	55614176	55618880	-	none	0	na
+0	mapSrc	trans	ENST00001118009.1		PPP4R3B-272	protein_coding	chr2	55616153	55618851	-	none	0	na
+0	mapSrc	trans	ENST00001107710.1		PPP4R3B-269	protein_coding	chr2	55616153	55618880	-	none	0	na
+0	map	gene	ENSG00000275052.7_13	OTTHUMG00000129336.8_13	PPP4R3B	protein_coding	chr2	55774428	55846015	-	partial	1	new
+0	map	trans	ENST00000616407.2_8	OTTHUMT00000251483.4_8	PPP4R3B-206	protein_coding	chr2	55774428	55844757	-	partial	1	new
+0	map	trans	ENST00001052080.1_1		PPP4R3B-259	nonsense_mediated_decay	chr2	55774428	55844757	-	partial	1	new
+0	map	trans	ENST00000611717.5_8	OTTHUMT00000251482.3_8	PPP4R3B-203	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000616288.5_8	OTTHUMT00000325319.3_8	PPP4R3B-205	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890050.2_2		PPP4R3B-207	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890052.2_2		PPP4R3B-208	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890053.2_2		PPP4R3B-209	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890054.2_2		PPP4R3B-210	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890055.2_2		PPP4R3B-211	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890056.2_2		PPP4R3B-212	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890057.2_2		PPP4R3B-213	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890058.2_2		PPP4R3B-214	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890059.2_2		PPP4R3B-215	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890060.2_2		PPP4R3B-216	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890061.2_2		PPP4R3B-217	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890062.2_2		PPP4R3B-218	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890063.2_2		PPP4R3B-219	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890064.2_2		PPP4R3B-220	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890065.2_2		PPP4R3B-221	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890066.2_2		PPP4R3B-222	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890067.2_2		PPP4R3B-223	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890068.2_2		PPP4R3B-224	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890069.2_2		PPP4R3B-225	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890070.2_2		PPP4R3B-226	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890071.2_2		PPP4R3B-227	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890072.2_2		PPP4R3B-228	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890073.2_2		PPP4R3B-229	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890074.2_2		PPP4R3B-230	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890075.2_2		PPP4R3B-231	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890076.2_2		PPP4R3B-232	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890077.2_2		PPP4R3B-233	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890078.2_2		PPP4R3B-234	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890079.2_2		PPP4R3B-235	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890080.2_2		PPP4R3B-236	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890081.2_2		PPP4R3B-237	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890082.2_2		PPP4R3B-238	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890083.2_2		PPP4R3B-239	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890084.2_2		PPP4R3B-240	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890085.2_2		PPP4R3B-241	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000890086.2_2		PPP4R3B-242	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000925128.2_2		PPP4R3B-243	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000925129.2_2		PPP4R3B-244	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000925130.2_2		PPP4R3B-245	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000925131.2_2		PPP4R3B-246	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000925132.2_2		PPP4R3B-247	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000925133.2_2		PPP4R3B-248	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953461.2_2		PPP4R3B-249	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953462.2_2		PPP4R3B-250	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953463.2_2		PPP4R3B-251	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953464.2_2		PPP4R3B-252	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953465.2_2		PPP4R3B-253	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953466.2_2		PPP4R3B-254	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953467.2_2		PPP4R3B-255	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953468.2_2		PPP4R3B-256	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00000953469.2_2		PPP4R3B-257	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00001081270.1_1		PPP4R3B-265	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00001142084.1_1		PPP4R3B-273	protein_coding	chr2	55774428	55844934	-	partial	1	new
+0	map	trans	ENST00001081268.1_1		PPP4R3B-263	nonsense_mediated_decay	chr2	55774431	55844816	-	partial	1	new
+0	map	trans	ENST00001052081.1_1		PPP4R3B-260	nonsense_mediated_decay	chr2	55774437	55844735	-	partial	1	new
+0	map	trans	ENST00001081269.1_1		PPP4R3B-264	nonsense_mediated_decay	chr2	55775511	55844816	-	partial	1	new
+0	map	trans	ENST00001052082.1_1		PPP4R3B-261	nonsense_mediated_decay	chr2	55775513	55844757	-	partial	1	new
+0	map	trans	ENST00001081271.1_1		PPP4R3B-266	nonsense_mediated_decay	chr2	55775514	55844730	-	partial	1	new
+0	map	trans	ENST00001052083.1_1		PPP4R3B-262	nonsense_mediated_decay	chr2	55775515	55844754	-	partial	1	new
+0	map	trans	ENST00001114804.1_1		PPP4R3B-270	protein_coding	chr2	55784820	55844934	-	partial	1	new
+0	map	trans	ENST00001114805.1_1		PPP4R3B-271	protein_coding	chr2	55784821	55844934	-	partial	1	new
+0	map	trans	ENST00000997013.1_1		PPP4R3B-258	nonsense_mediated_decay	chr2	55791459	55844745	-	partial	1	new
+0	map	trans	ENST00000482826.1_3	OTTHUMT00000326267.1_3	PPP4R3B-202	retained_intron	chr2	55795165	55800854	-	full_contig	1	new
+0	map	trans	ENST00001107708.1_1		PPP4R3B-267	protein_coding	chr2	55800134	55844934	-	partial	1	new
+0	map	trans	ENST00000470801.1_3	OTTHUMT00000326265.1_3	PPP4R3B-201	protein_coding_CDS_not_defined	chr2	55825834	55843753	-	full_contig	1	new
+0	map	trans	ENST00001107709.1_1		PPP4R3B-268	protein_coding	chr2	55840522	55844934	-	partial	1	new
+0	map	trans	ENST00000612688.1_3	OTTHUMT00000325320.2_3	PPP4R3B-204	protein_coding_CDS_not_defined	chr2	55841312	55846015	-	partial	1	new
+0	map	trans	ENST00001118009.1_1		PPP4R3B-272	protein_coding	chr2	55843289	55845986	-	partial	1	new
+0	map	trans	ENST00001107710.1_1		PPP4R3B-269	protein_coding	chr2	55843289	55846015	-	partial	1	new

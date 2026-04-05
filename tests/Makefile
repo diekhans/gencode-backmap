@@ -14,7 +14,8 @@ GRCh38_GFF3s = data/gencode.v22.annotation.gff3 data/idChange.v25.gff3 \
 	data/gencode.v29.annotation.gff3 data/gencode.v31.annotation.gff3 \
 	data/dup-transcripts.v33.gff3 \
 	data/gapped-transcripts.v33.gff3 data/sort.v33.gff3 \
-	data/par.V43.gff3 data/par.V44.gff3 data/transMove.V44.gff3
+	data/par.V43.gff3 data/par.V44.gff3 data/transMove.V44.gff3 \
+	data/overlap-features-bug.v50.annotation.gff3
 
 targetGtfArg = --targetGxf=data/gencode.v19.annotation.gtf
 targetGff3Arg = --targetGxf=data/gencode.v19.annotation.gff3
@@ -202,7 +203,7 @@ ${testGencodeLiftOverChains}: ${testUcscLiftOverChains}
 # various regression tests
 #
 ##
-regressTests: idChangeV25Test gff3V29RegressTest gff3V31RegressTest
+regressTests: idChangeV25Test gff3V29RegressTest gff3V31RegressTest gff3OverlapFeaturesTest gtfOverlapFeaturesTest
 
 ##
 # Id changes and related in v25
@@ -286,6 +287,22 @@ transMoveTest: mkdirs ${testGencodeLiftOverChains}
 	gff3ToGenePred -geneNameAttr=gene_name -rnaNameAttr=transcript_id output/$@.mapped.gff3 output/$@.gp
 	genePredCheck -db=hg19 output/$@.gp
 
+
+gff3OverlapFeaturesTest: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap \
+            --targetGxf=data/overlap-features-bug.v19.annotation.gff3 ${targetSubstArg} ${targetPatchArg} \
+	     --previousMappedGxf=data/overlap-features-bug.v49lift37.annotation.gff3 ${headerArg} \
+	     data/overlap-features-bug.v50.annotation.gff3 ${testGencodeLiftOverChains} output/$@.mapped.gff3 output/$@.map-info
+	${diff} expected/$@.mapped.gff3 output/$@.mapped.gff3
+	${diff} expected/$@.map-info output/$@.map-info
+
+gtfOverlapFeaturesTest: mkdirs ${testGencodeLiftOverChains}
+	${gencode_backmap_verb} --swapMap --useTargetForAutoSmallNonCoding --onlyManualForTargetSubstituteOverlap \
+            --targetGxf=data/overlap-features-bug.v19.annotation.gtf ${targetSubstArg} ${targetPatchArg} \
+	     --previousMappedGxf=data/overlap-features-bug.v49lift37.annotation.gtf ${headerArg} \
+	     data/overlap-features-bug.v50.annotation.gtf ${testGencodeLiftOverChains} output/$@.mapped.gtf output/$@.map-info
+	${diff} expected/$@.mapped.gtf output/$@.mapped.gtf
+	${diff} expected/$@.map-info output/$@.map-info
 
 
 ##

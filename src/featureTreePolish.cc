@@ -128,6 +128,16 @@ static FeatureNode* mkMergeNode(FeatureNode* transcript,
     return new FeatureNode(newFeature, transcript, feature->fRemapStatus, feature->fTargetStatus, feature->fNumMappings);
 }
 
+/* unexpected error merging features */
+static void invalidFeatureMerge(FeatureNode* transcript,
+                                FeatureNode* feature1, FeatureNode* feature2,
+                                const string& msg) {
+    throw logic_error(msg + ":" +
+                      "\n    transcript: " + transcript->toString() +
+                      "\n    feature1:   " + feature1->toString() + 
+                      "\n    feature2:   " + feature2->toString());
+}
+
 /* Merge two feature records */
 static FeatureNode* mergeFeatureRecs(FeatureNode* transcript,
                                      FeatureNode* feature1, FeatureNode* feature2) {
@@ -138,24 +148,43 @@ static FeatureNode* mergeFeatureRecs(FeatureNode* transcript,
              << endl;
     }
     if (feature1->getType() != feature2->getType()) {
-        throw logic_error("mergeFeatureRecs: feature types not the same");
+        invalidFeatureMerge(transcript, feature1, feature2,
+                            "mergeFeatureRecs: feature types not the same");
+    }
+    if (feature1->overlaps(feature2)) {
+        invalidFeatureMerge(transcript, feature1, feature2,
+                            "mergeFeatureRecs: features overlap");
     }
     if ((feature1->getNumChildren() > 0) or (feature2->getNumChildren() > 0)) {
-        throw logic_error("mergeFeatureRecs: assumption of no transcript grandchildren is not true");
+        invalidFeatureMerge(transcript, feature1, feature2,
+                            "mergeFeatureRecs: assumption of no transcript grandchildren is not true");
     }
     GxfFeature* newFeature = new GxfFeature(feature1->getSeqid(), feature1->getSource(), feature1->getType(),
                                             feature1->getStart(), feature2->getEnd(), feature1->getScore(),
-                                            feature1->getStrand(), getMergePhase(feature1, feature2), feature1->getAttrs());
-    return mkMergeNode(transcript, newFeature, feature1);
+                                            feature1->getStrand(), getMergePhase(feature1, feature2),
+                                            feature1->getAttrs());
+    FeatureNode* merged = mkMergeNode(transcript, newFeature, feature1);
+    if (gVerbose) {
+        cerr << "merged: " << merged->toString() << endl;
+    }
+    return merged;
 }
 
-/* find feature of specified type or -1 */
-static int findOverType(const string& featType,
-                        NodeIndexVector& overs,
-                        int startIdx = 0) {
+/* find feature of specified type that hasn't been used and is adjacent
+ * (gap <= maxCloseGapSize), or -1.  Features must be adjacent to be
+ * merged, not just the same type, otherwise features on opposite sides
+ * of a CDS in a split exon get incorrectly merged. */
+static int findAdjacentOverType(const string& featType,
+                                const FeatureNode* feature,
+                                NodeIndexVector& overs,
+                                const BoolVector& done) {
     for (int i = 0; i < overs.size(); i++) {
-        if (overs[i].feat->getType() == featType) {
-            return i;
+        if ((not done[i]) and (overs[i].feat->getType() == featType)) {
+            int gap = max(feature->getStart0(), overs[i].feat->getStart0())
+                - min(feature->getEnd(), overs[i].feat->getEnd());
+            if (gap <= maxCloseGapSize) {
+                return i;
+            }
         }
     }
     return -1;
@@ -166,7 +195,7 @@ static FeatureNode* mergeCopyOther(FeatureNode* transcript,
                                    FeatureNode* feature,
                                    NodeIndexVector& overs2,
                                    BoolVector& done2) {
-    int i2 = findOverType(feature->getType(), overs2);
+    int i2 = findAdjacentOverType(feature->getType(), feature, overs2, done2);
     if (i2 < 0) {
         return feature->cloneFeature();
     } else {
