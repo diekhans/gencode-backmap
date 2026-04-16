@@ -54,7 +54,8 @@ class TransMap {
         } else if (stringEndsWith(fileName, ".psl") or stringEndsWith(fileName, ".psl.gz")) {
             return false;
         } else {
-            errAbort(toCharStr("Error: expected mapping alignments file with an extension of .chain, .chain.gz, .psl, or .psl.gz: " + fileName));
+            errAbort((char*)"Error: expected mapping alignments file with an extension of .chain, .chain.gz, .psl, or .psl.gz: %s",
+                     toCharStr(fileName));
             return false;
         }
     }

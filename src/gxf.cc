@@ -89,7 +89,8 @@ GxfFormat gxfFormatFromFileName(const string& fileName) {
     } else if (fileName == "/dev/null") {
         return DEV_NULL_FORMAT;
     } else {
-        errAbort(toCharStr("Error: expected file with extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: " + fileName));
+        errAbort((char *)"Error: expected file with extension of .gff3, .gff3.gz, .gtf, or .gtf.gz: %s",
+                 toCharStr(fileName));
         return GXF_UNKNOWN_FORMAT;
     }
 }
